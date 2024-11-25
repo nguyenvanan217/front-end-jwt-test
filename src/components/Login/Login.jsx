@@ -3,24 +3,19 @@ import imglogouniver from '../../assets/img/logo university.png';
 import { toast } from 'react-toastify';
 // import axios from '../../setup/axios';
 import { Link } from 'react-router-dom';
-import { registerNewUser } from '../../services/userService';
-import { useHistory } from 'react-router-dom';
-function Register() {
+import { loginUser, registerNewUser } from '../../services/userService';
+import { useHistory, NavLink } from 'react-router-dom';
+function Login() {
     let history = useHistory();
     const [email, setEmail] = useState('');
-    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const defaultValueInput = {
         email: true,
-        username: true,
         password: true,
-        confirmPassword: true,
     };
     const emailRef = useRef(null);
     const usernameRef = useRef(null);
     const passwordRef = useRef(null);
-    const confirmPasswordRef = useRef(null);
 
     const [valueInput, setValueInput] = useState(defaultValueInput);
 
@@ -44,22 +39,10 @@ function Register() {
             emailRef.current.focus();
             return false;
         }
-        if (!username) {
-            setValueInput({ ...valueInput, username: false });
-            toast.error('Please enter UserName!');
-            usernameRef.current.focus();
-            return false;
-        }
         if (!password) {
             setValueInput({ ...valueInput, password: false });
             toast.error('Password is required!');
             passwordRef.current.focus();
-            return false;
-        }
-        if (password !== confirmPassword) {
-            setValueInput({ ...valueInput, confirmPassword: false });
-            toast.error('Your passwords do not match!');
-            confirmPasswordRef.current.focus();
             return false;
         }
         return true;
@@ -71,24 +54,24 @@ function Register() {
             }
         }
     };
-    const handleEnterRegister = (event) => {
+    const handleEnterLogin = (event) => {
         if (event.keyCode === 13 && event.code === 'Enter') {
-            handleRegister();
+            handleLogin();
         }
     };
-    const handleRegister = async () => {
+    const handleLogin = async () => {
         const check = handleSubmit();
         if (check) {
-            let response = await registerNewUser(email, username, password);
+            let response = await loginUser(email, password);
             console.log('response ', response);
-            if(response && +response.EC === 0){
+            if (response && +response.EC === 0) {
                 toast.success(response.EM);
-                history.push('/login');
-            }else{
+                history.push('/');
+            } else {
                 toast.error(response.EM);
-            };
+            }
         }
-    }
+    };
     return (
         <div className="flex justify-center items-center h-screen bg-gray-100">
             <div className="container mx-auto w-[1200px] flex flex-col items-center">
@@ -99,7 +82,7 @@ function Register() {
                     <img src={imglogouniver} alt="Logo University" height="100px" width="100px" />
                 </div>
                 <div className="register border border-gray-300 rounded-lg p-6 bg-white shadow-md w-full max-w-sm">
-                    <h1 className="text-[#0866FF] flex justify-center mb-3 text-2xl font-bold">Đăng Ký Tài Khoản</h1>
+                    <h1 className="text-[#0866FF] flex justify-center mb-3 text-2xl font-bold">Đăng Nhập</h1>
                     <div className="form-email mb-4">
                         <input
                             type="email"
@@ -119,25 +102,6 @@ function Register() {
                             ref={emailRef}
                         />
                     </div>
-                    <div className="form-name mb-4">
-                        <input
-                            type="text"
-                            value={username}
-                            placeholder="Nhập vào User Name"
-                            className={`w-full px-4 py-2 border rounded-md ${
-                                valueInput.username ? 'border-blue-500' : 'border-red-500'
-                            } focus:outline-none`}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setUsername(value);
-                                if (value.trim() !== '') {
-                                    setValueInput((prev) => ({ ...prev, username: true }));
-                                }
-                            }}
-                            onKeyDown={(event) => handleNextEnter(event, passwordRef)}
-                            ref={usernameRef}
-                        />
-                    </div>
                     <div className="form-password mb-4">
                         <input
                             type="password"
@@ -147,36 +111,23 @@ function Register() {
                                 valueInput.password ? 'border-blue-500' : 'border-red-500'
                             } focus:outline-none`}
                             onChange={(e) => setPassword(e.target.value)}
-                            onKeyDown={(event) => handleNextEnter(event, confirmPasswordRef)}
+                            onKeyDown={(event) => handleEnterLogin(event)}
                             ref={passwordRef}
                         />
                     </div>
-                    <div className="form-confirm-password">
-                        <input
-                            type="password"
-                            value={confirmPassword}
-                            placeholder="Nhập lại mật khẩu"
-                            className={`w-full px-4 py-2 border rounded-md ${
-                                valueInput.confirmPassword ? 'border-blue-500' : 'border-red-500'
-                            } focus:outline-none`}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            onKeyDown={(event) => handleEnterRegister(event)}
-                            ref={confirmPasswordRef}
-                        />
-                    </div>
                     <h1 className="mt-2">
-                        Bạn đã có tài khoản ?
-                        <Link to="/login" className="text-[#0866FF] border-bottom border-b-[1px] border-blue-500">
+                        Bạn chưa có tài khoản ?
+                        <NavLink to="/register" className="text-[#0866FF] border-bottom border-b-[1px] border-blue-500">
                             {' '}
-                            Đăng nhập ngay
-                        </Link>
+                            Đăng ký ngay
+                        </NavLink>
                     </h1>
                     <div className="submit flex justify-center">
                         <button
                             className="bg-blue-600 hover:bg-blue-500 transition-all text-white mt-5 w-full py-2 rounded"
-                            onClick={() => handleRegister()}
+                            onClick={() => handleLogin()}
                         >
-                            Đăng ký
+                            Đăng Nhập
                         </button>
                     </div>
                 </div>
@@ -185,4 +136,4 @@ function Register() {
     );
 }
 
-export default Register;
+export default Login;

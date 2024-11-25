@@ -2,10 +2,18 @@ import React, { useState } from 'react';
 import imglogo from '../../assets/img/logo192.png';
 import { FaCaretDown } from 'react-icons/fa';
 import './Navbar.css';
+import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 function Navbar() {
+    let location = useLocation();
     const [dropdown, setDropdown] = useState(false);
     const handleSetting = () => {
         setDropdown(!dropdown);
+    };
+    const handleLogout = () => {
+        // Đóng dropdown
+        setDropdown(false);
+        window.location.reload();
     };
     return (
         <div className="bg-slate-950 flex items-center justify-between">
@@ -22,19 +30,19 @@ function Navbar() {
             </div>
             <div className="setting flex gap-4 pr-6">
                 <div className="text-white text-base cursor-pointer">Welcome: Nguyễn An</div>
-                <div className='relative'>
+                <div className="relative">
                     <div
                         className="text-white text-base cursor-pointer flex items-center  hover:text-[#61DAFB]"
                         onClick={() => handleSetting()}
                     >
                         Settings <FaCaretDown />
                     </div>
-                    <div >
+                    <div>
                         {dropdown && (
                             <div className="drop-down flex">
-                                <a href="" className="text-red-500">
+                                <Link to="/login" onClick={() => handleLogout()} className="text-red-500">
                                     Log Out!
-                                </a>
+                                </Link>
                             </div>
                         )}
                     </div>
