@@ -4,10 +4,9 @@ import { toast } from 'react-toastify';
 // import axios from '../../setup/axios';
 import { Link } from 'react-router-dom';
 import { loginUser, registerNewUser } from '../../services/userService';
-import { useNavigate , NavLink } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router-dom';
 function Login() {
-    console.log('Rendering Login component');
-    let navigate  = useNavigate();
+    let navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const defaultValueInput = {
@@ -63,9 +62,11 @@ function Login() {
         const check = handleSubmit();
         if (check) {
             let response = await loginUser(email, password);
-            console.log('response ', response);
             if (response && +response.EC === 0) {
+                console.log('Token before saving:', localStorage.getItem('access_token'));
                 localStorage.setItem('access_token', response.access_token);
+                console.log('Token after saving:', localStorage.getItem('access_token'));
+                
                 toast.success(response.EM);
                 navigate('/');
             } else {
