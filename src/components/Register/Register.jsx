@@ -4,9 +4,9 @@ import { toast } from 'react-toastify';
 // import axios from '../../setup/axios';
 import { Link } from 'react-router-dom';
 import { registerNewUser } from '../../services/userService';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 function Register() {
-    let history = useHistory();
+    let navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -83,7 +83,7 @@ function Register() {
             console.log('response ', response);
             if(response && +response.EC === 0){
                 toast.success(response.EM);
-                history.push('/login');
+                navigate('/login');
             }else{
                 toast.error(response.EM);
             };

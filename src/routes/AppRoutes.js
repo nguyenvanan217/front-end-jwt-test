@@ -1,28 +1,37 @@
 import React from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
+
 import Login from '../components/Login/Login';
-import Navbar from '../components/Navbar/Navbar';
 import Register from '../components/Register/Register';
+import BookManagement from '../components/BookManagement/BookManagement';
+import UserManagement from '../components/UserManagement/UserManagement';
+import Statistical from '../components/Statistical/Statistical';
+import ViolationManagement from '../components/ViolationManagement/ViolationManagement';
+import BookBorrowingHistory from '../components/BookBorrowingHistory/BookBorrowingHistory';
 
 function AppRoutes() {
     return (
-        <Switch>
-            <Route path="/" exact>
-                <Navbar />
-            </Route>
-            <Route path="/login">
-                <Login />
-            </Route>
-            <Route path="/register">
-                <Register />
-            </Route>
-            <Route path="*">
-                <div style={{ textAlign: 'center', marginTop: '50px' }}>
-                    <h1>404 - Page Not Found</h1>
-                    <p>The page you are looking for does not exist.</p>
-                </div>
-            </Route>
-        </Switch>
+        <Routes>
+            <Route path="/" element={<BookManagement />} />
+            <Route path="/usermanagerment" element={<UserManagement />} />
+            <Route path="/statistical" element={<Statistical />} />
+            <Route path="/violationmanagerment" element={<ViolationManagement />} />
+            <Route path="/bookborrowinghistory" element={<BookBorrowingHistory />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+                path="*"
+                element={
+                    <div style={{ textAlign: 'center', marginTop: '50px' }}>
+                        <h1 className="text-red-600 text-2xl font-bold">404 - Page Not Found</h1>
+                        <p className="text-red-600">The page you are looking for does not exist.</p>
+                        <a href="/" className="text-blue-600 underline">
+                            Go back to Home
+                        </a>
+                    </div>
+                }
+            />
+        </Routes>
     );
 }
 

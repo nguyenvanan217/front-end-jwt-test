@@ -4,9 +4,10 @@ import { toast } from 'react-toastify';
 // import axios from '../../setup/axios';
 import { Link } from 'react-router-dom';
 import { loginUser, registerNewUser } from '../../services/userService';
-import { useHistory, NavLink } from 'react-router-dom';
+import { useNavigate , NavLink } from 'react-router-dom';
 function Login() {
-    let history = useHistory();
+    console.log('Rendering Login component');
+    let navigate  = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const defaultValueInput = {
@@ -14,7 +15,6 @@ function Login() {
         password: true,
     };
     const emailRef = useRef(null);
-    const usernameRef = useRef(null);
     const passwordRef = useRef(null);
 
     const [valueInput, setValueInput] = useState(defaultValueInput);
@@ -65,8 +65,9 @@ function Login() {
             let response = await loginUser(email, password);
             console.log('response ', response);
             if (response && +response.EC === 0) {
+                localStorage.setItem('access_token', response.access_token);
                 toast.success(response.EM);
-                history.push('/');
+                navigate('/');
             } else {
                 toast.error(response.EM);
             }
@@ -98,7 +99,7 @@ function Login() {
                                     setValueInput((prev) => ({ ...prev, email: true }));
                                 }
                             }}
-                            onKeyDown={(event) => handleNextEnter(event, usernameRef)}
+                            onKeyDown={(event) => handleNextEnter(event, passwordRef)}
                             ref={emailRef}
                         />
                     </div>
