@@ -63,12 +63,10 @@ function Login() {
         if (check) {
             let response = await loginUser(email, password);
             if (response && +response.EC === 0) {
-                console.log('Token before saving:', localStorage.getItem('access_token'));
                 localStorage.setItem('access_token', response.access_token);
-                console.log('Token after saving:', localStorage.getItem('access_token'));
                 
                 toast.success(response.EM);
-                navigate('/');
+                navigate('/usermanagerment');
             } else {
                 toast.error(response.EM);
             }

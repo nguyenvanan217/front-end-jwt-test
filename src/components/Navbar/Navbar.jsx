@@ -21,8 +21,8 @@ function Navbar() {
                 <img src={imglogo} alt="" width="45" height="45" className="logo-spin " />
                 <div className="text-white text-xl font-bold">Quản Lý Thư Viện</div>
                 <div className="manage-books flex gap-5">
-                    <NavLink to="/" className="text-white text-base cursor-pointer">Quản Lý Sách</NavLink>
                     <NavLink to="/usermanagerment" className="text-white text-base cursor-pointer">Quản Lý Người Dùng</NavLink>
+                    <NavLink to="/bookmanagerment" className="text-white text-base cursor-pointer">Quản Lý Sách</NavLink>
                     <NavLink to="/statistical" className="text-white text-base cursor-pointer">Thống kê</NavLink>
                     <NavLink to="/violationmanagerment" className="text-white text-base cursor-pointer">Quản Lý Phạt Vi Phạm</NavLink>
                     <NavLink to="/bookborrowinghistory" className="text-white text-base cursor-pointer"> Lịch Sử Mượn Sách</NavLink>
@@ -40,7 +40,7 @@ function Navbar() {
                     <div>
                         {dropdown && (
                             <div className="drop-down flex">
-                                <Link to="/login"
+                                <Link to="/"
                                 onClick={handleLogout}
                                     className="text-red-500 cursor-pointer bg-transparent border-none"
                                 >

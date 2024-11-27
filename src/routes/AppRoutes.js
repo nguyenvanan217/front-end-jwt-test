@@ -12,12 +12,12 @@ import BookBorrowingHistory from '../components/BookBorrowingHistory/BookBorrowi
 function AppRoutes() {
     return (
         <Routes>
-            <Route path="/" element={<BookManagement />} />
             <Route path="/usermanagerment" element={<UserManagement />} />
+            <Route path="/bookmanagerment" element={<BookManagement />} />
             <Route path="/statistical" element={<Statistical />} />
             <Route path="/violationmanagerment" element={<ViolationManagement />} />
             <Route path="/bookborrowinghistory" element={<BookBorrowingHistory />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route
                 path="*"

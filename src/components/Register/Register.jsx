@@ -83,7 +83,7 @@ function Register() {
             console.log('response ', response);
             if(response && +response.EC === 0){
                 toast.success(response.EM);
-                navigate('/login');
+                navigate('/');
             }else{
                 toast.error(response.EM);
             };
@@ -166,7 +166,7 @@ function Register() {
                     </div>
                     <h1 className="mt-2">
                         Bạn đã có tài khoản ?
-                        <Link to="/login" className="text-[#0866FF] border-bottom border-b-[1px] border-blue-500">
+                        <Link to="/" className="text-[#0866FF] border-bottom border-b-[1px] border-blue-500">
                             {' '}
                             Đăng nhập ngay
                         </Link>
