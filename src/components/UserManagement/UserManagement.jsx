@@ -32,7 +32,6 @@ function UserManagement() {
         setIsOpenModalUpdate(true);
     };
     const confirmDeleleUser = async () => {
-        console.log(dataModal);
         let response = await deleteUser(dataModal);
         if (response && response.EC === 0) {
             toast.success(response.EM);
@@ -41,6 +40,9 @@ function UserManagement() {
             toast.error(response.EM);
         }
         setIsOpenModal(false);
+    };
+    const handleUpdateSuccess = () => {
+        fetchAllUser(); 
     };
     return (
         <>
@@ -55,6 +57,7 @@ function UserManagement() {
                 <ModalUserUpdate 
                     dataModal={dataModal} 
                     setIsOpenModalUpdate={setIsOpenModalUpdate}
+                    handleUpdateSuccess={handleUpdateSuccess}
              />}
             <div className="w-[97%] mx-auto mt-4">
                 <div className="text-xl my-4 font-bold text-gray-800">Quản lý tài khoản sinh viên:</div>

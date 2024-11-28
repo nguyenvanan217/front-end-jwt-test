@@ -80,15 +80,18 @@ function Register() {
         const check = handleSubmit();
         if (check) {
             let response = await registerNewUser(email, username, password);
-            console.log('response ', response);
-            if(response && +response.EC === 0){
+            if (response && +response.EC === 1 && response.EM.includes('Email is already in use')) {
+                toast.error(response.EM);
+                setValueInput({ ...valueInput, email: false });
+                emailRef.current.focus();
+            } else if (response && +response.EC === 0) {
                 toast.success(response.EM);
                 navigate('/');
-            }else{
+            } else {
                 toast.error(response.EM);
-            };
+            }
         }
-    }
+    };
     return (
         <div className="flex justify-center items-center h-screen bg-gray-100">
             <div className="container mx-auto w-[1200px] flex flex-col items-center">

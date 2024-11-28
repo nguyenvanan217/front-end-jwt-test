@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaRegWindowClose } from 'react-icons/fa';
-
+import './Modal.css'
 function ModalUser(props) {
     return (
         <div
@@ -8,7 +8,7 @@ function ModalUser(props) {
             onClick={() => props.setIsOpenModal(false)}
         >
             {/* Form content */}
-            <div className="w-[450px] h-48 bg-slate-100 px-4 py-2 rounded shadow-lg relative top-[30%]">
+            <div className="w-[450px] h-48 bg-white px-4 py-2 rounded shadow-lg relative top-[30%] modal-slide-down">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-[#333] pb-2">
                     <div className="text-center font-bold text-red-500">Confirm Delete User</div>

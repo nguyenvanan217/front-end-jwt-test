@@ -30,4 +30,8 @@ const fetchGroup = async () => {
     const URL_API = '/api/v1/groups/read';
     return axios.get(URL_API);
 };
-export { registerNewUser, loginUser, getAllUsers, deleteUser, fetchGroup };
+const updateCurrentUser = async (data) => {
+    const URL_API = '/api/v1/users/update';
+    return axios.put(URL_API, data);
+};
+export { registerNewUser, loginUser, getAllUsers, deleteUser, fetchGroup, updateCurrentUser };

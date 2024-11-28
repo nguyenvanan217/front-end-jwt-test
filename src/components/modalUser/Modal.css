@@ -1,0 +1,37 @@
+@keyframes slide-down {
+    0% {
+        opacity: 0;
+        transform: translateY(-50%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Add the class to apply the animation */
+.modal-slide-down {
+    animation: slide-down 0.5s ease-out;
+}
+
+/* Keyframe animation for sliding up (used for closing the modal) */
+@keyframes slide-up {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50%);
+    }
+}
+
+/* Class to apply when the modal opens */
+.modal-slide-down {
+    animation: slide-down 0.3s ease-out;
+}
+
+/* Class to apply when the modal closes */
+.modal-slide-up {
+    animation: slide-up 0.3s ease-in forwards;
+}

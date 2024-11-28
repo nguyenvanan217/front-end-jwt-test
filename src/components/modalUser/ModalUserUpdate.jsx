@@ -1,57 +1,80 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaRegWindowClose } from 'react-icons/fa';
-import { fetchGroup } from '../../services/userService';
-
+import { fetchGroup, updateCurrentUser } from '../../services/userService';
+import { toast } from 'react-toastify';
+import './Modal.css';
 function ModalUserUpdate(props) {
     const validInputDefault = {
         email: true,
         username: true,
         group: true,
+        group_id: true,
     };
     const transmittedUserData = {
+        id: props.dataModal.id,
         email: props.dataModal.email,
         username: props.dataModal.username,
         group: props.dataModal.Group,
         group_id: props.dataModal.Group.id,
     };
+    const inputRefs = useRef([]);
+    const handleKeyDown = (e, index) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const nextIndex = index + 1;
+
+            if (nextIndex < inputRefs.current.length) {
+                inputRefs.current[nextIndex].focus();
+            } else {
+                handleUpdateUser();
+            }
+        }
+    };
+    // useEffect(() => {
+    //     setTransmitUserData({
+    //         id: props.dataModal.id,
+    //         email: props.dataModal.email,
+    //         username: props.dataModal.username,
+    //         group: props.dataModal.Group,
+    //         group_id: props.dataModal.Group?.id,
+    //     });
+    // }, [props.dataModal]);
     const [userGroup, setUserGroup] = useState([]);
     const [transmitUserData, setTransmitUserData] = useState(transmittedUserData);
     const [validInput, setValidInput] = useState(validInputDefault);
     useEffect(() => {
         handleFetchGroup();
-        console.log(props.dataModal.email);
-        console.log('check >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', transmittedUserData.group.name);
     }, []);
     const handleFetchGroup = async () => {
         let response = await fetchGroup();
-        console.log('Fetch Group', response);
         if (response && response.EC === 0) {
             setUserGroup(response.DT);
         } else {
             console.log(response.EM);
         }
     };
-    const handleUpdateUser = () => {
-        console.log('Update User');
-    };
     const handleModalClick = (e) => {
         e.stopPropagation();
     };
     const checkValidInput = () => {
-        setValidInput(validInputDefault);
         let check = true;
+        let updatedValidInput = { ...validInputDefault };
         if (transmitUserData.email === '') {
-            setValidInput({ ...validInput, email: false });
+            updatedValidInput.email = false;
+            toast.error('Email is required!');
             check = false;
         }
         if (transmitUserData.username === '') {
-            setValidInput({ ...validInput, username: false });
+            updatedValidInput.username = false;
+            toast.error('UserName is required!');
             check = false;
         }
         if (transmitUserData.group === '') {
-            setValidInput({ ...validInput, group: false });
+            updatedValidInput.group = false;
+            toast.error('Group is required!');
             check = false;
         }
+        setValidInput(updatedValidInput);
         return check;
     };
     const handleOnchageInput = (e, name) => {
@@ -59,7 +82,31 @@ function ModalUserUpdate(props) {
             ...transmitUserData,
             [name]: e.target.value,
         });
+        console.log(transmitUserData.group_id);
+        setValidInput({
+            ...validInput,
+            [name]: true,
+        });
     };
+    const handleUpdateUser = async () => {
+        let check = checkValidInput();
+        if (check) {
+            let response = await updateCurrentUser({
+                id: transmitUserData.id,
+                email: transmitUserData.email,
+                username: transmitUserData.username,
+                group_id: +transmitUserData.group_id,
+            });
+            if (response && response.EC === 0) {
+                toast.success(response.EM);
+                props.handleUpdateSuccess();
+                props.setIsOpenModalUpdate(false);
+            } else {
+                toast.warning(response.EM);
+            }
+        }
+    };
+
     return (
         <div
             className="fixed inset-0 flex justify-center bg-black bg-opacity-50 z-0"
@@ -67,7 +114,7 @@ function ModalUserUpdate(props) {
         >
             {/* Form content */}
             <div
-                className="w-[450px] h-64 bg-slate-100 px-4 py-2 rounded shadow-lg relative top-[30%]"
+                className="w-[500px] h-[270px] bg-white px-4 py-2 rounded shadow-lg relative top-[30%] modal-slide-down"
                 onClick={handleModalClick}
             >
                 {/* Header */}
@@ -84,30 +131,42 @@ function ModalUserUpdate(props) {
                 <div className="text-gray-800 mt-7 flex-col justify-center items-center border-b border-[#898686] pb-2 z-2">
                     <div className="my-4">
                         <input
+                            ref={(el) => (inputRefs.current[0] = el)}
                             value={transmitUserData.email}
                             type="text"
                             placeholder="Email"
                             className={`w-full h-10 pl-2 ${
-                                validInput.email ? 'border order-blue-500' : 'border border-red-500'
+                                validInput.email ? 'border border-blue-500' : 'border border-red-500'
                             } focus:outline-none`}
                             onChange={(e) => handleOnchageInput(e, 'email')}
+                            onKeyDown={(e) => handleKeyDown(e, 0)}
                         />
                     </div>
-                    <div className="flex gap-3 mb-3">
+                    <div className="flex gap-3 pb-7">
                         <input
+                            ref={(el) => (inputRefs.current[1] = el)}
                             value={transmitUserData.username}
                             type="text"
                             placeholder="UserName"
-                            className="w-[49%] h-10 pl-2"
+                            className={`w-[49%] h-10 pl-2 ${
+                                validInput.username ? 'border border-blue-500' : 'border border-red-500'
+                            } focus:outline-none`}
                             onChange={(e) => handleOnchageInput(e, 'username')}
+                            onKeyDown={(e) => handleKeyDown(e, 1)}
                         />
                         <select
-                            className="w-[49%] h-10 pl-2"
+                            ref={(el) => (inputRefs.current[2] = el)}
                             value={transmitUserData.group_id}
+                            className={`w-[49%] h-10 pl-2 ${
+                                validInput.group_id ? 'border border-blue-500' : 'border border-red-500'
+                            } focus:outline-none`}
                             onChange={(e) => handleOnchageInput(e, 'group_id')}
+                            onKeyDown={(e) => handleKeyDown(e, 2)}
                         >
                             {userGroup.map((item) => (
-                                <option  key={item.id} value={item.id}>{item.name}</option>
+                                <option key={item.id} value={item.id}>
+                                    {item.name}
+                                </option>
                             ))}
                         </select>
                     </div>
