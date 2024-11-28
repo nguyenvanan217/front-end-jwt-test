@@ -10,7 +10,7 @@ function App() {
     const navbarRoutes = [
         '/usermanagerment',
         '/bookmanagerment',
-        '/statistical',
+        '/booklist',
         '/violationmanagerment',
         '/bookborrowinghistory',
     ];

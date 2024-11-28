@@ -15,6 +15,7 @@ function UserManagement() {
         try {
             const response = await getAllUsers();
             if (response && response.EC === 0) {
+                console.log('response', response.DT);
                 setListUser(response.DT);
             } else {
                 toast.error(response.EM);
@@ -42,7 +43,7 @@ function UserManagement() {
         setIsOpenModal(false);
     };
     const handleUpdateSuccess = () => {
-        fetchAllUser(); 
+        fetchAllUser();
     };
     return (
         <>
@@ -53,12 +54,13 @@ function UserManagement() {
                     confirmDeleleUser={confirmDeleleUser}
                 />
             )}
-            {isOpenModalUpdate &&
-                <ModalUserUpdate 
-                    dataModal={dataModal} 
+            {isOpenModalUpdate && (
+                <ModalUserUpdate
+                    dataModal={dataModal}
                     setIsOpenModalUpdate={setIsOpenModalUpdate}
                     handleUpdateSuccess={handleUpdateSuccess}
-             />}
+                />
+            )}
             <div className="w-[97%] mx-auto mt-4">
                 <div className="text-xl my-4 font-bold text-gray-800">Quản lý tài khoản sinh viên:</div>
                 <div className="overflow-x-auto">
@@ -70,6 +72,7 @@ function UserManagement() {
                                 <th className="px-4 py-2 border border-gray-300">Email</th>
                                 <th className="px-4 py-2 border border-gray-300">UserName</th>
                                 <th className="px-4 py-2 border border-gray-300">Group</th>
+                                <th className="px-4 py-2 border border-gray-300">Number of books borrowed</th>
                                 <th className="px-4 py-2 border border-gray-300">Action</th>
                             </tr>
                         </thead>

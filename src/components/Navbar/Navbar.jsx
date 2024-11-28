@@ -23,7 +23,7 @@ function Navbar() {
                 <div className="manage-books flex gap-5">
                     <NavLink to="/usermanagerment" className="text-white text-base cursor-pointer">Quản Lý Người Dùng</NavLink>
                     <NavLink to="/bookmanagerment" className="text-white text-base cursor-pointer">Quản Lý Sách</NavLink>
-                    <NavLink to="/statistical" className="text-white text-base cursor-pointer">Thống kê</NavLink>
+                    <NavLink to="/booklist" className="text-white text-base cursor-pointer">Sách Thư Viện</NavLink>
                     <NavLink to="/violationmanagerment" className="text-white text-base cursor-pointer">Quản Lý Phạt Vi Phạm</NavLink>
                     <NavLink to="/bookborrowinghistory" className="text-white text-base cursor-pointer"> Lịch Sử Mượn Sách</NavLink>
                 </div>

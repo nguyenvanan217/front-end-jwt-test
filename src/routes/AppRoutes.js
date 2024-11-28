@@ -5,7 +5,7 @@ import Login from '../components/Login/Login';
 import Register from '../components/Register/Register';
 import BookManagement from '../components/BookManagement/BookManagement';
 import UserManagement from '../components/UserManagement/UserManagement';
-import Statistical from '../components/Statistical/Statistical';
+import BookList from '../components/BookList/BookList';
 import ViolationManagement from '../components/ViolationManagement/ViolationManagement';
 import BookBorrowingHistory from '../components/BookBorrowingHistory/BookBorrowingHistory';
 
@@ -14,7 +14,7 @@ function AppRoutes() {
         <Routes>
             <Route path="/usermanagerment" element={<UserManagement />} />
             <Route path="/bookmanagerment" element={<BookManagement />} />
-            <Route path="/statistical" element={<Statistical />} />
+            <Route path="/booklist" element={<BookList />} />
             <Route path="/violationmanagerment" element={<ViolationManagement />} />
             <Route path="/bookborrowinghistory" element={<BookBorrowingHistory />} />
             <Route path="/" element={<Login />} />
