@@ -14,8 +14,8 @@ function UserManagement() {
     const fetchAllUser = async () => {
         try {
             const response = await getAllUsers();
+            console.log('response', response);
             if (response && response.EC === 0) {
-                console.log('response', response.DT);
                 setListUser(response.DT);
             } else {
                 toast.error(response.EM);
@@ -62,7 +62,7 @@ function UserManagement() {
                 />
             )}
             <div className="w-[97%] mx-auto mt-4">
-                <div className="text-xl my-4 font-bold text-gray-800">Quản lý tài khoản sinh viên:</div>
+                <div className="text-3xl font-bold mb-6 text-center">Quản lý tài khoản sinh viên:</div>
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse border border-gray-300">
                         {/* Table Head */}
@@ -70,42 +70,61 @@ function UserManagement() {
                             <tr className="bg-[#020617] text-white">
                                 <th className="px-4 py-2 border border-gray-300">Id</th>
                                 <th className="px-4 py-2 border border-gray-300">Email</th>
-                                <th className="px-4 py-2 border border-gray-300">UserName</th>
-                                <th className="px-4 py-2 border border-gray-300">Group</th>
-                                <th className="px-4 py-2 border border-gray-300">Number of books borrowed</th>
+                                <th className="px-4 py-2 border border-gray-300">Tên Sinh Viên</th>
+                                <th className="px-4 py-2 border border-gray-300">Nhóm</th>
+                                <th className="px-4 py-2 border border-gray-300">Đã Mượn</th>
+                                <th className="px-4 py-2 border border-gray-300">Trạng Thái</th>
                                 <th className="px-4 py-2 border border-gray-300">Action</th>
                             </tr>
                         </thead>
                         {/* Table Body */}
                         <tbody>
-                            {listUser.map((item, index) => {
-                                return (
-                                    <tr key={index} className="hover:bg-gray-100">
-                                        <td className="px-4 py-2 text-center border border-gray-300">{item.id}</td>
-                                        <td className="px-4 py-2 text-center border border-gray-300">{item.email}</td>
-                                        <td className="px-4 py-2 text-center border border-gray-300 max-w-[80px] truncate">
-                                            {item.username}
-                                        </td>
-                                        <td className="px-4 py-2 text-center border border-gray-300">
-                                            {item.Group.name}
-                                        </td>
-                                        <td className="py-2 text-center border border-gray-300 flex justify-center gap-5">
-                                            <button
-                                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                                                onClick={() => handleUpdateUser(item)}
-                                            >
-                                                Chỉnh sửa
-                                            </button>
-                                            <button
-                                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                                                onClick={() => handledeleteUser(item)}
-                                            >
-                                                Xóa
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                            {listUser && listUser.length > 0 ? (
+                                listUser.map((item, index) => {
+                                    return (
+                                        <tr key={index} className="hover:bg-gray-100">
+                                            <td className="px-4 py-2 text-center border border-gray-300">{item.id}</td>
+                                            <td className="px-4 py-2 text-center border border-gray-300 max-w-[180px] truncate">
+                                                {item.email}
+                                            </td>
+                                            <td className="px-4 py-2 text-center border border-gray-300 max-w-[180px] truncate">
+                                                {item.username}
+                                            </td>
+                                            <td className="px-4 py-2 text-center border border-gray-300">
+                                                {item.Group.name}
+                                            </td>
+                                            <td className="w-46 py-2 text-center border border-gray-300">
+                                                {item && +item.borrowedBooksCount > 0
+                                                    ? item.borrowedBooksCount + ' cuốn'
+                                                    : 'Chưa mượn lần nào'}
+                                            </td>
+                                            <td className="px-4 py-2 text-center border border-gray-300">
+                                                {item.Transactions && item.Transactions.length > 0 ? item.Transactions[0].status : 'Không có trạng thái'}
+                                            </td>
+                                            <td className=" py-2 text-center border border-gray-300 flex justify-center gap-5">
+                                                <button
+                                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                                    onClick={() => handleUpdateUser(item)}
+                                                >
+                                                    Chỉnh sửa
+                                                </button>
+                                                <button
+                                                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                                                    onClick={() => handledeleteUser(item)}
+                                                >
+                                                    Xóa
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr>
+                                    <td colSpan="6" className="text-center py-4">
+                                        Không có dữ liệu
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
