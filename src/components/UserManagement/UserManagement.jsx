@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { getAllUsers, deleteUser } from '../../services/userService';
 import ModalUser from '../modalUser/ModalUser';
 import ModalUserUpdate from '../modalUser/ModalUserUpdate';
+import { Link } from 'react-router-dom';
 function UserManagement() {
     const [listUser, setListUser] = useState([]);
     const [dataModal, setDataModal] = useState({});
@@ -29,6 +30,7 @@ function UserManagement() {
         setDataModal(item);
     };
     const handleUpdateUser = (item) => {
+        console.log('item', item);
         setDataModal(item);
         setIsOpenModalUpdate(true);
     };
@@ -94,13 +96,19 @@ function UserManagement() {
                                                 {item.Group.name}
                                             </td>
                                             <td className="w-46 py-2 text-center border border-gray-300">
-                                                {item && +item.borrowedBooksCount > 0
-                                                    ? item.borrowedBooksCount + ' cuốn'
-                                                    : 'Chưa mượn lần nào'}
+                                                <span
+                                                    className={item && +item.borrowedBooksCount > 0 ? 'font-bold' : ''}
+                                                >
+                                                    {item && +item.borrowedBooksCount > 0
+                                                        ? item.borrowedBooksCount + ' cuốn'
+                                                        : 'Chưa mượn lần nào'}
+                                                </span>
                                             </td>
-                                            <td className="px-4 py-2 text-center border border-gray-300">
-                                                {item.Transactions && item.Transactions.length > 0 ? item.Transactions[0].status : 'Không có trạng thái'}
+
+                                            <td className="px-4 py-2 text-center border border-gray-300 text-white">
+                                               <Link className='text-blue-500 decoration-slice underline' to="/bookloanreturndetails">Xem Chi tiết</Link>
                                             </td>
+
                                             <td className=" py-2 text-center border border-gray-300 flex justify-center gap-5">
                                                 <button
                                                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"

@@ -13,6 +13,7 @@ function App() {
         '/booklist',
         '/violationmanagerment',
         '/bookborrowinghistory',
+        '/bookloanreturndetails',
     ];
     return (
         <>

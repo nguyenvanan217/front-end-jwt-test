@@ -8,6 +8,7 @@ import UserManagement from '../components/UserManagement/UserManagement';
 import BookList from '../components/BookList/BookList';
 import ViolationManagement from '../components/ViolationManagement/ViolationManagement';
 import BookBorrowingHistory from '../components/BookBorrowingHistory/BookBorrowingHistory';
+import BookLoanReturnDetails from '../components/BookLoanReturnDetails/BookLoanReturnDetails';
 
 function AppRoutes() {
     return (
@@ -17,6 +18,7 @@ function AppRoutes() {
             <Route path="/booklist" element={<BookList />} />
             <Route path="/violationmanagerment" element={<ViolationManagement />} />
             <Route path="/bookborrowinghistory" element={<BookBorrowingHistory />} />
+            <Route path="/bookloanreturndetails" element={<BookLoanReturnDetails />} />
             <Route path="/" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route
