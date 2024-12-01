@@ -12,7 +12,6 @@ const BookManagementTable = () => {
     const fetchAllBook = async () => {
         try {
             const response = await getAllBook();
-            console.log('response', response);
             if (response && response.EC === 0) {
                 setBooks(response.DT);
             } else {

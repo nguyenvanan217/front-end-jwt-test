@@ -1,0 +1,41 @@
+.text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 170px;
+}
+
+.table-header {
+    white-space: nowrap;
+    text-align: left;
+}
+.header-content-book tr th {
+    width: 10%;
+}
+.body-content-book tr td {
+    width: 10%;
+}
+/* table {
+    border: 1px solid #ddd; 
+    border-collapse: collapse; 
+    width: 100%; 
+}
+
+
+th {
+    border: 1px solid #ddd; 
+    padding: 8px;
+}
+
+
+td {
+    border: 1px solid #ddd; 
+    padding: 8px;
+    text-align: left; 
+}
+
+
+td:hover {
+    background-color: #f9f9f9; 
+} */
+

@@ -18,7 +18,7 @@ function AppRoutes() {
             <Route path="/booklist" element={<BookList />} />
             <Route path="/violationmanagerment" element={<ViolationManagement />} />
             <Route path="/bookborrowinghistory" element={<BookBorrowingHistory />} />
-            <Route path="/bookloanreturndetails" element={<BookLoanReturnDetails />} />
+            <Route path="/bookloanreturndetails/:id" element={<BookLoanReturnDetails />} />
             <Route path="/" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route

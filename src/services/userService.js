@@ -38,4 +38,17 @@ const updateCurrentUser = async (data) => {
     const URL_API = '/api/v1/users/update';
     return axios.put(URL_API, data);
 };
-export { registerNewUser, loginUser, getAllUsers, deleteUser, fetchGroup, updateCurrentUser, fetchStatus };
+const getUserDetailsById = async (id) => {
+    const URL_API = `/api/v1/users/read/${id}`;
+    return axios.get(URL_API);
+};
+export {
+    registerNewUser,
+    loginUser,
+    getAllUsers,
+    deleteUser,
+    fetchGroup,
+    updateCurrentUser,
+    fetchStatus,
+    getUserDetailsById,
+};

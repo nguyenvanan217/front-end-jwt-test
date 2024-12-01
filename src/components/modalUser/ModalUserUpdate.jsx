@@ -43,7 +43,6 @@ function ModalUserUpdate(props) {
     useEffect(() => {
         handleFetchGroup();
         // handleFetchStatus();
-        console.log('props.dataModal.Group', props.dataModal.Group);
     }, []);
 
     const handleFetchGroup = async () => {
@@ -115,7 +114,6 @@ function ModalUserUpdate(props) {
                 group_id: +transmitUserData.group_id,
                 // status: transmitUserData.status,
             });
-            console.log('API Response:', response);
             if (response && response.EC === 0) {
                 toast.success(response.EM);
                 props.handleUpdateSuccess();
@@ -226,7 +224,6 @@ function ModalUserUpdate(props) {
                     <button
                         className="bg-blue-700 text-white font-bold py-2 px-4 rounded mt-3 text-base"
                         onClick={() => {
-                            console.log('Confirm button clicked', transmitUserData);
                             handleUpdateUser();
                         }}
                     >

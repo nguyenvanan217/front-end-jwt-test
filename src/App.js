@@ -13,11 +13,12 @@ function App() {
         '/booklist',
         '/violationmanagerment',
         '/bookborrowinghistory',
-        '/bookloanreturndetails',
+        '/bookloanreturndetails/:id',
     ];
+    const isBookLoanReturnDetailPage = location.pathname.startsWith('/bookloanreturndetails');
     return (
         <>
-            {navbarRoutes.includes(location.pathname) && <Navbar />}
+            {(navbarRoutes.includes(location.pathname) || isBookLoanReturnDetailPage) && <Navbar />}
             <div className="App">
                 <AppRoutes />
             </div>

@@ -15,7 +15,6 @@ function UserManagement() {
     const fetchAllUser = async () => {
         try {
             const response = await getAllUsers();
-            console.log('response', response);
             if (response && response.EC === 0) {
                 setListUser(response.DT);
             } else {
@@ -30,7 +29,6 @@ function UserManagement() {
         setDataModal(item);
     };
     const handleUpdateUser = (item) => {
-        console.log('item', item);
         setDataModal(item);
         setIsOpenModalUpdate(true);
     };
@@ -106,7 +104,12 @@ function UserManagement() {
                                             </td>
 
                                             <td className="px-4 py-2 text-center border border-gray-300 text-white">
-                                               <Link className='text-blue-500 decoration-slice underline' to="/bookloanreturndetails">Xem Chi tiết</Link>
+                                                <Link
+                                                    className="text-blue-500 decoration-slice underline"
+                                                    to={`/bookloanreturndetails/${item.id}`}
+                                                >
+                                                    Xem Chi tiết
+                                                </Link>
                                             </td>
 
                                             <td className=" py-2 text-center border border-gray-300 flex justify-center gap-5">
