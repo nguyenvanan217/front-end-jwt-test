@@ -30,8 +30,8 @@ const fetchGroup = async () => {
     const URL_API = '/api/v1/groups/read';
     return axios.get(URL_API);
 };
-const fetchStatus = async () => {
-    const URL_API = '/api/v1/status/read';
+const fetchStatus = async (id) => {
+    const URL_API = `/api/v1/status/read/${id}`;
     return axios.get(URL_API);
 };
 const updateCurrentUser = async (data) => {
@@ -42,6 +42,10 @@ const getUserDetailsById = async (id) => {
     const URL_API = `/api/v1/users/read/${id}`;
     return axios.get(URL_API);
 };
+const updateTransaction = async (data) => {
+    const URL_API = '/api/v1/transactions/update';
+    return axios.put(URL_API, data);
+}
 export {
     registerNewUser,
     loginUser,
@@ -51,4 +55,5 @@ export {
     updateCurrentUser,
     fetchStatus,
     getUserDetailsById,
+    updateTransaction
 };

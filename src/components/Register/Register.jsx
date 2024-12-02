@@ -97,7 +97,7 @@ function Register() {
             <div className="container mx-auto w-[1200px] flex flex-col items-center">
                 <div className="title-register flex flex-col items-center mb-8">
                     <h1 className="text-3xl font-bold text-center text-[#0866FF] mb-5">
-                        Quản lý thư viện Đại học Khoa Học Huế
+                        Thư viện Đại học Khoa Học Huế
                     </h1>
                     <img src={imglogouniver} alt="Logo University" height="100px" width="100px" />
                 </div>

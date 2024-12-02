@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getUserDetailsById } from '../../services/userService';
+import { fetchStatus, getUserDetailsById, updateTransaction } from '../../services/userService';
 import { toast } from 'react-toastify';
 import './BookLoanReturnDetails.css';
 
@@ -8,8 +8,12 @@ function BookLoanReturnDetails() {
     const { id } = useParams();
     const [userDetails, setUserDetails] = useState(null);
     const [transactionInput, setTransactionInput] = useState(false);
+    const [buttonUpdate, setButtonUpdate] = useState(false);
+    const [deleteBorrowedTable, setDeleteBorrowedTable] = useState(false);
+    const [listStatus, setListStatus] = useState([]);
     const [borrowDate, setBorrowDate] = useState('');
     const [returnDate, setReturnDate] = useState('');
+    const [selectedOption, setSelectedOption] = useState('');
 
     useEffect(() => {
         const fetchUserDetails = async () => {
@@ -27,9 +31,25 @@ function BookLoanReturnDetails() {
 
         fetchUserDetails();
     }, [id]);
+    useEffect(() => {
+        handleFetchStatus();
+    }, []);
+    const handleFetchStatus = async () => {
+        let response = await fetchStatus(id);
+        if (response && response.EC === 0) {
+            setListStatus(response.DT);
+            console.log('check status', response.DT);
+        } else {
+            console.log(response.EM);
+            setListStatus([]);
+        }
+    };
 
     const handleEditDetails = (transaction) => {
+        console.log('transaction', transaction);
         setTransactionInput(true);
+        setButtonUpdate(true);
+        console.log('userDetails.Transactions', userDetails.Transactions);
         setBorrowDate(new Date(transaction.borrow_date).toISOString().split('T')[0]);
         setReturnDate(new Date(transaction.return_date).toISOString().split('T')[0]);
     };
@@ -39,6 +59,56 @@ function BookLoanReturnDetails() {
     };
     const handleDateChangeReturnDate = (e) => {
         setReturnDate(e.target.value);
+    };
+    const handleCancelEdit = () => {
+        setTransactionInput(false);
+        setButtonUpdate(false);
+    };
+    const handleCancelDelete = () => {
+        setDeleteBorrowedTable(false);
+    };
+    const handleDeleteBorrowedBookTable = () => {
+        setDeleteBorrowedTable(true);
+    };
+    const handleSelectChange = (event, transactionId) => {
+        const updatedTransactions = userDetails.Transactions.map((transaction) => {
+            if (transaction.id === transactionId) {
+                return { ...transaction, status: event.target.value };
+            }
+            return transaction;
+        });
+        setUserDetails((prev) => ({ ...prev, Transactions: updatedTransactions }));
+    };
+    const handleSaveChanges = async () => {
+        const updatedTransactions = userDetails.Transactions.map((transaction) => {
+            console.log('userDetails.Transactions[0].id', userDetails?.Transactions);
+            if (transaction.id === userDetails.Transactions[0].id) {
+                return {
+                    ...transaction,
+                    borrow_date: borrowDate,
+                    return_date: returnDate,
+                    status: selectedOption,
+                };
+            }
+            return transaction;
+        });
+
+        try {
+            // Giả sử bạn có hàm updateTransaction để gửi dữ liệu cập nhật
+            const response = await updateTransaction(updatedTransactions[0]);
+
+            if (response.EC === 0) {
+                toast.success('Cập nhật thành công!');
+                setUserDetails((prev) => ({ ...prev, Transactions: updatedTransactions }));
+                setTransactionInput(false);
+                setButtonUpdate(false);
+            } else {
+                toast.error(response.EM || 'Cập nhật thất bại');
+            }
+        } catch (error) {
+            console.error('Error updating transaction:', error);
+            toast.error('Có lỗi xảy ra khi cập nhật.');
+        }
     };
 
     return (
@@ -82,11 +152,14 @@ function BookLoanReturnDetails() {
                     <h3 className="font-semibold text-lg text-green-600 mb-2">Thông tin sách mượn:</h3>
                     {userDetails?.Transactions?.map((transaction) => (
                         <table className="w-full mb-4" key={transaction.id}>
-                            <thead className="bg-[#020617] text-white header-content-book">
+                            <thead className="bg-[#020617] text-white header-content-book relative">
                                 <tr>
                                     <th className="px-4 py-2 text-left border-spacing-3 text-nowrap">Thông tin</th>
                                     <th className="px-4 py-2 text-left border-spacing-3">Chi tiết</th>
                                 </tr>
+                                {deleteBorrowedTable && (
+                                    <button className="absolute top-[15%] left-[93%] w-10 h-7 bg-red-600">X</button>
+                                )}
                             </thead>
                             <tbody className="body-content-book">
                                 <tr>
@@ -111,7 +184,7 @@ function BookLoanReturnDetails() {
                                 </tr>
                                 <tr>
                                     <td className="px-4 py-2 font-medium">Ngày trả:</td>
-                                    <td className="px-4 py-2">
+                                    <td className=" py-2">
                                         {transactionInput ? (
                                             <td className="px-4 py-2">
                                                 <input
@@ -130,19 +203,33 @@ function BookLoanReturnDetails() {
                                 <tr>
                                     <td className="px-4 py-2 font-medium">Trạng thái:</td>
                                     <td className="px-4 py-2">
-                                        <span
-                                            className={`px-2 py-1 rounded ${
-                                                transaction.status === 'Quá hạn'
-                                                    ? 'bg-red-500 text-white'
-                                                    : transaction.status === 'Chờ trả'
-                                                    ? 'bg-orange-500 text-white'
-                                                    : transaction.status === 'Đã trả'
-                                                    ? 'bg-green-500 text-white'
-                                                    : ''
-                                            }`}
-                                        >
-                                            {transaction.status}
-                                        </span>
+                                        {transactionInput ? (
+                                            <span className="bg-blue-500 w-4">
+                                                <select
+                                                    className="border border-red-600 rounded px-2 outline-none"
+                                                    value={transaction.status}
+                                                    onChange={(event) => handleSelectChange(event, transaction.id)}
+                                                >
+                                                    <option value="Đã trả">Đã trả</option>
+                                                    <option value="Chờ trả">Chờ trả</option>
+                                                    <option value="Quá hạn">Quá hạn</option>
+                                                </select>
+                                            </span>
+                                        ) : (
+                                            <span
+                                                className={`px-2 py-1 rounded ${
+                                                    transaction.status === 'Quá hạn'
+                                                        ? 'bg-red-500 text-white'
+                                                        : transaction.status === 'Chờ trả'
+                                                        ? 'bg-orange-500 text-white'
+                                                        : transaction.status === 'Đã trả'
+                                                        ? 'bg-green-500 text-white'
+                                                        : ''
+                                                }`}
+                                            >
+                                                {transaction.status}
+                                            </span>
+                                        )}
                                     </td>
                                 </tr>
                             </tbody>
@@ -152,13 +239,26 @@ function BookLoanReturnDetails() {
             </div>
 
             <div className="flex justify-end gap-4 mt-6">
+                {buttonUpdate && (
+                    <button
+                        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg"
+                        onClick={handleSaveChanges}
+                    >
+                        Lưu
+                    </button>
+                )}
                 <button
                     className="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg"
-                    onClick={() => handleEditDetails(userDetails.Transactions[0])} // Giả sử chỉ chỉnh sửa 1 giao dịch đầu tiên
+                    onClick={buttonUpdate ? handleCancelEdit : () => handleEditDetails(userDetails.Transactions[0])}
                 >
-                    Chỉnh sửa
+                    {buttonUpdate ? 'Hủy' : 'Chỉnh sửa'}
                 </button>
-                <button className="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg">Xóa</button>
+                <button
+                    className="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg"
+                    onClick={deleteBorrowedTable ? handleCancelDelete : () => handleDeleteBorrowedBookTable()}
+                >
+                    {deleteBorrowedTable ? 'Hủy' : 'Xóa'}
+                </button>
             </div>
         </div>
     );
