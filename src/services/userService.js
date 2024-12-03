@@ -42,10 +42,10 @@ const getUserDetailsById = async (id) => {
     const URL_API = `/api/v1/users/read/${id}`;
     return axios.get(URL_API);
 };
-const updateTransaction = async (data) => {
-    const URL_API = '/api/v1/transactions/update';
-    return axios.put(URL_API, data);
-}
+const updateTransactionStatus = async (transactionStatuses) => {
+    const URL_API = '/api/v1/transactions/update-status';
+    return axios.put(URL_API, transactionStatuses);
+};
 export {
     registerNewUser,
     loginUser,
@@ -55,5 +55,5 @@ export {
     updateCurrentUser,
     fetchStatus,
     getUserDetailsById,
-    updateTransaction
+    updateTransactionStatus,
 };
