@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { getAllBook } from '../../services/bookManagerService';
+import { addBook, getAllBook } from '../../services/bookManagerService';
 import { toast } from 'react-toastify';
-
+import { IoMdAdd } from 'react-icons/io';
+import ModalAddBook from './ModalAddBook';
 const BookManagementTable = () => {
     const [books, setBooks] = useState([]);
+    const [isOpenModalAdd, setIsOpenModalAdd] = useState(false);
 
     useEffect(() => {
         fetchAllBook();
@@ -22,9 +24,35 @@ const BookManagementTable = () => {
         }
     };
 
+    const handleAddBook = async (bookData) => {
+        try {
+            console.log('Sending book data:', bookData);
+            const response = await addBook(bookData);
+            console.log('Response:', response);
+            
+            if (response && response.EC === 0) {
+                toast.success(response.EM);
+                fetchAllBook();
+                setIsOpenModalAdd(false);
+            } else {
+                toast.error(response.EM || 'Thêm sách thất bại');
+            }
+        } catch (error) {
+            console.error('Error details:', error.response?.data || error);
+            toast.error(error.response?.data?.EM || 'Có lỗi xảy ra khi thêm sách');
+        }
+    };
+
     return (
         <div className="container mx-auto px-4 my-6">
             <h1 className="text-3xl font-bold mb-6 text-center">Quản Lý Sách</h1>
+            <button 
+                onClick={() => setIsOpenModalAdd(true)}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
+            >
+                <IoMdAdd />
+                Thêm sách
+            </button>
             <table className="table-auto w-full border-collapse border border-gray-300">
                 <thead>
                     <tr className="bg-gray-200 text-white">
@@ -76,6 +104,13 @@ const BookManagementTable = () => {
                     )}
                 </tbody>
             </table>
+
+            {isOpenModalAdd && (
+                <ModalAddBook 
+                    setIsOpenModalAdd={setIsOpenModalAdd}
+                    handleAddBook={handleAddBook}
+                />
+            )}
         </div>
     );
 };
