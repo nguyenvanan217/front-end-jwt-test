@@ -13,9 +13,17 @@
     width: 10%;
 }
 .body-content-book tr td {
-    width: 10%;
+    width: 50%;
 }
-/* table {
+thead {
+    /* position: absolute; */
+    z-index: -1000;
+}
+.modal {
+    position: fixed;
+    z-index: 1000; /* Giá trị rất cao để chắc chắn modal nằm trên */
+  }
+table {
     border: 1px solid #ddd; 
     border-collapse: collapse; 
     width: 100%; 
@@ -37,5 +45,4 @@ td {
 
 td:hover {
     background-color: #f9f9f9; 
-} */
-
+}

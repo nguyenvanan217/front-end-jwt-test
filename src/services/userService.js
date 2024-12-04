@@ -46,6 +46,10 @@ const updateTransactionStatus = async (transactionStatuses) => {
     const URL_API = '/api/v1/transactions/update-status';
     return axios.put(URL_API, transactionStatuses);
 };
+const deleteTransaction = async (transactionId) => {
+    const URL_API = `/api/v1/transactions/delete/${transactionId}`;
+    return axios.delete(URL_API);
+}
 export {
     registerNewUser,
     loginUser,
@@ -56,4 +60,5 @@ export {
     fetchStatus,
     getUserDetailsById,
     updateTransactionStatus,
+    deleteTransaction,
 };
