@@ -131,7 +131,7 @@ function ModalUserUpdate(props) {
         >
             {/* Form content */}
             <div
-                className="w-[500px] h-[330px] bg-white px-4 py-2 rounded shadow-lg relative top-[30%] modal-slide-down"
+                className="w-[500px] h-[320px] bg-white px-4 py-2 rounded shadow-lg relative top-[30%] modal-slide-down"
                 onClick={handleModalClick}
             >
                 {/* Header */}
@@ -145,7 +145,7 @@ function ModalUserUpdate(props) {
                     </div>
                 </div>
                 {/* Body */}
-                <div className="text-gray-800 mt-3 flex-col justify-center items-center border-b border-[#898686] z-2">
+                <div className="text-gray-800 py-5 flex-col justify-center items-center border-b border-[#898686] z-2">
                     <div className="flex flex-col gap-2">
                         <label className="flex items-center gap-2 font-bold">
                             Email <span className="text-red-600">(*)</span>

@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { addBook, getAllBook } from '../../services/bookManagerService';
+import { addBook, getAllBook, getAllGenres, deleteBook, updateBook } from '../../services/bookManagerService';
 import { toast } from 'react-toastify';
 import { IoMdAdd } from 'react-icons/io';
 import ModalAddBook from './ModalAddBook';
+import ModalDeleteBook from './ModalDeleteBook';
+import ModalUpdateBook from './ModalUpdateBook';
 const BookManagementTable = () => {
     const [books, setBooks] = useState([]);
+    const [genres, setGenres] = useState([]);
     const [isOpenModalAdd, setIsOpenModalAdd] = useState(false);
+    const [isOpenModalDelete, setIsOpenModalDelete] = useState(false);
+    const [bookToDelete, setBookToDelete] = useState(null);
+    const [isOpenModalUpdate, setIsOpenModalUpdate] = useState(false);
+    const [bookToUpdate, setBookToUpdate] = useState(null);
 
     useEffect(() => {
         fetchAllBook();
+        fetchAllGenres();
     }, []);
 
     const fetchAllBook = async () => {
@@ -23,13 +31,21 @@ const BookManagementTable = () => {
             console.log(error);
         }
     };
+    const fetchAllGenres = async () => {
+        const response = await getAllGenres();
+        if (response && response.EC === 0) {
+            setGenres(response.DT);
+        } else {
+            toast.error(response.EM);
+        }
+    };
 
     const handleAddBook = async (bookData) => {
         try {
             console.log('Sending book data:', bookData);
             const response = await addBook(bookData);
             console.log('Response:', response);
-            
+
             if (response && response.EC === 0) {
                 toast.success(response.EM);
                 fetchAllBook();
@@ -42,11 +58,47 @@ const BookManagementTable = () => {
             toast.error(error.response?.data?.EM || 'Có lỗi xảy ra khi thêm sách');
         }
     };
+    const handleOpenDeleteModal = (book) => {
+        setBookToDelete(book);
+        setIsOpenModalDelete(true);
+    };
 
+    const handleConfirmDelete = async (bookId) => {
+        try {
+            const response = await deleteBook(bookId);
+            if (response && response.EC === 0) {
+                toast.success(response.EM);
+                fetchAllBook();
+                setIsOpenModalDelete(false);
+            } else {
+                toast.error(response.EM || 'Xóa sách thất bại');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('Có lỗi xảy ra khi xóa sách');
+        }
+    };
+    const handleOpenUpdateModal = (book) => {
+        setBookToUpdate(book);
+        setIsOpenModalUpdate(true);
+    };
+
+    const handleUpdateBook = async (bookId, bookData) => {
+        try {
+            const response = await updateBook(bookId, bookData);
+            if (response && response.EC === 0) {
+                await fetchAllBook();
+            }
+            return response;
+        } catch (error) {
+            console.error('Error:', error);
+            return { EC: -1, EM: 'Có lỗi xảy ra khi cập nhật sách' };
+        }
+    };
     return (
         <div className="container mx-auto px-4 my-6">
-            <h1 className="text-3xl font-bold mb-6 text-center">Quản Lý Sách</h1>
-            <button 
+            <h1 className="text-3xl font-bold mb-6 text-center">Quản Lý Sách Trong Thư Viện</h1>
+            <button
                 onClick={() => setIsOpenModalAdd(true)}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
             >
@@ -69,8 +121,8 @@ const BookManagementTable = () => {
                     {books && books.length > 0 ? (
                         books.map((book) => (
                             <tr key={book.id} className="text-center">
-                                <td className="border px-4 py-2">{book.id}</td>
-                                <td className="border px-4 py-2">
+                                <td className="border text-center px-4 py-2">{book.id}</td>
+                                <td className="border text-center px-4 py-2">
                                     {book.cover_image ? (
                                         <img
                                             src={book.cover_image}
@@ -81,15 +133,23 @@ const BookManagementTable = () => {
                                         'Không có ảnh'
                                     )}
                                 </td>
-                                <td className="border px-4 py-2">{book.title}</td>
-                                <td className="border px-4 py-2">{book.author}</td>
-                                <td className="border px-4 py-2">{book.Genre.name}</td>
-                                <td className="border px-4 py-2">{book.quantity}</td>
-                                <td className="border px-4 py-2">
-                                    <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 mr-2">
+                                <td className="border text-center px-4 py-2 max-w-[200px] truncate">{book.title}</td>
+                                <td className="border text-center px-4 py-2 max-w-[150px] truncate">{book.author}</td>
+                                <td className="border text-center px-4 py-2 max-w-[150px] truncate">
+                                    {book.Genre?.name || 'Không có thể loại'}
+                                </td>
+                                <td className="border text-center px-4 py-2">{book.quantity}</td>
+                                <td className="border text-center px-4 py-2">
+                                    <button
+                                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 mr-2"
+                                        onClick={() => handleOpenUpdateModal(book)}
+                                    >
                                         Chỉnh Sửa
                                     </button>
-                                    <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                                    <button
+                                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                                        onClick={() => handleOpenDeleteModal(book)}
+                                    >
                                         Xóa
                                     </button>
                                 </td>
@@ -106,9 +166,20 @@ const BookManagementTable = () => {
             </table>
 
             {isOpenModalAdd && (
-                <ModalAddBook 
-                    setIsOpenModalAdd={setIsOpenModalAdd}
-                    handleAddBook={handleAddBook}
+                <ModalAddBook setIsOpenModalAdd={setIsOpenModalAdd} handleAddBook={handleAddBook} genres={genres} />
+            )}
+            {isOpenModalDelete && (
+                <ModalDeleteBook
+                    setIsOpenModalDelete={setIsOpenModalDelete}
+                    bookToDelete={bookToDelete}
+                    handleConfirmDelete={handleConfirmDelete}
+                />
+            )}
+            {isOpenModalUpdate && (
+                <ModalUpdateBook
+                    setIsOpenModalUpdate={setIsOpenModalUpdate}
+                    bookToUpdate={bookToUpdate}
+                    handleUpdateBook={handleUpdateBook}
                 />
             )}
         </div>

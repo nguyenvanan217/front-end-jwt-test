@@ -6,18 +6,30 @@ const getAllBook = async () => {
 };
 
 const getAllGenres = async () => {
-    return axios.get('/api/v1/genres/read');
+    const URL_API = '/api/v1/genres/read';
+    return axios.get(URL_API);
 };
 
 const addBook = async (bookData) => {
-    console.log('bookData', bookData);
-    return axios.post('/api/v1/books/create', {
-        title: bookData.title,
+    const URL_API = '/api/v1/books/create';
+    const data = {
         author: bookData.author,
-        quantity: bookData.quantity,
         cover_image: bookData.cover_image,
-        genre_name: bookData.genre_name
-    });
+        genre_name: bookData.genre_name,
+        quantity: bookData.quantity,
+        title: bookData.title,
+    };
+    return axios.post(URL_API, data);
 };
 
-export { getAllBook, addBook, getAllGenres };
+const deleteBook = async (bookId) => {
+    const URL_API = `/api/v1/books/delete/${bookId}`;
+    return axios.delete(URL_API);
+};
+
+const updateBook = async (bookId, bookData) => {
+    const URL_API = `/api/v1/books/update/${bookId}`;
+    return axios.put(URL_API, bookData);
+};
+
+export { getAllBook, addBook, getAllGenres, deleteBook, updateBook };

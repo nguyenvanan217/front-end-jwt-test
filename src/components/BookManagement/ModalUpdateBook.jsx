@@ -3,13 +3,13 @@ import { FaRegWindowClose } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getAllGenres } from '../../services/bookManagerService';
 
-function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
+function ModalUpdateBook({ setIsOpenModalUpdate, handleUpdateBook, bookToUpdate }) {
     const [bookData, setBookData] = useState({
-        title: '',
-        author: '',
-        genre_name: '',
-        quantity: '',
-        cover_image: '',
+        title: bookToUpdate.title || '',
+        author: bookToUpdate.author || '',
+        genre_name: bookToUpdate.Genre?.name || '',
+        quantity: bookToUpdate.quantity || '',
+        cover_image: bookToUpdate.cover_image || '',
     });
 
     const [genres, setGenres] = useState([]);
@@ -102,9 +102,30 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
         });
     };
 
-    const handleSubmit = () => {
+    const handleGenreChange = (e) => {
+        const selectedGenre = genres.find(genre => genre.name === e.target.value);
+        setBookData({
+            ...bookData,
+            genre_name: e.target.value
+        });
+        setErrors({
+            ...errors,
+            genre_name: ''
+        });
+    };
+
+    const handleSubmit = async () => {
         if (validateForm()) {
-            handleAddBook(bookData);
+            const response = await handleUpdateBook(bookToUpdate.id, bookData);
+            
+            if (response && response.EC === 0) {
+                toast.success(response.EM);
+                setIsOpenModalUpdate(false);
+            } else if (response && response.EC === 1 && response.EM === 'Nothing to update') {
+                toast.warning(response.EM);
+            } else {
+                toast.error(response.EM || 'Cập nhật sách thất bại');
+            }
         } else {
             toast.error('Vui lòng kiểm tra lại thông tin nhập vào!');
         }
@@ -113,7 +134,7 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
     return (
         <div
             className="fixed inset-0 flex justify-center bg-black bg-opacity-50 z-50"
-            onClick={() => setIsOpenModalAdd(false)}
+            onClick={() => setIsOpenModalUpdate(false)}
         >
             <div
                 className="bg-white rounded-lg shadow-lg p-6 w-[500px] h-[470px] relative top-[10%] overflow-y-auto"
@@ -121,8 +142,8 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
             >
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-blue-500 pb-3">
-                    <h2 className="text-xl font-bold text-green-600">Thêm Sách Mới</h2>
-                    <button onClick={() => setIsOpenModalAdd(false)} className="text-red-500 hover:text-red-700">
+                    <h2 className="text-xl font-bold text-blue-600">Cập Nhật Thông Tin Sách</h2>
+                    <button onClick={() => setIsOpenModalUpdate(false)} className="text-red-500 hover:text-red-700">
                         <FaRegWindowClose size={20} />
                     </button>
                 </div>
@@ -169,7 +190,7 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
                                     errors.genre_name ? 'border-red-500' : 'border-blue-500'
                                 } px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 focus:outline-none`}
                                 value={bookData.genre_name}
-                                onChange={(e) => handleOnChangeInput(e, 'genre_name')}
+                                onChange={handleGenreChange}
                             >
                                 <option value="">Chọn thể loại</option>
                                 {genres.map((genre) => (
@@ -179,9 +200,7 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
                                 ))}
                             </select>
                             <div className="h-5">
-                                {errors.genre_name && (
-                                    <p className="text-red-500 text-sm">{errors.genre_name}</p>
-                                )}
+                                {errors.genre_name && <p className="text-red-500 text-sm">{errors.genre_name}</p>}
                             </div>
                         </div>
 
@@ -221,7 +240,7 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
                 {/* Footer */}
                 <div className="mt-6 flex justify-end space-x-3">
                     <button
-                        onClick={() => setIsOpenModalAdd(false)}
+                        onClick={() => setIsOpenModalUpdate(false)}
                         className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                     >
                         Hủy
@@ -230,7 +249,7 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
                         onClick={handleSubmit}
                         className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                     >
-                        Thêm Sách
+                        Cập Nhật
                     </button>
                 </div>
             </div>
@@ -238,4 +257,4 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
     );
 }
 
-export default ModalAddBook;
+export default ModalUpdateBook;
