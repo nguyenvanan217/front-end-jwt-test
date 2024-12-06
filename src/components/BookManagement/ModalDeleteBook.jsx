@@ -8,7 +8,7 @@ function ModalDeleteBook({ setIsOpenModalDelete, bookToDelete, handleConfirmDele
             onClick={() => setIsOpenModalDelete(false)}
         >
             <div
-                className="bg-white rounded-lg shadow-lg p-6 w-[450px] h-[230px] relative top-[30%]"
+                className="bg-white rounded-lg shadow-lg p-6 w-[450px] h-[230px] relative top-[30%] modal-slide-down"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

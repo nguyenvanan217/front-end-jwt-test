@@ -137,7 +137,7 @@ function ModalUpdateBook({ setIsOpenModalUpdate, handleUpdateBook, bookToUpdate 
             onClick={() => setIsOpenModalUpdate(false)}
         >
             <div
-                className="bg-white rounded-lg shadow-lg p-6 w-[500px] h-[470px] relative top-[10%] overflow-y-auto"
+                className="bg-white rounded-lg shadow-lg p-6 w-[500px] h-[470px] relative top-[10%] overflow-y-auto modal-slide-down"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

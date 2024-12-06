@@ -32,4 +32,12 @@ const updateBook = async (bookId, bookData) => {
     return axios.put(URL_API, bookData);
 };
 
-export { getAllBook, addBook, getAllGenres, deleteBook, updateBook };
+const addGenre = async (genreName) => {
+    const URL_API = '/api/v1/genres/create';
+    return axios.post(URL_API, { name: genreName });
+};
+const deleteGenre = async (genreId) => {
+    const URL_API = `/api/v1/genres/delete/${genreId}`;
+    return axios.delete(URL_API);
+};
+export { getAllBook, addBook, getAllGenres, deleteBook, updateBook, addGenre, deleteGenre };

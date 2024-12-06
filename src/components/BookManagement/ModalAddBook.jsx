@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaRegWindowClose } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getAllGenres } from '../../services/bookManagerService';
-
+import '../modalUser/Modal.css'
 function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
     const [bookData, setBookData] = useState({
         title: '',
@@ -116,7 +116,7 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
             onClick={() => setIsOpenModalAdd(false)}
         >
             <div
-                className="bg-white rounded-lg shadow-lg p-6 w-[500px] h-[470px] relative top-[10%] overflow-y-auto"
+                className="bg-white rounded-lg shadow-lg p-6 w-[500px] h-[470px] relative top-[10%] overflow-y-auto modal-slide-down"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

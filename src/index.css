@@ -2,5 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 .active {
-    color : #61DAFB;
+    color: #61dafb;
+}
+/* Tùy chỉnh thanh scrollbar cho tất cả các phần tử có thể cuộn (bao gồm cả body) */
+::-webkit-scrollbar {
+    width: 12px; /* Chiều rộng của thanh cuộn */
+    height: 12px; /* Chiều cao của thanh cuộn ngang */
+}
+
+/* Tùy chỉnh phần thanh cuộn */
+::-webkit-scrollbar-thumb {
+    background-color: #4caf50; /* Màu sắc của thanh cuộn */
+    border-radius: 10px; /* Bo tròn góc của thanh cuộn */
+    border: 3px solid #f1f1f1; /* Màu viền xung quanh thanh cuộn */
+}
+
+/* Tùy chỉnh phần nền của thanh cuộn */
+::-webkit-scrollbar-track {
+    background-color: #f1f1f1; /* Màu nền của thanh cuộn */
+    border-radius: 10px; /* Bo tròn góc của nền thanh cuộn */
+}
+
+/* Tùy chỉnh thanh cuộn ngang (cho các phần tử có chiều ngang cuộn) */
+::-webkit-scrollbar-horizontal {
+    height: 10px;
+}
+
+/* Tùy chỉnh khi người dùng hover trên thanh cuộn */
+::-webkit-scrollbar-thumb:hover {
+    background-color: #45a049; /* Màu sắc thay đổi khi hover */
+}
+
+/* Tùy chỉnh khi người dùng hover trên thanh cuộn ngang */
+::-webkit-scrollbar-horizontal:hover {
+    background-color: #ddd; /* Màu nền của thanh cuộn ngang khi hover */
 }
