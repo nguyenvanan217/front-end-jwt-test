@@ -37,3 +37,6 @@
 ::-webkit-scrollbar-horizontal:hover {
     background-color: #ddd; /* Màu nền của thanh cuộn ngang khi hover */
 }
+html {
+    overflow-y: scroll;
+}

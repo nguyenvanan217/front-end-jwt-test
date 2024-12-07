@@ -40,4 +40,26 @@ const deleteGenre = async (genreId) => {
     const URL_API = `/api/v1/genres/delete/${genreId}`;
     return axios.delete(URL_API);
 };
-export { getAllBook, addBook, getAllGenres, deleteBook, updateBook, addGenre, deleteGenre };
+
+const createTransaction = async (data) => {
+    const URL_API = '/api/v1/transactions/create';
+    return axios.post(URL_API, {
+        bookId: data.bookId,
+        userId: data.userId, 
+        borrowDate: data.borrowDate,
+        returnDate: data.returnDate,
+        status: 'Chờ trả' 
+    });
+};
+
+export const getBookDetail = async (bookId) => {
+    try {
+        const URL_API = `/api/v1/books/read/${bookId}`;
+        const response = await axios.get(URL_API);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export { getAllBook, addBook, getAllGenres, deleteBook, updateBook, addGenre, deleteGenre, createTransaction };

@@ -8,7 +8,7 @@ function ModalViewDetailBook({ setIsOpenModalViewDetail, bookViewDetail }) {
             onClick={() => setIsOpenModalViewDetail(false)}
         >
             <div
-                className="bg-white rounded-lg shadow-lg p-6 w-[800px] h-[600px] relative top-[10%] modal-slide-down"
+                className="bg-white rounded-lg shadow-lg p-6 w-[800px] h-[700px] relative top-[5%] modal-slide-down overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -19,73 +19,78 @@ function ModalViewDetailBook({ setIsOpenModalViewDetail, bookViewDetail }) {
                     </button>
                 </div>
 
-                {/* Cover Image */}
-                <div className="mt-4 h-[200px] flex justify-center items-center border border-blue-500 rounded-md">
-                    <img src={bookViewDetail?.cover_image} alt="Book cover" className="max-h-full max-w-full object-contain" />
+                {/* Cover Image with larger size */}
+                <div className="mt-4 h-[300px] flex justify-center items-center border border-blue-500 rounded-md bg-gray-50">
+                    <img 
+                        src={bookViewDetail?.cover_image} 
+                        alt={bookViewDetail?.title} 
+                        className="max-h-full max-w-full object-contain"
+                        onError={(e) => {
+                            e.target.src = '/assets/default-book.png'; // Add a default image
+                            e.target.onerror = null;
+                        }}
+                    />
                 </div>
 
-                {/* Form Content */}
-                <div className="mt-4 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                {/* Book Details */}
+                <div className="mt-6 space-y-6">
+                    {/* Basic Information */}
+                    <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">ID Sách</label>
-                            <input
-                                type="text"
-                                value={bookViewDetail?.id || ''}
-                                className="mt-1 block w-full rounded-md border border-blue-500 px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 focus:outline-none"
-                                readOnly
-                            />
+                            <div className="p-2 bg-gray-50 rounded-md border border-blue-500">
+                                {bookViewDetail?.id || 'N/A'}
+                            </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Tên Sách</label>
-                            <input
-                                type="text"
-                                value={bookViewDetail?.title || ''}
-                                className="mt-1 block w-full rounded-md border border-blue-500 px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 focus:outline-none"
-                                readOnly
-                            />
+                            <div className="p-2 bg-gray-50 rounded-md border border-blue-500">
+                                {bookViewDetail?.title || 'N/A'}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Author and Genre */}
+                    <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Tác Giả</label>
-                            <input
-                                type="text"
-                                value={bookViewDetail?.author || ''}
-                                className="mt-1 block w-full rounded-md border border-blue-500 px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 focus:outline-none"
-                                readOnly
-                            />
+                            <div className="p-2 bg-gray-50 rounded-md border border-blue-500">
+                                {bookViewDetail?.author || 'N/A'}
+                            </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Thể Loại</label>
-                            <input
-                                type="text"
-                                value={bookViewDetail?.Genre?.name || ''}
-                                className="mt-1 block w-full rounded-md border border-blue-500 px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 focus:outline-none"
-                                readOnly
-                            />
+                            <div className="p-2 bg-gray-50 rounded-md border border-blue-500">
+                                {bookViewDetail?.Genre?.name || 'N/A'}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Quantity and Status */}
+                    <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Số Lượng</label>
-                            <input
-                                type="text"
-                                value={bookViewDetail?.quantity || ''}
-                                className="mt-1 block w-full rounded-md border border-blue-500 px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 focus:outline-none"
-                                readOnly
-                            />
+                            <div className="p-2 bg-gray-50 rounded-md border border-blue-500">
+                                {bookViewDetail?.quantity || '0'} cuốn
+                            </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">URL Ảnh Bìa</label>
-                            <input
-                                type="text"
-                                value={bookViewDetail?.cover_image || ''}
-                                className="mt-1 block w-full rounded-md border border-blue-500 px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 focus:outline-none"
-                                readOnly
-                            />
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Trạng Thái</label>
+                            <div className={`p-2 rounded-md ${
+                                bookViewDetail?.quantity > 0 
+                                    ? 'bg-green-100 text-green-800 border border-green-500' 
+                                    : 'bg-red-100 text-red-800 border border-red-500'
+                            }`}>
+                                {bookViewDetail?.quantity > 0 ? 'Còn sách' : 'Hết sách'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Cover Image URL */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">URL Ảnh Bìa</label>
+                        <div className="p-2 bg-gray-50 rounded-md border border-blue-500 break-all">
+                            {bookViewDetail?.cover_image || 'N/A'}
                         </div>
                     </div>
                 </div>

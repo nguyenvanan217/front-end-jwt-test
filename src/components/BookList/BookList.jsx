@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { getAllBook, getAllGenres } from '../../services/bookManagerService';
 import { toast } from 'react-toastify';
+import ModalBorrowBooks from './ModalBorrowBooks';
+import { Link } from 'react-router-dom';
 
 function BookList() {
     const [books, setBooks] = useState([]);
     const [genres, setGenres] = useState([]);
     const [selectedGenre, setSelectedGenre] = useState('');
     const [filteredBooks, setFilteredBooks] = useState([]);
+    const [isModalBorrowBooksOpen, setIsModalBorrowBooksOpen] = useState(false);
+    const [selectedBook, setSelectedBook] = useState(null);
 
     useEffect(() => {
         fetchAllBook();
@@ -51,7 +55,7 @@ function BookList() {
         if (!selectedGenre) {
             setFilteredBooks(books);
         } else {
-            const filtered = books.filter(book => book.genreId === parseInt(selectedGenre));
+            const filtered = books.filter((book) => book.genreId === parseInt(selectedGenre));
             setFilteredBooks(filtered);
         }
     };
@@ -59,17 +63,26 @@ function BookList() {
     const handleGenreChange = (e) => {
         setSelectedGenre(e.target.value);
     };
+    const handleBtnBorrowBook = (book) => {
+        setSelectedBook(book);
+        setIsModalBorrowBooksOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalBorrowBooksOpen(false);
+        setSelectedBook(null);
+    };
 
     return (
         <div className="w-[95%] md:w-[90%] mx-auto p-4">
             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-center my-4">
-                Tủ Sách Thư Viện Đại học Khoa Học Huế
+                Tủ Sách Thư Viện Đại Học Khoa Học Huế
             </h1>
 
             {/* Filter Section */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
                 <strong className="text-sm md:text-base">Bộ Lọc: </strong>
-                <select 
+                <select
                     className="border border-blue-500 focus:outline-none rounded-md p-1 text-sm md:text-base"
                     value={selectedGenre}
                     onChange={handleGenreChange}
@@ -93,20 +106,22 @@ function BookList() {
                         >
                             {/* Book Image */}
                             <div className="relative pt-[140%]">
-                                <img
-                                    src={book.cover_image}
-                                    alt={book.title}
-                                    className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                                />
+                                <Link to={`/books/${book.id}`} className="hover:opacity-80">
+                                    <img
+                                        src={book.cover_image}
+                                        alt={book.title}
+                                        className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                    />
+                                </Link>
                             </div>
 
                             {/* Book Info */}
                             <div className="p-4 flex flex-col flex-grow">
                                 <h2 className="text-base md:text-lg font-bold line-clamp-2 mb-2">{book.title}</h2>
                                 <p className="text-sm md:text-base text-gray-600 mb-2 line-clamp-1">
-                                    Tác Giả: {book.author}
+                                    <strong> Tác Giả: {book.author}</strong>
                                 </p>
-                                <p className="text-sm md:text-base text-gray-600 mb-4 line-clamp-1">
+                                <p className="text-sm md:text-base text-gray-600 mb-2 line-clamp-1">
                                     Số Lượng: {book.quantity}
                                 </p>
                                 <p className="text-sm md:text-base text-gray-600 mb-4 line-clamp-1">
@@ -115,12 +130,18 @@ function BookList() {
 
                                 {/* Buttons */}
                                 <div className="flex gap-2 mt-auto">
-                                    <button className="flex-1 bg-blue-500 text-white hover:bg-blue-700 hover:text-white border border-blue-700 transition-colors duration-3 00 rounded-md p-2 text-sm md:text-base">
+                                    <button
+                                        onClick={() => handleBtnBorrowBook(book)}
+                                        className="flex-1 bg-blue-500 text-white hover:bg-blue-700 hover:text-white border border-blue-700 transition-colors duration-300 rounded-md p-2 text-sm md:text-base"
+                                    >
                                         Mượn
                                     </button>
-                                    <button className="flex-1 bg-white text-blue-500 border border-blue-500 transition-colors duration-300 rounded-md p-2 text-sm md:text-base">
+                                    <Link 
+                                        to={`/books/${book.id}`}
+                                        className="flex-1 bg-white text-blue-500 border border-blue-500 transition-colors duration-300 rounded-md p-2 text-sm md:text-base text-center hover:bg-blue-50"
+                                    >
                                         Chi tiết
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -132,6 +153,11 @@ function BookList() {
                     <div className="text-center py-8 text-gray-500">Không có sách nào trong thư viện</div>
                 )}
             </div>
+            <ModalBorrowBooks 
+                isOpen={isModalBorrowBooksOpen}
+                onClose={handleCloseModal}
+                book={selectedBook}
+            />
         </div>
     );
 }

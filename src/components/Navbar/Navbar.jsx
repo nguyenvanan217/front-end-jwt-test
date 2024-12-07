@@ -50,7 +50,7 @@ function Navbar() {
                             Quản Lý Phạt Vi Phạm
                         </NavLink>
                         <NavLink to="/bookborrowinghistory" className="nav-link">
-                            Lịch Sử Mượn Sách
+                            Quản Lý Mượn Sách
                         </NavLink>
                     </div>
 
@@ -99,7 +99,7 @@ function Navbar() {
                         Quản Lý Phạt Vi Phạm
                     </NavLink>
                     <NavLink to="/bookborrowinghistory" className="mobile-nav-link">
-                        Lịch Sử Mượn Sách
+                        Quản Lý Mượn Sách
                     </NavLink>
 
                     <div className="pt-4 border-t border-slate-700 mb-2">
