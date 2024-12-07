@@ -3,6 +3,7 @@ import { getAllBook, getAllGenres } from '../../services/bookManagerService';
 import { toast } from 'react-toastify';
 import ModalBorrowBooks from './ModalBorrowBooks';
 import { Link } from 'react-router-dom';
+import ModalBookDetail from './ModalBookDetail';
 
 function BookList() {
     const [books, setBooks] = useState([]);
@@ -11,6 +12,7 @@ function BookList() {
     const [filteredBooks, setFilteredBooks] = useState([]);
     const [isModalBorrowBooksOpen, setIsModalBorrowBooksOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState(null);
+    const [isModalBooksDetailOpen, setIsModalBooksDetailOpen] = useState(false);
 
     useEffect(() => {
         fetchAllBook();
@@ -72,7 +74,14 @@ function BookList() {
         setIsModalBorrowBooksOpen(false);
         setSelectedBook(null);
     };
-
+    const handleBtnDetailBook = (book) => {
+        setSelectedBook(book);
+        setIsModalBooksDetailOpen(true);
+    };
+    const handleCloseDetailModal = () => {
+        setIsModalBooksDetailOpen(false);
+        setSelectedBook(null);
+    };
     return (
         <div className="w-[95%] md:w-[90%] mx-auto p-4">
             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-center my-4">
@@ -118,9 +127,9 @@ function BookList() {
                             {/* Book Info */}
                             <div className="p-4 flex flex-col flex-grow">
                                 <h2 className="text-base md:text-lg font-bold line-clamp-2 mb-2">{book.title}</h2>
-                                <p className="text-sm md:text-base text-gray-600 mb-2 line-clamp-1">
+                                {/* <p className="text-sm md:text-base text-gray-600 mb-2 line-clamp-1">
                                     <strong> Tác Giả: {book.author}</strong>
-                                </p>
+                                </p> */}
                                 <p className="text-sm md:text-base text-gray-600 mb-2 line-clamp-1">
                                     Số Lượng: {book.quantity}
                                 </p>
@@ -136,12 +145,13 @@ function BookList() {
                                     >
                                         Mượn
                                     </button>
-                                    <Link 
+                                    <button
                                         to={`/books/${book.id}`}
                                         className="flex-1 bg-white text-blue-500 border border-blue-500 transition-colors duration-300 rounded-md p-2 text-sm md:text-base text-center hover:bg-blue-50"
+                                        onClick={() => handleBtnDetailBook(book)}
                                     >
                                         Chi tiết
-                                    </Link>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -153,9 +163,10 @@ function BookList() {
                     <div className="text-center py-8 text-gray-500">Không có sách nào trong thư viện</div>
                 )}
             </div>
-            <ModalBorrowBooks 
-                isOpen={isModalBorrowBooksOpen}
-                onClose={handleCloseModal}
+            <ModalBorrowBooks isOpen={isModalBorrowBooksOpen} onClose={handleCloseModal} book={selectedBook} />
+            <ModalBookDetail 
+                isOpen={isModalBooksDetailOpen} 
+                onClose={handleCloseDetailModal} 
                 book={selectedBook}
             />
         </div>

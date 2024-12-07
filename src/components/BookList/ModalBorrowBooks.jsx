@@ -129,8 +129,8 @@ const ModalBorrowBooks = ({ isOpen, onClose, book }) => {
                                     className="w-24 h-32 object-cover rounded"
                                 />
                                 <div>
-                                    <h4 className="font-semibold text-lg">{book?.title}</h4>
-                                    <p className="text-gray-600">Tác giả: {book?.author}</p>
+                                    <h4 className="font-semibold text-lg line-clamp-2 ">{book?.title}</h4>
+                                    <p className="text-gray-600 mt-1">Tác giả: {book?.author}</p>
                                 </div>
                             </div>
 
