@@ -192,8 +192,8 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
                                 className={`mt-1 block w-full rounded-md border ${
                                     errors.quantity ? 'border-red-500' : 'border-blue-500'
                                 } px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 focus:outline-none`}
-                                min={0}
-                                value={bookData.quantity}
+                                min={1}
+                                value={bookData.quantity ? bookData.quantity : ''}
                                 onChange={(e) => handleOnChangeInput(e, 'quantity')}
                             />
                             <div className="h-5">

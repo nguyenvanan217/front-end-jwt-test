@@ -131,7 +131,7 @@ function UserManagement() {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan="6" className="text-center py-4">
+                                    <td colSpan="7" className="text-center py-4">
                                         Không có dữ liệu
                                     </td>
                                 </tr>

@@ -34,7 +34,7 @@ function ModalDeletegenres({ setIsOpenModalDeleteGenre }) {
             onClick={() => setIsOpenModalDeleteGenre(false)}
         >
             <div
-                className="bg-white rounded-lg shadow-lg p-3 w-[500px] h-[40%] overflow-y-auto relative top-[20%] modal-slide-down"
+                className="bg-white rounded-lg shadow-lg p-3 w-[500px] min-h-[300px] max-h-[50vh] relative top-[20%] modal-slide-down flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -48,10 +48,10 @@ function ModalDeletegenres({ setIsOpenModalDeleteGenre }) {
                     </button>
                 </div>
 
-                {/* Table Content */}
-                <div className="mt-4 space-y-4">
+                {/* Table Content - với overflow-y-auto */}
+                <div className="flex-grow overflow-y-auto my-4">
                     <table className="w-full">
-                        <thead>
+                        <thead className=" bg-black">
                             <tr className="bg-black text-white">
                                 <th className="text-center">ID</th>
                                 <th className="text-center">Tên thể loại</th>
@@ -75,7 +75,7 @@ function ModalDeletegenres({ setIsOpenModalDeleteGenre }) {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="3" className="text-center">
+                                    <td colSpan="3" className="text-center py-4">
                                         Không có dữ liệu
                                     </td>
                                 </tr>
@@ -84,14 +84,16 @@ function ModalDeletegenres({ setIsOpenModalDeleteGenre }) {
                     </table>
                 </div>
 
-                {/* Footer */}
-                <div className="mt-6 flex justify-end">
-                    <button
-                        onClick={() => setIsOpenModalDeleteGenre(false)}
-                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                    >
-                        Đóng
-                    </button>
+                {/* Footer - luôn ở dưới cùng */}
+                <div className="border-t border-gray-200 pt-3 mt-auto">
+                    <div className="flex justify-end">
+                        <button
+                            onClick={() => setIsOpenModalDeleteGenre(false)}
+                            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                        >
+                            Đóng
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
