@@ -49,7 +49,15 @@ const updateTransactionStatus = async (transactionStatuses) => {
 const deleteTransaction = async (transactionId) => {
     const URL_API = `/api/v1/transactions/delete/${transactionId}`;
     return axios.delete(URL_API);
-}
+};
+const markViolationAsResolved = async (transactionId) => {
+    const URL_API = `/api/v1/transactions/resolve-violation/${transactionId}`;
+    return axios.put(URL_API);
+};
+const getAllUsersAndTransactions = async () => {
+    const URL_API = '/api/v1/users/read-with-transactions';
+    return axios.get(URL_API);
+};
 export {
     registerNewUser,
     loginUser,
@@ -61,4 +69,6 @@ export {
     getUserDetailsById,
     updateTransactionStatus,
     deleteTransaction,
+    markViolationAsResolved,
+    getAllUsersAndTransactions,
 };
