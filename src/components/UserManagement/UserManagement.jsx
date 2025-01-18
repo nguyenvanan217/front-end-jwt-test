@@ -24,13 +24,13 @@ function UserManagement() {
             console.log(error);
         }
     };
-    const handledeleteUser = (item) => {
+    const handleDeleteUser = (item) => {
         setIsOpenModal(true);
         setDataModal(item);
     };
     const handleUpdateUser = (item) => {
-        setDataModal(item);
         setIsOpenModalUpdate(true);
+        setDataModal(item);
     };
     const confirmDeleleUser = async () => {
         let response = await deleteUser(dataModal);
@@ -121,7 +121,7 @@ function UserManagement() {
                                                 </button>
                                                 <button
                                                     className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                                                    onClick={() => handledeleteUser(item)}
+                                                    onClick={() => handleDeleteUser(item)}
                                                 >
                                                     Xóa
                                                 </button>

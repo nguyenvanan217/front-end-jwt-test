@@ -43,16 +43,12 @@ function ViolationManagement() {
     };
 
     // Tính tiền phạt (ví dụ: 5000đ/ngày)
-    const calculateFine = (overdueDays) => {
-        return overdueDays * 5000;
-    };
 
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
     };
 
     const filteredUsers = violationUsers.filter((user) => {
-        
         const matchesSearch =
             user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -85,14 +81,12 @@ function ViolationManagement() {
 
     // Sửa lại hàm đếm số sách quá hạn
     const countOverdueBooks = (transactions) => {
-        
         const overdueTransactions = transactions.filter((trans) => {
-            
             return trans.status === 'Quá hạn';
         });
-        
+
         const overdueCount = overdueTransactions.length;
-        
+
         return overdueCount;
     };
 
@@ -103,18 +97,15 @@ function ViolationManagement() {
             .reduce((total, trans) => {
                 return total + calculateOverdueDays(trans.return_date);
             }, 0);
-        
+
         return totalDays;
     };
 
     // Tính tổng tiền phạt
-    const calculateTotalFine = (totalDays) => {
-        return totalDays * 5000;
-    };
 
     return (
         <div className="w-[97%] mx-auto mt-4">
-            <h1 className="text-3xl font-bold mb-6 text-center">Danh Sách Vi Phạm Trả Sách Muộn</h1>
+            <h1 className="text-3xl font-bold mb-6 text-center">Danh Sách Sinh Viên Vi Phạm Trả Sách Muộn</h1>
 
             {/* Search and Filter Section */}
             <div className="flex justify-between items-center mb-6 gap-4">
@@ -150,8 +141,8 @@ function ViolationManagement() {
                             <th className="px-4 py-3 text-left text-sm font-semibold">Tên sinh viên</th>
                             <th className="px-4 py-3 text-left text-sm font-semibold">Email</th>
                             <th className="px-4 py-3 text-left text-sm font-semibold">Số sách quá hạn</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold">Số ngày trễ</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold">Tiền phạt</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold">Số ngày trễ (tổng sách)</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold">Tiền phạt (5.000đ/ngày)</th>
                             <th className="px-4 py-3 text-left text-sm font-semibold">Trạng thái</th>
                             <th className="px-4 py-3 text-left text-sm font-semibold">Thao tác</th>
                         </tr>
@@ -168,11 +159,7 @@ function ViolationManagement() {
                             </tr>
                         ) : filteredUsers.length > 0 ? (
                             filteredUsers.map((user) => {
-                                
-                                
                                 const overdueBooks = countOverdueBooks(user.Transactions);
-                                const totalOverdueDays = calculateTotalOverdueDays(user.Transactions);
-                                const totalFine = calculateTotalFine(totalOverdueDays);
 
                                 return (
                                     <tr key={user.id} className="hover:bg-gray-50">
@@ -182,12 +169,8 @@ function ViolationManagement() {
                                         <td className="px-4 py-3 text-sm font-medium text-red-600">
                                             {overdueBooks} cuốn
                                         </td>
-                                        <td className="px-4 py-3 text-sm font-medium text-red-600">
-                                            {totalOverdueDays} ngày
-                                        </td>
-                                        <td className="px-4 py-3 text-sm font-medium text-red-600">
-                                            {totalFine.toLocaleString('vi-VN')}đ
-                                        </td>
+                                        <td className="px-4 py-3 text-sm font-medium text-red-600">ngày</td>
+                                        <td className="px-4 py-3 text-sm font-medium text-red-600">đ</td>
                                         <td className="px-4 py-3 text-sm">
                                             <span
                                                 className={`px-2 py-1 rounded-full text-xs font-medium
@@ -219,7 +202,7 @@ function ViolationManagement() {
                                                         className="text-green-600 hover:text-green-800 font-medium"
                                                         onClick={() => handleMarkAsResolved(user.id)}
                                                     >
-                                                        Xác nhận đã nộp phạt
+                                                        Đã nộp phạt & trả sách
                                                     </button>
                                                 )}
                                             </div>

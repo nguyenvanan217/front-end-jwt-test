@@ -24,10 +24,10 @@ function BookLoanReturnDetails() {
             if (response.EC === 0) {
                 setUserDetails(response.DT);
             } else {
-                toast.error(response.EM || 'Không tìm thấy thông tin người dùng.');
+                toast.error(response.EM || 'Không tìm thấy thông tin mượn của người dùng.');
             }
         } catch (error) {
-            console.error('Lỗi khi lấy chi tiết người dùng:', error);
+            console.error('Lỗi khi lấy chi tiết mượn sách của người dùng:', error);
         }
     };
 
@@ -79,7 +79,7 @@ function BookLoanReturnDetails() {
     const formatDate = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
+        const day = String(date.getDate() - 1).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}-${month}-${year}`;

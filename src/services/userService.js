@@ -26,6 +26,10 @@ const deleteUser = async (user) => {
     const data = { data: { id: user.id } };
     return axios.delete(URL_API, data);
 };
+const updateCurrentUser = async (data) => {
+    const URL_API = '/api/v1/users/update';
+    return axios.put(URL_API, data);
+};
 const fetchGroup = async () => {
     const URL_API = '/api/v1/groups/read';
     return axios.get(URL_API);
@@ -33,10 +37,6 @@ const fetchGroup = async () => {
 const fetchStatus = async (id) => {
     const URL_API = `/api/v1/status/read/${id}`;
     return axios.get(URL_API);
-};
-const updateCurrentUser = async (data) => {
-    const URL_API = '/api/v1/users/update';
-    return axios.put(URL_API, data);
 };
 const getUserDetailsById = async (id) => {
     const URL_API = `/api/v1/users/read/${id}`;

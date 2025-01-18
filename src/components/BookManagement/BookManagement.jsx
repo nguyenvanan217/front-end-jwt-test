@@ -8,6 +8,7 @@ import ModalUpdateBook from './ModalUpdateBook';
 import ModalViewDetailBook from './ModalViewDetailBook';
 import ModalAddGender from './ModalAddGender';
 import ModalDeletegenres from './ModalDeleteGenres';
+
 const BookManagementTable = () => {
     const [books, setBooks] = useState([]);
     const [genres, setGenres] = useState([]);
@@ -108,7 +109,7 @@ const BookManagementTable = () => {
             if (response && +response.EC === 0) {
                 toast.success(response.EM);
                 await fetchAllGenres();
-                console.log('Genres updated:', genres);
+                // console.log('Genres updated:', genres);
                 setIsOpenModalAddGende(false);
             } else if (response && +response.EC === 1) {
                 toast.warning(response.EM);
@@ -219,7 +220,11 @@ const BookManagementTable = () => {
             </table>
 
             {isOpenModalAdd && (
-                <ModalAddBook setIsOpenModalAdd={setIsOpenModalAdd} handleAddBook={handleAddBook} genres={genres} />
+                <ModalAddBook 
+                    setIsOpenModalAdd={setIsOpenModalAdd} 
+                    handleAddBook={handleAddBook} 
+                    genres={genres}  
+                />
             )}
             {isOpenModalDelete && (
                 <ModalDeleteBook

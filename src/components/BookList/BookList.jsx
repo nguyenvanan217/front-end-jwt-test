@@ -115,18 +115,24 @@ function BookList() {
                         >
                             {/* Book Image */}
                             <div className="relative pt-[140%]">
-                                <Link to={`/books/${book.id}`} className="hover:opacity-80">
+                                <div className="hover:opacity-80 cursor-pointer">
                                     <img
                                         src={book.cover_image}
                                         alt={book.title}
                                         className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                        onClick={() => handleBtnBorrowBook(book)}
                                     />
-                                </Link>
+                                </div>
                             </div>
 
                             {/* Book Info */}
                             <div className="p-4 flex flex-col flex-grow">
-                                <h2 className="text-base md:text-lg font-bold line-clamp-2 mb-2">{book.title}</h2>
+                                <h2
+                                    className="text-base md:text-lg font-bold line-clamp-2 mb-2 cursor-pointer"
+                                    onClick={() => handleBtnBorrowBook(book)}
+                                >
+                                    {book.title}
+                                </h2>
                                 {/* <p className="text-sm md:text-base text-gray-600 mb-2 line-clamp-1">
                                     <strong> Tác Giả: {book.author}</strong>
                                 </p> */}
@@ -164,11 +170,7 @@ function BookList() {
                 )}
             </div>
             <ModalBorrowBooks isOpen={isModalBorrowBooksOpen} onClose={handleCloseModal} book={selectedBook} />
-            <ModalBookDetail 
-                isOpen={isModalBooksDetailOpen} 
-                onClose={handleCloseDetailModal} 
-                book={selectedBook}
-            />
+            <ModalBookDetail isOpen={isModalBooksDetailOpen} onClose={handleCloseDetailModal} book={selectedBook} />
         </div>
     );
 }
