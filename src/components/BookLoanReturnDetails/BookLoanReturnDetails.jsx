@@ -4,6 +4,7 @@ import { deleteTransaction, getUserDetailsById, updateTransactionStatus } from '
 import { toast } from 'react-toastify';
 import './BookLoanReturnDetails.css';
 import ModalDeleteTransaction from './ModalDeleteTransaction';
+import { autoUpdateStatusInDB } from '../../services/bookManagerService';
 
 function BookLoanReturnDetails() {
     const { id } = useParams();
@@ -16,7 +17,25 @@ function BookLoanReturnDetails() {
 
     useEffect(() => {
         fetchUserDetails();
+        autoUpdateStatus();
     }, [id]);
+    // useEffect(() => {
+    //     autoUpdateStatus();
+    // }, [chỉ chạy khi có thay đổi]);
+    const autoUpdateStatus = async () => {
+        try {
+            const response = await autoUpdateStatusInDB();
+            console.log('response check cú', response);
+            if (response && response.DT.hasChanges === true) {
+                toast.success(response.EM);
+                await fetchUserDetails();
+            }
+        } catch (error) {
+            console.error('Lỗi khi cập nhật trạng thái:', error);
+            toast.error('Có lỗi xảy ra khi kiểm tra trạng thái giao dịch');
+        }
+    };
+
     const fetchUserDetails = async () => {
         try {
             const response = await getUserDetailsById(id);
@@ -79,7 +98,7 @@ function BookLoanReturnDetails() {
     const formatDate = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
-        const day = String(date.getDate() - 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}-${month}-${year}`;

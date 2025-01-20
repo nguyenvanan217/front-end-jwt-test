@@ -45,14 +45,13 @@ const createTransaction = async (data) => {
     const URL_API = '/api/v1/transactions/create';
     return axios.post(URL_API, {
         bookId: data.bookId,
-        userId: data.userId, 
+        userId: data.userId,
         borrowDate: data.borrowDate,
         returnDate: data.returnDate,
-        status: 'Chờ trả' 
+        status: 'Chờ trả',
     });
 };
-
-export const getBookDetail = async (bookId) => {
+const getBookDetail = async (bookId) => {
     try {
         const URL_API = `/api/v1/books/read/${bookId}`;
         const response = await axios.get(URL_API);
@@ -61,5 +60,26 @@ export const getBookDetail = async (bookId) => {
         throw error;
     }
 };
+const autoUpdateStatusInDB = async () => {
+    try {
+        const URL_API = `/api/v1/transactions/autoupdatestatus`;
+        const response = await axios.put(URL_API);
+        return response;
+    } catch (error) {
+        console.error('Lỗi trong hàm autoUpdateStatusInDB:', error);
+        throw error;
+    }
+};
 
-export { getAllBook, addBook, getAllGenres, deleteBook, updateBook, addGenre, deleteGenre, createTransaction };
+export {
+    getAllBook,
+    addBook,
+    getAllGenres,
+    deleteBook,
+    updateBook,
+    addGenre,
+    deleteGenre,
+    createTransaction,
+    getBookDetail,
+    autoUpdateStatusInDB,
+};
