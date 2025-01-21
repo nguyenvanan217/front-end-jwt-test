@@ -5,7 +5,6 @@ import { toast } from 'react-toastify';
 import './BookLoanReturnDetails.css';
 import ModalDeleteTransaction from './ModalDeleteTransaction';
 import { autoUpdateStatusInDB } from '../../services/bookManagerService';
-import { updateTransactionDates } from '../../services/bookManagerService';
 
 function BookLoanReturnDetails() {
     const { id } = useParams();
@@ -15,6 +14,7 @@ function BookLoanReturnDetails() {
     const [dateInput, setDateInput] = useState(false);
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [getTransactionId, setGetTransactionId] = useState('');
+    const [dateErrors, setDateErrors] = useState({});
 
     useEffect(() => {
         fetchUserDetails();
@@ -108,6 +108,39 @@ function BookLoanReturnDetails() {
     };
     const handleSaveChanges = async () => {
         try {
+            const errors = {};
+            let hasError = false;
+
+            // Validate dates trước khi gửi request
+            userDetails.Transactions.forEach((transaction) => {
+                // Kiểm tra xem có trường nào bị trống không
+                if (!transaction.borrow_date || !transaction.return_date) {
+                    errors[transaction.id] = 'Vui lòng nhập đầy đủ ngày mượn và ngày trả';
+                    hasError = true;
+                    return;
+                }
+
+                // Chuyển đổi string date thành Date object để so sánh
+                const borrowDate = new Date(transaction.borrow_date);
+                const returnDate = new Date(transaction.return_date);
+
+                // Kiểm tra ngày mượn có lớn hơn ngày trả không
+                if (borrowDate > returnDate) {
+                    errors[transaction.id] = 'Ngày mượn không thể lớn hơn ngày trả';
+                    hasError = true;
+                }
+            });
+
+            // Nếu có lỗi, hiển thị thông báo và dừng việc gửi request
+            if (hasError) {
+                setDateErrors(errors);
+                toast.error('Vui lòng kiểm tra lại thông tin ngày mượn/trả');
+                return;
+            }
+
+            // Clear errors nếu không có lỗi
+            setDateErrors({});
+
             const transactions = userDetails.Transactions.map((transaction) => ({
                 id: transaction.id,
                 status: transaction.status,
@@ -218,7 +251,11 @@ function BookLoanReturnDetails() {
                                                         onChange={(e) =>
                                                             handleDateChange(e, transaction.id, 'borrow_date')
                                                         }
-                                                        className="border border-gray-300 rounded px-2 py-1 outline-none"
+                                                        className={`border ${
+                                                            dateErrors[transaction.id]
+                                                                ? 'border-red-500'
+                                                                : 'border-gray-300'
+                                                        } rounded px-2 py-1 outline-none`}
                                                     />
                                                 </td>
                                             ) : (
@@ -235,13 +272,26 @@ function BookLoanReturnDetails() {
                                                         onChange={(e) =>
                                                             handleDateChange(e, transaction.id, 'return_date')
                                                         }
-                                                        className="border border-gray-300 rounded px-2 py-1 outline-none"
+                                                        className={`border ${
+                                                            dateErrors[transaction.id]
+                                                                ? 'border-red-500'
+                                                                : 'border-gray-300'
+                                                        } rounded px-2 py-1 outline-none`}
                                                     />
                                                 </td>
                                             ) : (
                                                 <td className="px-4 py-2">{formatDate(transaction.return_date)}</td>
                                             )}
                                         </tr>
+                                        {dateErrors[transaction.id] && (
+                                            <tr>
+                                                <td colSpan="2" className="px-4 py-2">
+                                                    <span className="text-red-500 text-sm">
+                                                        {dateErrors[transaction.id]}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        )}
                                         <tr>
                                             <td className="px-4 py-2 font-medium">Trạng thái:</td>
                                             <td className="px-4 py-2">

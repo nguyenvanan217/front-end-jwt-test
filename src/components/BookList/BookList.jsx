@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getAllBook, getAllGenres } from '../../services/bookManagerService';
 import { toast } from 'react-toastify';
-import ModalBorrowBooks from './ModalBorrowBooks';
-import { Link } from 'react-router-dom';
 import ModalBookDetail from './ModalBookDetail';
 
 function BookList() {
@@ -10,7 +8,6 @@ function BookList() {
     const [genres, setGenres] = useState([]);
     const [selectedGenre, setSelectedGenre] = useState('');
     const [filteredBooks, setFilteredBooks] = useState([]);
-    const [isModalBorrowBooksOpen, setIsModalBorrowBooksOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState(null);
     const [isModalBooksDetailOpen, setIsModalBooksDetailOpen] = useState(false);
 
@@ -65,23 +62,17 @@ function BookList() {
     const handleGenreChange = (e) => {
         setSelectedGenre(e.target.value);
     };
-    const handleBtnBorrowBook = (book) => {
-        setSelectedBook(book);
-        setIsModalBorrowBooksOpen(true);
-    };
 
-    const handleCloseModal = () => {
-        setIsModalBorrowBooksOpen(false);
-        setSelectedBook(null);
-    };
     const handleBtnDetailBook = (book) => {
         setSelectedBook(book);
         setIsModalBooksDetailOpen(true);
     };
+
     const handleCloseDetailModal = () => {
         setIsModalBooksDetailOpen(false);
         setSelectedBook(null);
     };
+
     return (
         <div className="w-[95%] md:w-[90%] mx-auto p-4">
             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-center my-4">
@@ -120,7 +111,7 @@ function BookList() {
                                         src={book.cover_image}
                                         alt={book.title}
                                         className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                                        onClick={() => handleBtnBorrowBook(book)}
+                                        onClick={() => handleBtnDetailBook(book)}
                                     />
                                 </div>
                             </div>
@@ -129,13 +120,10 @@ function BookList() {
                             <div className="p-4 flex flex-col flex-grow">
                                 <h2
                                     className="text-base md:text-lg font-bold line-clamp-2 mb-2 cursor-pointer"
-                                    onClick={() => handleBtnBorrowBook(book)}
+                                    onClick={() => handleBtnDetailBook(book)}
                                 >
                                     {book.title}
                                 </h2>
-                                {/* <p className="text-sm md:text-base text-gray-600 mb-2 line-clamp-1">
-                                    <strong> Tác Giả: {book.author}</strong>
-                                </p> */}
                                 <p className="text-sm md:text-base text-gray-600 mb-2 line-clamp-1">
                                     Số Lượng: {book.quantity}
                                 </p>
@@ -143,17 +131,10 @@ function BookList() {
                                     Thể loại: {getGenreName(book.genreId)}
                                 </p>
 
-                                {/* Buttons */}
-                                <div className="flex gap-2 mt-auto">
+                                {/* Chỉ giữ lại nút Chi tiết */}
+                                <div className="flex justify-center mt-auto">
                                     <button
-                                        onClick={() => handleBtnBorrowBook(book)}
-                                        className="flex-1 bg-blue-500 text-white hover:bg-blue-700 hover:text-white border border-blue-700 transition-colors duration-300 rounded-md p-2 text-sm md:text-base"
-                                    >
-                                        Mượn
-                                    </button>
-                                    <button
-                                        to={`/books/${book.id}`}
-                                        className="flex-1 bg-white text-blue-500 border border-blue-500 transition-colors duration-300 rounded-md p-2 text-sm md:text-base text-center hover:bg-blue-50"
+                                        className="w-full bg-blue-500 text-white hover:bg-blue-700 transition-colors duration-300 rounded-md p-2 text-sm md:text-base"
                                         onClick={() => handleBtnDetailBook(book)}
                                     >
                                         Chi tiết
@@ -169,7 +150,6 @@ function BookList() {
                     <div className="text-center py-8 text-gray-500">Không có sách nào trong thư viện</div>
                 )}
             </div>
-            <ModalBorrowBooks isOpen={isModalBorrowBooksOpen} onClose={handleCloseModal} book={selectedBook} />
             <ModalBookDetail isOpen={isModalBooksDetailOpen} onClose={handleCloseDetailModal} book={selectedBook} />
         </div>
     );

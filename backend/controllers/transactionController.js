@@ -56,7 +56,41 @@ const updateDateAndStatus = async (req, res) => {
     }
 };
 
+const markViolationAsResolved = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const transaction = await db.Transactions.findByPk(id);
+
+        if (!transaction) {
+            return res.status(404).json({
+                EM: 'Không tìm thấy giao dịch',
+                EC: 1,
+                DT: [],
+            });
+        }
+
+        // Cập nhật trạng thái thành "Đã trả"
+        await transaction.update({
+            status: 'Đã trả',
+        });
+
+        return res.status(200).json({
+            EM: 'Cập nhật trạng thái thành công',
+            EC: 0,
+            DT: [],
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            EM: 'Lỗi server',
+            EC: 1,
+            DT: [],
+        });
+    }
+};
+
 module.exports = {
     // ... other exports
     updateDateAndStatus,
+    markViolationAsResolved,
 };

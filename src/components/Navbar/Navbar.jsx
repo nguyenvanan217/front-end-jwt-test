@@ -46,9 +46,6 @@ function Navbar() {
                         <NavLink to="/booklist" className="nav-link">
                             Sách Thư Viện
                         </NavLink>
-                        <NavLink to="/violationmanagerment" className="nav-link">
-                            Quản Lý Phạt Vi Phạm
-                        </NavLink>
                         <NavLink to="/bookborrowinghistory" className="nav-link">
                             Quản Lý Mượn Sách
                         </NavLink>

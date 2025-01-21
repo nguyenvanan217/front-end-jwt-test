@@ -47,16 +47,17 @@ const deleteTransaction = async (transactionId) => {
     return axios.delete(URL_API);
 };
 const markViolationAsResolved = async (transactionId) => {
+    console.log('hilu', transactionId);
     const URL_API = `/api/v1/transactions/resolve-violation/${transactionId}`;
     return axios.put(URL_API);
-};
-const getAllUsersAndTransactions = async () => {
-    const URL_API = '/api/v1/users/read-with-transactions';
-    return axios.get(URL_API);
 };
 const updateTransactionDateAndStatus = async (transactions) => {
     const URL_API = '/api/v1/transactions/update-date-and-status';
     return axios.put(URL_API, transactions);
+};
+const getAllInforUser = async () => {
+    const URL_API = '/api/v1/users/get-all-user-infor';
+    return axios.get(URL_API);
 };
 export {
     registerNewUser,
@@ -69,6 +70,6 @@ export {
     getUserDetailsById,
     deleteTransaction,
     markViolationAsResolved,
-    getAllUsersAndTransactions,
     updateTransactionDateAndStatus,
+    getAllInforUser,
 };
