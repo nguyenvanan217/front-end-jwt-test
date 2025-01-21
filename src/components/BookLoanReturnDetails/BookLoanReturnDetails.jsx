@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { deleteTransaction, getUserDetailsById, updateTransactionStatus } from '../../services/userService';
+import { deleteTransaction, getUserDetailsById, updateTransactionDateAndStatus } from '../../services/userService';
 import { toast } from 'react-toastify';
 import './BookLoanReturnDetails.css';
 import ModalDeleteTransaction from './ModalDeleteTransaction';
 import { autoUpdateStatusInDB } from '../../services/bookManagerService';
+import { updateTransactionDates } from '../../services/bookManagerService';
 
 function BookLoanReturnDetails() {
     const { id } = useParams();
     const [userDetails, setUserDetails] = useState([]);
-    const [transactionInput, setTransactionInput] = useState(false);
     const [buttonUpdate, setButtonUpdate] = useState(false);
     const [deleteBorrowedTable, setDeleteBorrowedTable] = useState(false);
+    const [dateInput, setDateInput] = useState(false);
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [getTransactionId, setGetTransactionId] = useState('');
 
@@ -19,9 +20,6 @@ function BookLoanReturnDetails() {
         fetchUserDetails();
         autoUpdateStatus();
     }, [id]);
-    // useEffect(() => {
-    //     autoUpdateStatus();
-    // }, [chỉ chạy khi có thay đổi]);
     const autoUpdateStatus = async () => {
         try {
             const response = await autoUpdateStatusInDB();
@@ -51,49 +49,21 @@ function BookLoanReturnDetails() {
     };
 
     const handleEditDetails = () => {
-        setTransactionInput(true);
+        setDateInput(true);
         setButtonUpdate(true);
     };
 
     const handleCancelEdit = () => {
-        setTransactionInput(false);
+        setDateInput(false);
         setButtonUpdate(false);
+        fetchUserDetails();
     };
+
     const handleCancelDelete = () => {
         setDeleteBorrowedTable(false);
     };
     const handleDeleteBorrowedBookTable = () => {
         setDeleteBorrowedTable(true);
-    };
-    const handleSelectChange = (event, transactionId) => {
-        const updatedTransactions = userDetails.Transactions.map((transaction) => {
-            if (transaction.id === transactionId) {
-                return { ...transaction, status: event.target.value };
-            }
-            return transaction;
-        });
-        setUserDetails((prev) => ({ ...prev, Transactions: updatedTransactions }));
-        console.log('updatedTransactions', updatedTransactions);
-    };
-    const handleUpdateStatus = async () => {
-        try {
-            const transactionStatuses = userDetails.Transactions.map((transaction) => ({
-                id: transaction.id,
-                status: transaction.status,
-            }));
-            const response = await updateTransactionStatus(transactionStatuses);
-            if (response.EC === 0) {
-                toast.success(response.EM);
-                setButtonUpdate(false);
-                setTransactionInput(false);
-            } else if (response.EC === 2) {
-                toast.warning(response.EM);
-            } else {
-                toast.error(response.EM || 'Cập nhật trạng thái thất bại');
-            }
-        } catch (error) {
-            console.error('Lỗi khi cập nhật trạng thái:', error);
-        }
     };
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -110,7 +80,7 @@ function BookLoanReturnDetails() {
     };
     const handleConfirmDeleteTransaction = async () => {
         try {
-            const response = await deleteTransaction(getTransactionId); // Sử dụng `getTransactionId` từ state
+            const response = await deleteTransaction(getTransactionId);
             if (response && response.EC === 0) {
                 toast.success(response.EM);
                 const updatedTransactions = userDetails.Transactions.filter(
@@ -126,7 +96,43 @@ function BookLoanReturnDetails() {
             setIsOpenModal(false);
         }
     };
+    const handleDateChange = (event, transactionId, dateType) => {
+        const updatedTransactions = userDetails.Transactions.map((transaction) => {
+            if (transaction.id === transactionId) {
+                return { ...transaction, [dateType]: event.target.value };
+            }
+            return transaction;
+        });
+        setUserDetails((prev) => ({ ...prev, Transactions: updatedTransactions }));
+        console.log('updatedTransactions', userDetails.Transactions);
+    };
+    const handleSaveChanges = async () => {
+        try {
+            const transactions = userDetails.Transactions.map((transaction) => ({
+                id: transaction.id,
+                status: transaction.status,
+                borrow_date: transaction.borrow_date,
+                return_date: transaction.return_date,
+            }));
 
+            const response = await updateTransactionDateAndStatus(transactions);
+
+            if (response && response.EC === 0) {
+                toast.success(response.EM);
+                setDateInput(false);
+                setButtonUpdate(false);
+                await autoUpdateStatus();
+                await fetchUserDetails();
+            } else if (response && response.EC === 2) {
+                toast.warning(response.EM);
+            } else {
+                toast.error(response.EM || 'Cập nhật thất bại');
+            }
+        } catch (error) {
+            console.error('Lỗi khi cập nhật:', error);
+            toast.error('Có lỗi xảy ra khi cập nhật');
+        }
+    };
     return (
         <>
             {isOpenModal && (
@@ -204,44 +210,54 @@ function BookLoanReturnDetails() {
                                         </tr>
                                         <tr>
                                             <td className="px-4 py-2 font-medium">Ngày mượn:</td>
-                                            <td className="px-4 py-2">{formatDate(transaction.borrow_date)}</td>
+                                            {dateInput ? (
+                                                <td className="px-4 py-2">
+                                                    <input
+                                                        type="date"
+                                                        value={transaction.borrow_date?.split('T')[0]}
+                                                        onChange={(e) =>
+                                                            handleDateChange(e, transaction.id, 'borrow_date')
+                                                        }
+                                                        className="border border-gray-300 rounded px-2 py-1 outline-none"
+                                                    />
+                                                </td>
+                                            ) : (
+                                                <td className="px-4 py-2">{formatDate(transaction.borrow_date)}</td>
+                                            )}
                                         </tr>
                                         <tr>
                                             <td className="px-4 py-2 font-medium">Ngày trả:</td>
-                                            <td className="px-4 py-2">{formatDate(transaction.return_date)}</td>
+                                            {dateInput ? (
+                                                <td className="px-4 py-2">
+                                                    <input
+                                                        type="date"
+                                                        value={transaction.return_date?.split('T')[0]}
+                                                        onChange={(e) =>
+                                                            handleDateChange(e, transaction.id, 'return_date')
+                                                        }
+                                                        className="border border-gray-300 rounded px-2 py-1 outline-none"
+                                                    />
+                                                </td>
+                                            ) : (
+                                                <td className="px-4 py-2">{formatDate(transaction.return_date)}</td>
+                                            )}
                                         </tr>
                                         <tr>
                                             <td className="px-4 py-2 font-medium">Trạng thái:</td>
                                             <td className="px-4 py-2">
-                                                {transactionInput ? (
-                                                    <span className="bg-blue-500 w-4">
-                                                        <select
-                                                            className="border border-red-600 rounded px-2 outline-none"
-                                                            value={transaction.status}
-                                                            onChange={(event) =>
-                                                                handleSelectChange(event, transaction.id)
-                                                            }
-                                                        >
-                                                            <option value="Chờ trả">Chờ trả</option>
-                                                            <option value="Đã trả">Đã trả</option>
-                                                            <option value="Quá hạn">Quá hạn</option>
-                                                        </select>
-                                                    </span>
-                                                ) : (
-                                                    <span
-                                                        className={`px-2 py-1 rounded ${
-                                                            transaction.status === 'Quá hạn'
-                                                                ? 'bg-red-500 text-white'
-                                                                : transaction.status === 'Chờ trả'
-                                                                ? 'bg-orange-500 text-white'
-                                                                : transaction.status === 'Đã trả'
-                                                                ? 'bg-green-500 text-white'
-                                                                : ''
-                                                        }`}
-                                                    >
-                                                        {transaction.status}
-                                                    </span>
-                                                )}
+                                                <span
+                                                    className={`px-2 py-1 rounded ${
+                                                        transaction.status === 'Quá hạn'
+                                                            ? 'bg-red-500 text-white'
+                                                            : transaction.status === 'Chờ trả'
+                                                            ? 'bg-orange-500 text-white'
+                                                            : transaction.status === 'Đã trả'
+                                                            ? 'bg-green-500 text-white'
+                                                            : ''
+                                                    }`}
+                                                >
+                                                    {transaction.status}
+                                                </span>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -260,7 +276,7 @@ function BookLoanReturnDetails() {
                         {buttonUpdate && (
                             <button
                                 className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg"
-                                onClick={() => handleUpdateStatus()}
+                                onClick={handleSaveChanges}
                             >
                                 Lưu
                             </button>

@@ -36,6 +36,7 @@ const addGenre = async (genreName) => {
     const URL_API = '/api/v1/genres/create';
     return axios.post(URL_API, { name: genreName });
 };
+
 const deleteGenre = async (genreId) => {
     const URL_API = `/api/v1/genres/delete/${genreId}`;
     return axios.delete(URL_API);
@@ -51,6 +52,7 @@ const createTransaction = async (data) => {
         status: 'Chờ trả',
     });
 };
+
 const getBookDetail = async (bookId) => {
     try {
         const URL_API = `/api/v1/books/read/${bookId}`;
@@ -60,6 +62,7 @@ const getBookDetail = async (bookId) => {
         throw error;
     }
 };
+
 const autoUpdateStatusInDB = async () => {
     try {
         const URL_API = `/api/v1/transactions/autoupdatestatus`;
