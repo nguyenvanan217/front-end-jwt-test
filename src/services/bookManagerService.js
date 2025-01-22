@@ -46,7 +46,7 @@ const createTransaction = async (data) => {
     const URL_API = '/api/v1/transactions/create';
     return axios.post(URL_API, {
         bookId: data.bookId,
-        userId: data.userId,
+        studentEmail: data.studentEmail,
         borrowDate: data.borrowDate,
         returnDate: data.returnDate,
         status: 'Chờ trả',

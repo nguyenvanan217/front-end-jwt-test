@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getAllBook, getAllGenres } from '../../services/bookManagerService';
 import { toast } from 'react-toastify';
 import ModalBookDetail from './ModalBookDetail';
+import ModalBorrowBooks from './ModalBorrowBooks';
 
 function BookList() {
     const [books, setBooks] = useState([]);
@@ -10,6 +11,8 @@ function BookList() {
     const [filteredBooks, setFilteredBooks] = useState([]);
     const [selectedBook, setSelectedBook] = useState(null);
     const [isModalBooksDetailOpen, setIsModalBooksDetailOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isModalBorrowOpen, setIsModalBorrowOpen] = useState(false);
 
     useEffect(() => {
         fetchAllBook();
@@ -17,8 +20,8 @@ function BookList() {
     }, []);
 
     useEffect(() => {
-        filterBooks();
-    }, [books, selectedGenre]);
+        filterAndSearchBooks();
+    }, [books, selectedGenre, searchTerm]);
 
     const fetchAllBook = async () => {
         try {
@@ -50,13 +53,18 @@ function BookList() {
         return genre ? genre.name : 'Chưa phân loại';
     };
 
-    const filterBooks = () => {
-        if (!selectedGenre) {
-            setFilteredBooks(books);
-        } else {
-            const filtered = books.filter((book) => book.genreId === parseInt(selectedGenre));
-            setFilteredBooks(filtered);
+    const filterAndSearchBooks = () => {
+        let filtered = [...books];
+
+        if (selectedGenre) {
+            filtered = filtered.filter((book) => book.genreId === parseInt(selectedGenre));
         }
+
+        if (searchTerm.trim()) {
+            filtered = filtered.filter((book) => book.title.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
+
+        setFilteredBooks(filtered);
     };
 
     const handleGenreChange = (e) => {
@@ -73,27 +81,67 @@ function BookList() {
         setSelectedBook(null);
     };
 
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const handleOpenBorrowModal = (book) => {
+        if (book.quantity <= 0) {
+            toast.error('Sách này hiện đã hết, vui lòng chọn sách khác');
+            return;
+        }
+        setSelectedBook(book);
+        setIsModalBorrowOpen(true);
+    };
+
+    const handleCloseBorrowModal = () => {
+        setIsModalBorrowOpen(false);
+        setSelectedBook(null);
+    };
+
+    const updateBookQuantity = (bookId) => {
+        setBooks((prevBooks) =>
+            prevBooks.map((book) => (book.id === bookId ? { ...book, quantity: book.quantity - 1 } : book)),
+        );
+        setFilteredBooks((prevBooks) =>
+            prevBooks.map((book) => (book.id === bookId ? { ...book, quantity: book.quantity - 1 } : book)),
+        );
+    };
+
     return (
         <div className="w-[95%] md:w-[90%] mx-auto p-4">
             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-center my-4">
                 Tủ Sách Thư Viện Đại Học Khoa Học Huế
             </h1>
 
-            {/* Filter Section */}
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-                <strong className="text-sm md:text-base">Bộ Lọc: </strong>
-                <select
-                    className="border border-blue-500 focus:outline-none rounded-md p-1 text-sm md:text-base"
-                    value={selectedGenre}
-                    onChange={handleGenreChange}
-                >
-                    <option value="">Tất cả sách</option>
-                    {genres.map((genre) => (
-                        <option key={genre.id} value={genre.id}>
-                            {genre.name}
-                        </option>
-                    ))}
-                </select>
+            {/* Search and Filter Section */}
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+                {/* Search Input */}
+                <div className="flex-1">
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm sách..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                    />
+                </div>
+
+                {/* Genre Filter */}
+                <div className="w-full md:w-64">
+                    <select
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        value={selectedGenre}
+                        onChange={handleGenreChange}
+                    >
+                        <option value="">Tất cả thể loại</option>
+                        {genres.map((genre) => (
+                            <option key={genre.id} value={genre.id}>
+                                {genre.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Books Grid */}
@@ -132,12 +180,23 @@ function BookList() {
                                 </p>
 
                                 {/* Chỉ giữ lại nút Chi tiết */}
-                                <div className="flex justify-center mt-auto">
+                                <div className="flex justify-center gap-2 mt-auto">
                                     <button
-                                        className="w-full bg-blue-500 text-white hover:bg-blue-700 transition-colors duration-300 rounded-md p-2 text-sm md:text-base"
+                                        className="w-1/2 bg-blue-500 text-white hover:bg-blue-700 transition-colors duration-300 rounded-md p-2 text-sm md:text-base"
                                         onClick={() => handleBtnDetailBook(book)}
                                     >
                                         Chi tiết
+                                    </button>
+                                    <button
+                                        className={`w-1/2 ${
+                                            book.quantity > 0
+                                                ? 'bg-green-500 hover:bg-green-700'
+                                                : 'bg-gray-400 cursor-not-allowed'
+                                        } text-white transition-colors duration-300 rounded-md p-2 text-sm md:text-base`}
+                                        onClick={() => handleOpenBorrowModal(book)}
+                                        disabled={book.quantity <= 0}
+                                    >
+                                        {book.quantity > 0 ? 'Mượn sách' : 'Hết sách'}
                                     </button>
                                 </div>
                             </div>
@@ -151,6 +210,12 @@ function BookList() {
                 )}
             </div>
             <ModalBookDetail isOpen={isModalBooksDetailOpen} onClose={handleCloseDetailModal} book={selectedBook} />
+            <ModalBorrowBooks
+                isOpen={isModalBorrowOpen}
+                onClose={handleCloseBorrowModal}
+                book={selectedBook}
+                onBorrowSuccess={updateBookQuantity}
+            />
         </div>
     );
 }

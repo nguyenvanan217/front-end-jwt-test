@@ -91,7 +91,7 @@ function BookLoanReturnDetails() {
                 toast.error(response.EM || 'Xóa giao dịch thất bại');
             }
         } catch (error) {
-            console.error('Lỗi khi xóa transaction:', error);
+            console.error('Lỗi khi xóa transaction:', error); 
         } finally {
             setIsOpenModal(false);
         }
@@ -176,7 +176,7 @@ function BookLoanReturnDetails() {
                 />
             )}
             <div className="p-6 bg-white rounded-lg shadow-lg">
-                <h2 className="text-xl font-bold text-center text-blue-500 mb-4">Chi Tiết Mượn Trả</h2>
+                <h2 className="text-3xl font-bold text-center text-blue-600 mb-4">Chi Tiết Mượn Trả</h2>
 
                 <div className="flex justify-between gap-6">
                     {/* Thông tin người dùng */}

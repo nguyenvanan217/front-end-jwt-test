@@ -2,98 +2,85 @@ import React, { useState, useEffect } from 'react';
 import '../modalUser/Modal.css';
 import { FaRegWindowClose } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { createTransaction } from '../../services/bookManagerService';
 
-const ModalBorrowBooks = ({ isOpen, onClose, book }) => {
-    
+const ModalBorrowBooks = ({ isOpen, onClose, book, onBorrowSuccess }) => {
+    const [studentEmail, setStudentEmail] = useState('');
     const [borrowDate, setBorrowDate] = useState('');
     const [returnDate, setReturnDate] = useState('');
-    const [error, setError] = useState('');
-    const [touched, setTouched] = useState(false);
+    const [errors, setErrors] = useState({});
 
-    const addDays = (dateStr, days) => {
-        if (!dateStr) return '';
-
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) return ''; 
-
-        date.setDate(date.getDate() + parseInt(days));
-
-        
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-
-        return `${year}-${month}-${day}`;
-    };
-
-    
     const getCurrentDate = () => {
         const now = new Date();
-        
+
         const vietnamTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
         return vietnamTime.toISOString().split('T')[0];
     };
 
-    
+    const calculateReturnDate = (borrowDate) => {
+        const date = new Date(borrowDate);
+        date.setDate(date.getDate() + 20);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     useEffect(() => {
         if (isOpen) {
-            setBorrowDate(getCurrentDate());
-            setReturnDate('');
-            setError('');
-            setTouched(false);
+            const currentDate = getCurrentDate();
+            setBorrowDate(currentDate);
+            setReturnDate(calculateReturnDate(currentDate));
+            setStudentEmail('');
+            setErrors({});
         }
     }, [isOpen]);
 
-    const handleReturnDateChange = (e) => {
-        setTouched(true);
-        const selectedDate = e.target.value;
-        
-    
-        if (selectedDate.length < 10) { 
-            setReturnDate(selectedDate);
-            return;
-        }
-
-        const maxDate = addDays(borrowDate, 20);
-    
-        const selectedDateTime = new Date(selectedDate).getTime();
-        const borrowDateTime = new Date(borrowDate).getTime();
-        const maxDateTime = new Date(maxDate).getTime();
-
-        if (!selectedDate) {
-            setError('Vui lòng chọn ngày trả sách');
-            setReturnDate('');
-            return;
-        }
-
-        if (selectedDateTime < borrowDateTime) {
-            setError('Ngày trả không thể trước ngày mượn');
-            setReturnDate(selectedDate);
-            return;
-        }
-
-        if (selectedDateTime > maxDateTime) {
-            setError('Thời gian mượn không được vượt quá 20 ngày');
-            setReturnDate(selectedDate); 
-            toast.error('Thời gian mượn không được vượt quá 20 ngày');
-            return;
-        }
-
-        setReturnDate(selectedDate);
-        setError('');
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
     };
 
-    const handleSubmit = () => {
-        setTouched(true);
-        if (!returnDate) {
-            setError('Vui lòng chọn ngày trả sách');
-            toast.error('Vui lòng chọn ngày trả sách');
+    const handleSubmit = async () => {
+        const newErrors = {};
+
+        if (book.quantity <= 0) {
+            toast.error('Sách này hiện đã hết, vui lòng chọn sách khác');
+            onClose();
             return;
         }
-        
-        // Xử lý submit form ở đây
-        toast.success('Gửi yêu cầu mượn sách thành công!');
-        onClose();
+
+        if (!studentEmail.trim()) {
+            newErrors.email = 'Vui lòng nhập email sinh viên';
+        } else if (!validateEmail(studentEmail)) {
+            newErrors.email = 'Email không hợp lệ';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        try {
+            const response = await createTransaction({
+                bookId: book.id,
+                studentEmail: studentEmail.trim(),
+                borrowDate: borrowDate,
+                returnDate: returnDate,
+                quantity: book.quantity,
+            });
+
+            if (response && response.EC === 0) {
+                toast.success(response.EM);
+                onBorrowSuccess(book.id);
+                onClose();
+            } else {
+                toast.error(response.EM || 'Có lỗi xảy ra');
+            }
+        } catch (error) {
+            console.error('Lỗi khi đăng ký mượn sách:', error);
+            toast.error('Không thể đăng ký mượn sách');
+        }
     };
 
     if (!isOpen) return null;
@@ -111,7 +98,7 @@ const ModalBorrowBooks = ({ isOpen, onClose, book }) => {
                     {/* Header */}
                     <div className="bg-white px-6 py-4 border-b border-gray-200">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-semibold text-gray-900">Xác Nhận Mượn Sách</h3>
+                            <h3 className="text-xl font-semibold text-gray-900">Đăng ký mượn sách</h3>
                             <button onClick={onClose} className="text-gray-400 hover:text-gray-500 focus:outline-none">
                                 <span className="sr-only">Close</span>
                                 <FaRegWindowClose size={20} color="red" />
@@ -129,39 +116,46 @@ const ModalBorrowBooks = ({ isOpen, onClose, book }) => {
                                     className="w-24 h-32 object-cover rounded"
                                 />
                                 <div>
-                                    <h4 className="font-semibold text-lg line-clamp-2 ">{book?.title}</h4>
+                                    <h4 className="font-semibold text-lg line-clamp-2">{book?.title}</h4>
                                     <p className="text-gray-600 mt-1">Tác giả: {book?.author}</p>
+                                    <p className={`mt-1 ${book.quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        Số lượng còn lại: {book?.quantity}
+                                    </p>
                                 </div>
                             </div>
 
                             {/* Borrow Details */}
                             <div className="space-y-3">
                                 <div>
+                                    <label className="block text-sm font-medium text-gray-700">Email sinh viên</label>
+                                    <input
+                                        type="email"
+                                        value={studentEmail}
+                                        onChange={(e) => setStudentEmail(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Nhập email sinh viên"
+                                    />
+                                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                                </div>
+
+                                <div>
                                     <label className="block text-sm font-medium text-gray-700">Ngày mượn</label>
                                     <input
                                         type="date"
                                         value={borrowDate}
-                                        disabled 
-                                        className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 cursor-not-allowed shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        disabled
+                                        className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100"
                                     />
                                 </div>
+
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Ngày trả dự kiến: (Tối đa mượn trong 20 ngày)
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700">Ngày trả</label>
                                     <input
                                         type="date"
                                         value={returnDate}
-                                        onChange={handleReturnDateChange}
-                                        min={borrowDate}
-                                        max={addDays(borrowDate, 20)}
-                                        className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 
-                                            ${touched && error ? 'border-red-500' : 'border-gray-300'} 
-                                            focus:border-blue-500`}
+                                        disabled
+                                        className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100"
                                     />
-                                    {touched && error && (
-                                        <p className="text-red-500 text-sm mt-1">{error}</p>
-                                    )}
                                 </div>
                             </div>
                         </div>
@@ -178,7 +172,7 @@ const ModalBorrowBooks = ({ isOpen, onClose, book }) => {
                             onClick={handleSubmit}
                             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none"
                         >
-                            Gửi yêu cầu
+                            Xác nhận
                         </button>
                     </div>
                 </div>
