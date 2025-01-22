@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 function BookBorrowingHistory() {
     const [borrowingData, setBorrowingData] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
     const [filteredData, setFilteredData] = useState([]);
 
     useEffect(() => {
@@ -15,16 +14,27 @@ function BookBorrowingHistory() {
 
     useEffect(() => {
         filterData();
-    }, [borrowingData, searchTerm, statusFilter]);
+    }, [borrowingData, searchTerm]);
 
     const fetchBorrowingData = async () => {
         try {
             const response = await getAllInforUser();
             if (response && response.EC === 0) {
-                // Lọc ra những user có giao dịch và có status
-                const usersWithTransactions = response.DT.filter((user) => user?.Transactions?.status);
-                setBorrowingData(usersWithTransactions);
-                console.log('usersWithTransactions1', usersWithTransactions);
+                // Tạo một Map để lưu trữ giao dịch duy nhất dựa trên transaction ID
+                const transactionMap = new Map();
+                
+                response.DT.forEach(user => {
+                    if (user?.Transactions?.id && user.Transactions.status && user.Transactions.Book) {
+                        // Sử dụng transaction ID làm key để đảm bảo tính duy nhất
+                        transactionMap.set(user.Transactions.id, user);
+                    }
+                });
+                
+                // Chuyển Map thành array
+                const uniqueTransactions = Array.from(transactionMap.values());
+                
+                console.log('Unique Transactions:', uniqueTransactions);
+                setBorrowingData(uniqueTransactions);
             } else {
                 toast.error(response.EM);
             }
@@ -37,24 +47,50 @@ function BookBorrowingHistory() {
     const filterData = () => {
         let filtered = [...borrowingData];
 
-        if (searchTerm) {
-            filtered = filtered.filter((user) => user.username.toLowerCase().includes(searchTerm.toLowerCase()));
+        if (searchTerm.trim()) {
+            const searchTermLower = searchTerm.trim().toLowerCase();
+            const searchWords = searchTermLower.split(' ').filter(word => word.length > 0);
+            
+            filtered = filtered.filter((user) => {
+                if (!user?.username) return false;
+                const username = user.username.toLowerCase();
+                
+                // Đếm số từ khớp
+                const matchCount = searchWords.filter(word => username.includes(word)).length;
+                user.matchCount = matchCount;
+                return matchCount > 0;
+            });
+
+            // Sắp xếp theo số lượng từ khớp và ngày mượn mới nhất
+            filtered.sort((a, b) => {
+                // Ưu tiên số lượng từ khớp
+                if (b.matchCount !== a.matchCount) {
+                    return b.matchCount - a.matchCount;
+                }
+                
+                // Nếu số từ khớp bằng nhau, sắp xếp theo ngày mượn mới nhất
+                const dateA = new Date(a.Transactions.borrow_date);
+                const dateB = new Date(b.Transactions.borrow_date);
+                return dateB - dateA;
+            });
         }
 
-        if (statusFilter !== 'all') {
-            filtered = filtered.filter((user) => user.Transactions.status === statusFilter);
-        }
+        // Log để debug
+        console.log('Filtered Data:', filtered.map(user => ({
+            id: user.id,
+            username: user.username,
+            transactionId: user.Transactions.id,
+            matchCount: user.matchCount
+        })));
 
         setFilteredData(filtered);
     };
 
     const handleConfirmReturn = async (transactionId) => {
         try {
-            console.log('hilu2', transactionId);
             const response = await markViolationAsResolved(transactionId);
             if (response && response.EC === 0) {
                 toast.success('Xác nhận trả sách thành công');
-                // Cập nhật lại dữ liệu
                 fetchBorrowingData();
             } else {
                 toast.error(response.EM || 'Có lỗi xảy ra');
@@ -74,7 +110,6 @@ function BookBorrowingHistory() {
         return `${day}-${month}-${year}`;
     };
 
-    // Thêm hàm tính số ngày quá hạn và tiền phạt
     const calculateFine = (returnDate) => {
         if (!returnDate) return 0;
 
@@ -83,16 +118,14 @@ function BookBorrowingHistory() {
         today.setHours(0, 0, 0, 0);
         dueDate.setHours(0, 0, 0, 0);
 
-        // Chỉ tính tiền phạt nếu đã quá hạn
         if (today > dueDate) {
             const diffTime = Math.abs(today - dueDate);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays * 10000; // 10.000đ/ngày
+            return diffDays * 10000;
         }
         return 0;
     };
 
-    // Thêm hàm format tiền VND
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
@@ -114,19 +147,6 @@ function BookBorrowingHistory() {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                    </div>
-
-                    <div className="w-full md:w-64">
-                        <select
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                        >
-                            <option value="all">Tất cả trạng thái</option>
-                            <option value="Đã trả">Đã trả</option>
-                            <option value="Chờ trả">Chờ trả</option>
-                            <option value="Quá hạn">Quá hạn</option>
-                        </select>
                     </div>
                 </div>
 
@@ -251,9 +271,7 @@ function BookBorrowingHistory() {
 
                     {filteredData.length === 0 && (
                         <div className="text-center py-4 text-gray-500">
-                            {searchTerm || statusFilter !== 'all'
-                                ? 'Không tìm thấy kết quả phù hợp'
-                                : 'Không có dữ liệu'}
+                            {searchTerm ? 'Không tìm thấy kết quả phù hợp' : 'Không có dữ liệu'}
                         </div>
                     )}
                 </div>

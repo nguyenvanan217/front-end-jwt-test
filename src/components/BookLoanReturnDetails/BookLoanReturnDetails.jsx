@@ -91,7 +91,7 @@ function BookLoanReturnDetails() {
                 toast.error(response.EM || 'Xóa giao dịch thất bại');
             }
         } catch (error) {
-            console.error('Lỗi khi xóa transaction:', error); 
+            console.error('Lỗi khi xóa transaction:', error);
         } finally {
             setIsOpenModal(false);
         }
@@ -166,6 +166,32 @@ function BookLoanReturnDetails() {
             toast.error('Có lỗi xảy ra khi cập nhật');
         }
     };
+
+    // Thêm hàm tính toán số lượng theo trạng thái
+    const calculateStatusCounts = () => {
+        if (!userDetails?.Transactions) return { returned: 0, pending: 0, overdue: 0 };
+
+        return userDetails.Transactions.reduce(
+            (acc, transaction) => {
+                switch (transaction.status) {
+                    case 'Đã trả':
+                        acc.returned++;
+                        break;
+                    case 'Chờ trả':
+                        acc.pending++;
+                        break;
+                    case 'Quá hạn':
+                        acc.overdue++;
+                        break;
+                    default:
+                        break;
+                }
+                return acc;
+            },
+            { returned: 0, pending: 0, overdue: 0 },
+        );
+    };
+
     return (
         <>
             {isOpenModal && (
@@ -205,6 +231,36 @@ function BookLoanReturnDetails() {
                                 <tr>
                                     <td className="px-4 py-2 font-medium">Nhóm:</td>
                                     <td className="px-4 py-2">{userDetails?.Group?.name}</td>
+                                </tr>
+                                {/* Thêm thống kê số lượng sách */}
+                                <tr className="border-t">
+                                    <td colSpan="2" className="px-4 py-2 font-medium text-blue-600">
+                                        Thống kê mượn sách:
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 font-medium">Đã trả:</td>
+                                    <td className="px-4 py-2">
+                                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                                            {calculateStatusCounts().returned} sách
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 font-medium">Chờ trả:</td>
+                                    <td className="px-4 py-2">
+                                        <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                                            {calculateStatusCounts().pending} sách
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="px-4 py-2 font-medium">Quá hạn:</td>
+                                    <td className="px-4 py-2">
+                                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
+                                            {calculateStatusCounts().overdue} sách
+                                        </span>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
