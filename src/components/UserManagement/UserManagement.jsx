@@ -4,14 +4,47 @@ import { getAllUsers, deleteUser } from '../../services/userService';
 import ModalUser from '../modalUser/ModalUser';
 import ModalUserUpdate from '../modalUser/ModalUserUpdate';
 import { Link } from 'react-router-dom';
+import { FaSearch } from 'react-icons/fa';
+
 function UserManagement() {
     const [listUser, setListUser] = useState([]);
     const [dataModal, setDataModal] = useState({});
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [isOpenModalUpdate, setIsOpenModalUpdate] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [sortOrder, setSortOrder] = useState('none');
+
     useEffect(() => {
         fetchAllUser();
     }, []);
+
+    useEffect(() => {
+        filterUsers();
+    }, [listUser, searchTerm, sortOrder]);
+
+    const filterUsers = () => {
+        let filtered = [...listUser];
+
+        if (searchTerm.trim()) {
+            const searchTermLower = searchTerm.toLowerCase().trim();
+            filtered = filtered.filter((user) => user.username.toLowerCase().includes(searchTermLower));
+        }
+
+        switch (sortOrder) {
+            case 'desc':
+                filtered.sort((a, b) => (+b.borrowedBooksCount || 0) - (+a.borrowedBooksCount || 0));
+                break;
+            case 'asc':
+                filtered.sort((a, b) => (+a.borrowedBooksCount || 0) - (+b.borrowedBooksCount || 0));
+                break;
+            default:
+                break;
+        }
+
+        setFilteredUsers(filtered);
+    };
+
     const fetchAllUser = async () => {
         try {
             const response = await getAllUsers();
@@ -45,6 +78,7 @@ function UserManagement() {
     const handleUpdateSuccess = () => {
         fetchAllUser();
     };
+
     return (
         <>
             {isOpenModal && (
@@ -63,9 +97,31 @@ function UserManagement() {
             )}
             <div className="w-[97%] mx-auto mt-4">
                 <div className="text-3xl font-bold mb-6 text-center">Quản lý tài khoản sinh viên:</div>
+                <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <div className="relative w-full md:w-[96%]">
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo tên sinh viên..."
+                            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    </div>
+                    <div className="w-full md:w-[28%]">
+                        <select
+                            value={sortOrder}
+                            onChange={(e) => setSortOrder(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        >
+                            <option value="none">Tất cả sinh viên</option>
+                            <option value="desc">Nhiều mượn nhất → Ít nhất</option>
+                            <option value="asc">Ít mượn nhất → Nhiều nhất</option>
+                        </select>
+                    </div>
+                </div>
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse border border-gray-300">
-                        {/* Table Head */}
                         <thead>
                             <tr className="bg-[#020617] text-white">
                                 <th className="px-4 py-2 border border-gray-300">Id</th>
@@ -77,10 +133,9 @@ function UserManagement() {
                                 <th className="px-4 py-2 border border-gray-300">Action</th>
                             </tr>
                         </thead>
-                        {/* Table Body */}
                         <tbody>
-                            {listUser && listUser.length > 0 ? (
-                                listUser.map((item, index) => {
+                            {filteredUsers && filteredUsers.length > 0 ? (
+                                filteredUsers.map((item, index) => {
                                     return (
                                         <tr key={index} className="hover:bg-gray-100">
                                             <td className="px-4 py-2 text-center border border-gray-300">{item.id}</td>
@@ -102,7 +157,6 @@ function UserManagement() {
                                                         : 'Chưa mượn lần nào'}
                                                 </span>
                                             </td>
-
                                             <td className="px-4 py-2 text-center border border-gray-300 text-white">
                                                 <Link
                                                     className="text-blue-500 decoration-slice underline"
@@ -111,7 +165,6 @@ function UserManagement() {
                                                     Xem Chi tiết
                                                 </Link>
                                             </td>
-
                                             <td className=" py-2 text-center border border-gray-300 flex justify-center gap-5">
                                                 <button
                                                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -132,7 +185,7 @@ function UserManagement() {
                             ) : (
                                 <tr>
                                     <td colSpan="7" className="text-center py-4">
-                                        Không có dữ liệu
+                                        {searchTerm ? 'Không tìm thấy sinh viên' : 'Không có dữ liệu'}
                                     </td>
                                 </tr>
                             )}

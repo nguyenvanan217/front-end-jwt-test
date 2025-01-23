@@ -1,10 +1,10 @@
 import React from 'react';
 import { FaRegWindowClose } from 'react-icons/fa';
-import './Modal.css'
+import './Modal.css';
 function ModalUser(props) {
     return (
         <div
-            className="fixed inset-0 flex justify-center bg-black bg-opacity-50 z-1"
+            className="fixed inset-0 flex justify-center bg-black bg-opacity-50 z-50"
             onClick={() => props.setIsOpenModal(false)}
         >
             {/* Form content */}

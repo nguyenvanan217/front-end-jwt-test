@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { getAllInforUser, markViolationAsResolved } from '../../services/userService';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import { FaSearch } from 'react-icons/fa';
 
 function BookBorrowingHistory() {
     const [borrowingData, setBorrowingData] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredData, setFilteredData] = useState([]);
+    const [statusFilter, setStatusFilter] = useState('all');
 
     useEffect(() => {
         fetchBorrowingData();
@@ -14,27 +16,28 @@ function BookBorrowingHistory() {
 
     useEffect(() => {
         filterData();
-    }, [borrowingData, searchTerm]);
+    }, [borrowingData, searchTerm, statusFilter]);
 
     const fetchBorrowingData = async () => {
         try {
             const response = await getAllInforUser();
             if (response && response.EC === 0) {
-                // Tạo một Map để lưu trữ giao dịch duy nhất dựa trên transaction ID
                 const transactionMap = new Map();
-                
-                response.DT.forEach(user => {
+
+                response.DT.forEach((user) => {
                     if (user?.Transactions?.id && user.Transactions.status && user.Transactions.Book) {
-                        // Sử dụng transaction ID làm key để đảm bảo tính duy nhất
-                        transactionMap.set(user.Transactions.id, user);
+                        const key = user.Transactions.id;
+                        if (!transactionMap.has(key)) {
+                            transactionMap.set(key, user);
+                        }
                     }
                 });
-                
-                // Chuyển Map thành array
+
                 const uniqueTransactions = Array.from(transactionMap.values());
-                
+
                 console.log('Unique Transactions:', uniqueTransactions);
                 setBorrowingData(uniqueTransactions);
+                setFilteredData(uniqueTransactions);
             } else {
                 toast.error(response.EM);
             }
@@ -49,39 +52,42 @@ function BookBorrowingHistory() {
 
         if (searchTerm.trim()) {
             const searchTermLower = searchTerm.trim().toLowerCase();
-            const searchWords = searchTermLower.split(' ').filter(word => word.length > 0);
-            
+
             filtered = filtered.filter((user) => {
                 if (!user?.username) return false;
                 const username = user.username.toLowerCase();
-                
-                // Đếm số từ khớp
-                const matchCount = searchWords.filter(word => username.includes(word)).length;
-                user.matchCount = matchCount;
-                return matchCount > 0;
-            });
-
-            // Sắp xếp theo số lượng từ khớp và ngày mượn mới nhất
-            filtered.sort((a, b) => {
-                // Ưu tiên số lượng từ khớp
-                if (b.matchCount !== a.matchCount) {
-                    return b.matchCount - a.matchCount;
-                }
-                
-                // Nếu số từ khớp bằng nhau, sắp xếp theo ngày mượn mới nhất
-                const dateA = new Date(a.Transactions.borrow_date);
-                const dateB = new Date(b.Transactions.borrow_date);
-                return dateB - dateA;
+                return username.includes(searchTermLower);
             });
         }
 
-        // Log để debug
-        console.log('Filtered Data:', filtered.map(user => ({
-            id: user.id,
-            username: user.username,
-            transactionId: user.Transactions.id,
-            matchCount: user.matchCount
-        })));
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter((user) => user?.Transactions?.status === statusFilter);
+        }
+
+        const uniqueTransactions = new Map();
+        filtered.forEach((user) => {
+            if (user?.Transactions?.id) {
+                uniqueTransactions.set(user.Transactions.id, user);
+            }
+        });
+
+        filtered = Array.from(uniqueTransactions.values());
+
+        filtered.sort((a, b) => {
+            const dateA = new Date(a.Transactions.borrow_date);
+            const dateB = new Date(b.Transactions.borrow_date);
+            return dateB - dateA;
+        });
+
+        console.log('Total results:', filtered.length);
+        console.log(
+            'Filtered Data:',
+            filtered.map((user) => ({
+                id: user.id,
+                username: user.username,
+                transactionId: user.Transactions.id,
+            })),
+        );
 
         setFilteredData(filtered);
     };
@@ -135,18 +141,34 @@ function BookBorrowingHistory() {
 
     return (
         <>
-            <div className="w-[97%] mx-auto mt-4">
+            <div className="w-[96%] mx-auto mt-4">
                 <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-center my-4">Quản lý mượn trả sách</h1>
 
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <div className="flex-1">
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm theo tên sinh viên..."
+                    <div className="flex-1 relative">
+                        <div className="relative w-full md:w-[96%]">
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm theo tên sinh viên..."
+                                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        </div>
+                    </div>
+
+                    <div className="md:w-48">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                        >
+                            <option value="all">Tất cả sách</option>
+                            <option value="Đã trả">Đã trả</option>
+                            <option value="Chờ trả">Chờ trả</option>
+                            <option value="Quá hạn">Quá hạn</option>
+                        </select>
                     </div>
                 </div>
 
@@ -168,110 +190,108 @@ function BookBorrowingHistory() {
                         </thead>
                         <tbody>
                             {filteredData.map((user) => {
-                                if (user?.Transactions?.Book) {
-                                    const fine =
-                                        user.Transactions.status === 'Quá hạn'
-                                            ? calculateFine(user.Transactions.return_date)
-                                            : 0;
+                                if (!user?.Transactions?.Book) return null;
 
-                                    return (
-                                        <tr
-                                            key={`${user.id}-${user.Transactions.Book.id}`}
-                                            className="hover:bg-gray-50"
-                                        >
-                                            <td className="py-2 px-4 border-b whitespace-nowrap">{user.id}</td>
-                                            <td className="py-2 px-4 border-b">
-                                                <div className="w-[140px] truncate" title={user.username || ''}>
-                                                    {user.username}
-                                                </div>
-                                            </td>
-                                            <td className="py-2 px-4 border-b">
-                                                <div className="w-[140px] truncate" title={user.email || ''}>
-                                                    {user.email}
-                                                </div>
-                                            </td>
-                                            <td className="py-2 px-4 border-b">
+                                const transactionKey = `${user.Transactions.id}-${user.Transactions.Book.id}`;
+
+                                const fine =
+                                    user.Transactions.status === 'Quá hạn'
+                                        ? calculateFine(user.Transactions.return_date)
+                                        : 0;
+
+                                return (
+                                    <tr key={transactionKey} className="hover:bg-gray-50">
+                                        <td className="py-2 px-4 border-b whitespace-nowrap">{user.id}</td>
+                                        <td className="py-2 px-4 border-b">
+                                            <div className="w-[140px] truncate" title={user.username || ''}>
+                                                {user.username}
+                                            </div>
+                                        </td>
+                                        <td className="py-2 px-4 border-b">
+                                            <div className="w-[140px] truncate" title={user.email || ''}>
+                                                {user.email}
+                                            </div>
+                                        </td>
+                                        <td className="py-2 px-4 border-b">
+                                            <div
+                                                className="w-[160px] truncate"
+                                                title={user.Transactions.Book.title || ''}
+                                            >
+                                                {user.Transactions.Book.title}
+                                            </div>
+                                        </td>
+                                        <td className="py-2 px-4 border-b whitespace-nowrap">
+                                            {formatDate(user.Transactions.borrow_date)}
+                                        </td>
+                                        <td className="py-2 px-4 border-b whitespace-nowrap">
+                                            {formatDate(user.Transactions.return_date)}
+                                        </td>
+                                        <td className="py-2 px-4 border-b whitespace-nowrap w-[120px]">
+                                            {user.Transactions.status === 'Quá hạn' ? (
                                                 <div
-                                                    className="w-[160px] truncate"
-                                                    title={user.Transactions.Book.title || ''}
+                                                    className="w-full truncate text-red-500 font-medium"
+                                                    title={formatCurrency(fine)}
                                                 >
-                                                    {user.Transactions.Book.title}
+                                                    {formatCurrency(fine)}
                                                 </div>
-                                            </td>
-                                            <td className="py-2 px-4 border-b whitespace-nowrap">
-                                                {formatDate(user.Transactions.borrow_date)}
-                                            </td>
-                                            <td className="py-2 px-4 border-b whitespace-nowrap">
-                                                {formatDate(user.Transactions.return_date)}
-                                            </td>
-                                            <td className="py-2 px-4 border-b whitespace-nowrap w-[120px]">
-                                                {user.Transactions.status === 'Quá hạn' ? (
-                                                    <div
-                                                        className="w-full truncate text-red-500 font-medium"
-                                                        title={formatCurrency(fine)}
-                                                    >
-                                                        {formatCurrency(fine)}
-                                                    </div>
-                                                ) : (
-                                                    <div
-                                                        className="w-full truncate text-gray-500"
-                                                        title="Không có tiền phạt"
-                                                    >
-                                                        Không có
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="py-2 px-4 border-b whitespace-nowrap">
-                                                <span
-                                                    className={`px-2 py-1 rounded text-white inline-block
-                                                    ${
-                                                        user.Transactions.status === 'Quá hạn'
-                                                            ? 'bg-red-500'
-                                                            : user.Transactions.status === 'Chờ trả'
-                                                            ? 'bg-orange-500'
-                                                            : 'bg-green-500'
-                                                    }`}
+                                            ) : (
+                                                <div
+                                                    className="w-full truncate text-gray-500"
+                                                    title="Không có tiền phạt"
                                                 >
-                                                    {user.Transactions.status}
-                                                </span>
-                                            </td>
-                                            <td className="py-2 px-4 border-b whitespace-nowrap">
-                                                <Link
-                                                    to={`/bookloanreturndetails/${user.id}`}
-                                                    className="text-blue-500 hover:text-blue-700"
+                                                    Không có
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="py-2 px-4 border-b whitespace-nowrap">
+                                            <span
+                                                className={`px-2 py-1 rounded text-white inline-block
+                                                ${
+                                                    user.Transactions.status === 'Quá hạn'
+                                                        ? 'bg-red-500'
+                                                        : user.Transactions.status === 'Chờ trả'
+                                                        ? 'bg-orange-500'
+                                                        : 'bg-green-500'
+                                                }`}
+                                            >
+                                                {user.Transactions.status}
+                                            </span>
+                                        </td>
+                                        <td className="py-2 px-4 border-b whitespace-nowrap">
+                                            <Link
+                                                to={`/bookloanreturndetails/${user.id}`}
+                                                className="text-blue-500 hover:text-blue-700"
+                                            >
+                                                Chi tiết
+                                            </Link>
+                                        </td>
+                                        <td className="py-2 px-4 border-b whitespace-nowrap">
+                                            {user.Transactions.status === 'Quá hạn' && (
+                                                <button
+                                                    onClick={() => handleConfirmReturn(user.Transactions.id)}
+                                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm whitespace-nowrap"
                                                 >
-                                                    Chi tiết
-                                                </Link>
-                                            </td>
-                                            <td className="py-2 px-4 border-b whitespace-nowrap">
-                                                {user.Transactions.status === 'Quá hạn' && (
-                                                    <button
-                                                        onClick={() => handleConfirmReturn(user.Transactions.id)}
-                                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm whitespace-nowrap"
-                                                    >
-                                                        Xác nhận đã nộp phạt
-                                                    </button>
-                                                )}
-                                                {user.Transactions.status === 'Chờ trả' && (
-                                                    <button
-                                                        onClick={() => handleConfirmReturn(user.Transactions.id)}
-                                                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm whitespace-nowrap"
-                                                    >
-                                                        Xác nhận đã trả sách
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );
-                                }
-                                return null;
+                                                    Xác nhận đã nộp phạt
+                                                </button>
+                                            )}
+                                            {user.Transactions.status === 'Chờ trả' && (
+                                                <button
+                                                    onClick={() => handleConfirmReturn(user.Transactions.id)}
+                                                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm whitespace-nowrap"
+                                                >
+                                                    Xác nhận đã trả sách
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
                             })}
                         </tbody>
                     </table>
 
                     {filteredData.length === 0 && (
                         <div className="text-center py-4 text-gray-500">
-                            {searchTerm ? 'Không tìm thấy kết quả phù hợp' : 'Không có dữ liệu'}
+                            {searchTerm ? 'Không tìm thấy sinh viên này' : 'Không có dữ liệu'}
                         </div>
                     )}
                 </div>

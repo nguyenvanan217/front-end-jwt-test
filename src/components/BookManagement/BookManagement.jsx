@@ -8,6 +8,7 @@ import ModalUpdateBook from './ModalUpdateBook';
 import ModalViewDetailBook from './ModalViewDetailBook';
 import ModalAddGender from './ModalAddGender';
 import ModalDeletegenres from './ModalDeleteGenres';
+import { FaSearch } from 'react-icons/fa';
 
 const BookManagementTable = () => {
     const [books, setBooks] = useState([]);
@@ -21,10 +22,18 @@ const BookManagementTable = () => {
     const [bookViewDetail, setBookViewDetail] = useState(null);
     const [isOpenModalAddGende, setIsOpenModalAddGende] = useState(false);
     const [isOpenModalDeleteGende, setIsOpenModalDeleteGende] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortOrder, setSortOrder] = useState('none');
+    const [filteredBooks, setFilteredBooks] = useState([]);
+
     useEffect(() => {
         fetchAllBook();
         fetchAllGenres();
     }, []);
+
+    useEffect(() => {
+        filterAndSortBooks();
+    }, [books, searchTerm, sortOrder]);
 
     const fetchAllBook = async () => {
         try {
@@ -127,9 +136,57 @@ const BookManagementTable = () => {
         setIsOpenModalViewDetail(true);
     };
 
+    const filterAndSortBooks = () => {
+        let filtered = [...books];
+
+        if (searchTerm.trim()) {
+            const searchLower = searchTerm.toLowerCase().trim();
+            filtered = filtered.filter(
+                (book) =>
+                    book.title.toLowerCase().includes(searchLower) || book.author.toLowerCase().includes(searchLower),
+            );
+        }
+
+        switch (sortOrder) {
+            case 'desc':
+                filtered.sort((a, b) => b.quantity - a.quantity);
+                break;
+            case 'asc':
+                filtered.sort((a, b) => a.quantity - b.quantity);
+                break;
+            default:
+                break;
+        }
+
+        setFilteredBooks(filtered);
+    };
+
     return (
         <div className="container mx-auto px-4 my-6">
             <h1 className="text-3xl font-bold mb-6 text-center">Quản Lý Sách Trong Thư Viện</h1>
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <div className="relative w-full md:w-[70%]">
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm theo tên sách hoặc tác giả..."
+                        className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+                <div className="w-full md:w-[28%]">
+                    <select
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    >
+                        <option value="none">Sắp xếp theo số lượng</option>
+                        <option value="desc">Nhiều nhất → Ít nhất</option>
+                        <option value="asc">Ít nhất → Nhiều nhất</option>
+                    </select>
+                </div>
+            </div>
             <div className="flex items-center gap-6">
                 <button
                     onClick={() => setIsOpenModalAdd(true)}
@@ -166,8 +223,8 @@ const BookManagementTable = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {books && books.length > 0 ? (
-                        books.map((book) => (
+                    {filteredBooks && filteredBooks.length > 0 ? (
+                        filteredBooks.map((book) => (
                             <tr key={book.id} className="text-center">
                                 <td className="border text-center px-4 py-2">{book.id}</td>
                                 <td className="border text-center px-4 py-2">
@@ -186,7 +243,11 @@ const BookManagementTable = () => {
                                 <td className="border text-center px-4 py-2 max-w-[150px] truncate">
                                     {book.Genre?.name || 'Không có thể loại'}
                                 </td>
-                                <td className="border text-center px-4 py-2">{book.quantity}</td>
+                                <td className="border text-center px-4 py-2">
+                                    <span className={book.quantity === 0 ? 'text-red-500 font-bold' : ''}>
+                                        {book.quantity === 0 ? 'Hết sách' : book.quantity}
+                                    </span>
+                                </td>
                                 <td className="border text-center px-4 py-2">
                                     <button
                                         className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2"
@@ -212,7 +273,7 @@ const BookManagementTable = () => {
                     ) : (
                         <tr>
                             <td colSpan="7" className="text-center py-4">
-                                Không có dữ liệu
+                                {searchTerm ? 'Không tìm thấy sách phù hợp' : 'Không có dữ liệu'}
                             </td>
                         </tr>
                     )}
@@ -220,11 +281,7 @@ const BookManagementTable = () => {
             </table>
 
             {isOpenModalAdd && (
-                <ModalAddBook 
-                    setIsOpenModalAdd={setIsOpenModalAdd} 
-                    handleAddBook={handleAddBook} 
-                    genres={genres}  
-                />
+                <ModalAddBook setIsOpenModalAdd={setIsOpenModalAdd} handleAddBook={handleAddBook} genres={genres} />
             )}
             {isOpenModalDelete && (
                 <ModalDeleteBook
