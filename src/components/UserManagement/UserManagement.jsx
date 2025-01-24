@@ -5,7 +5,8 @@ import ModalUser from '../modalUser/ModalUser';
 import ModalUserUpdate from '../modalUser/ModalUserUpdate';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
-
+import Pagination from '../Paginate/ReactPaginate';
+import ReactPaginate from 'react-paginate';
 function UserManagement() {
     const [listUser, setListUser] = useState([]);
     const [dataModal, setDataModal] = useState({});
@@ -14,10 +15,12 @@ function UserManagement() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [sortOrder, setSortOrder] = useState('none');
-
+    const [currentPage, setCurrentPage] = useState(1);
+    const [currentLimit, setCurrentLimit] = useState(5);
+    const [totalPage, setTotalPage] = useState(0);
     useEffect(() => {
         fetchAllUser();
-    }, []);
+    }, [currentPage]);
 
     useEffect(() => {
         filterUsers();
@@ -47,9 +50,12 @@ function UserManagement() {
 
     const fetchAllUser = async () => {
         try {
-            const response = await getAllUsers();
+            const response = await getAllUsers(currentPage, currentLimit);
             if (response && response.EC === 0) {
-                setListUser(response.DT);
+                setTotalPage(response.DT.totalPages);
+                setListUser(response.DT.users);
+                console.log('check user', listUser);
+                console.log(response);
             } else {
                 toast.error(response.EM);
             }
@@ -77,6 +83,10 @@ function UserManagement() {
     };
     const handleUpdateSuccess = () => {
         fetchAllUser();
+    };
+    const handlePageClick = async (event) => {
+        setCurrentPage(+event.selected + 1);
+        await fetchAllUser();
     };
 
     return (
@@ -136,6 +146,9 @@ function UserManagement() {
                         <tbody>
                             {filteredUsers && filteredUsers.length > 0 ? (
                                 filteredUsers.map((item, index) => {
+                                    const groupName = item?.Group?.name || 'Chưa có nhóm';
+                                    const borrowCount = item?.borrowedBooksCount || 0;
+
                                     return (
                                         <tr key={index} className="hover:bg-gray-100">
                                             <td className="px-4 py-2 text-center border border-gray-300">{item.id}</td>
@@ -146,15 +159,11 @@ function UserManagement() {
                                                 {item.username}
                                             </td>
                                             <td className="px-4 py-2 text-center border border-gray-300">
-                                                {item.Group.name}
+                                                {groupName}
                                             </td>
                                             <td className="w-46 py-2 text-center border border-gray-300">
-                                                <span
-                                                    className={item && +item.borrowedBooksCount > 0 ? 'font-bold' : ''}
-                                                >
-                                                    {item && +item.borrowedBooksCount > 0
-                                                        ? item.borrowedBooksCount + ' cuốn'
-                                                        : 'Chưa mượn lần nào'}
+                                                <span className={borrowCount > 0 ? 'font-bold' : ''}>
+                                                    {borrowCount > 0 ? `${borrowCount} cuốn` : 'Chưa mượn lần nào'}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-2 text-center border border-gray-300 text-white">
@@ -191,6 +200,30 @@ function UserManagement() {
                             )}
                         </tbody>
                     </table>
+                    {totalPage > 0 && (
+                        <footer>
+                            <ReactPaginate
+                                nextLabel="Sau >"
+                                onPageChange={handlePageClick}
+                                pageRangeDisplayed={3}
+                                marginPagesDisplayed={2}
+                                pageCount={totalPage}
+                                previousLabel="< Trước"
+                                pageClassName="page-item"
+                                pageLinkClassName="page-link"
+                                previousClassName="page-item"
+                                previousLinkClassName="page-link"
+                                nextClassName="page-item"
+                                nextLinkClassName="page-link"
+                                breakLabel="..."
+                                breakClassName="page-item"
+                                breakLinkClassName="page-link"
+                                containerClassName="pagination"
+                                activeClassName="active"
+                                renderOnZeroPageCount={null}
+                            />
+                        </footer>
+                    )}
                 </div>
             </div>
         </>

@@ -17,8 +17,8 @@ const loginUser = async (email, password) => {
     };
     return axios.post(URL_API, data);
 };
-const getAllUsers = async () => {
-    const URL_API = '/api/v1/users/read';
+const getAllUsers = async (page, limit) => {
+    const URL_API = `/api/v1/users/read?page=${page}&limit=${limit}`;
     return axios.get(URL_API);
 };
 const deleteUser = async (user) => {
