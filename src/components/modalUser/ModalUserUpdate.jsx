@@ -126,28 +126,28 @@ function ModalUserUpdate(props) {
 
     return (
         <div
-            className="fixed inset-0 flex justify-center bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
             onClick={() => props.setIsOpenModalUpdate(false)}
         >
-            {/* Form content */}
             <div
-                className="w-[500px] h-[320px] bg-white px-4 py-2 rounded shadow-lg relative top-[30%] modal-slide-down"
-                onClick={handleModalClick}
+                className="bg-white rounded-lg shadow-lg w-[500px] relative modal-slide-down"
+                onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-[#333] pb-2">
-                    <div className="text-center font-bold text-green-500">Update User</div>
-                    <div
-                        className="cursor-pointer text-red-500 text-xl"
+                <div className="flex items-center justify-between p-4 border-b border-gray-300">
+                    <h3 className="text-xl font-semibold text-green-500">Update User</h3>
+                    <button
                         onClick={() => props.setIsOpenModalUpdate(false)}
+                        className="text-red-500 hover:text-red-700"
                     >
-                        <FaRegWindowClose />
-                    </div>
+                        <FaRegWindowClose className="text-xl" />
+                    </button>
                 </div>
+
                 {/* Body */}
-                <div className="text-gray-800 py-5 flex-col justify-center items-center border-b border-[#898686] z-2">
-                    <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 font-bold">
+                <div className="p-4">
+                    <div className="mb-4">
+                        <label className="block font-bold mb-2">
                             Email <span className="text-red-600">(*)</span>
                         </label>
                         <input
@@ -155,16 +155,17 @@ function ModalUserUpdate(props) {
                             value={transmitUserData.email}
                             type="text"
                             placeholder="Email"
-                            className={`w-full h-10 pl-2 ${
-                                validInput.email ? 'border border-blue-500' : 'border border-red-500'
+                            className={`w-full px-3 py-2 border rounded ${
+                                validInput.email ? 'border-blue-500' : 'border-red-500'
                             } focus:outline-none`}
                             onChange={(e) => handleOnchageInput(e, 'email')}
                             onKeyDown={(e) => handleKeyDown(e, 0)}
                         />
                     </div>
-                    <div className="flex gap-3">
-                        <div className="flex flex-col w-[49%] gap-2 mt-3">
-                            <label className="flex items-center gap-2 font-bold">
+
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="block font-bold mb-2">
                                 Tên Sinh Viên <span className="text-red-600">(*)</span>
                             </label>
                             <input
@@ -172,22 +173,23 @@ function ModalUserUpdate(props) {
                                 value={transmitUserData.username}
                                 type="text"
                                 placeholder="UserName"
-                                className={`w-full h-10 pl-2 ${
-                                    validInput.username ? 'border border-blue-500' : 'border border-red-500'
+                                className={`w-full px-3 py-2 border rounded ${
+                                    validInput.username ? 'border-blue-500' : 'border-red-500'
                                 } focus:outline-none`}
                                 onChange={(e) => handleOnchageInput(e, 'username')}
                                 onKeyDown={(e) => handleKeyDown(e, 1)}
                             />
                         </div>
-                        <div className="flex flex-col w-[49%] gap-2 mt-3">
-                            <label className="flex items-center gap-2 font-bold">
+
+                        <div>
+                            <label className="block font-bold mb-2">
                                 Nhóm <span className="text-red-600">(*)</span>
                             </label>
                             <select
                                 ref={(el) => (inputRefs.current[2] = el)}
                                 value={transmitUserData.group_id}
-                                className={`w-full h-10 pl-2 ${
-                                    validInput.group_id ? 'border border-blue-500' : 'border border-red-500'
+                                className={`w-full px-3 py-2 border rounded ${
+                                    validInput.group_id ? 'border-blue-500' : 'border-red-500'
                                 } focus:outline-none`}
                                 onChange={(e) => handleOnchageInput(e, 'group_id')}
                                 onKeyDown={(e) => handleKeyDown(e, 2)}
@@ -200,34 +202,21 @@ function ModalUserUpdate(props) {
                             </select>
                         </div>
                     </div>
-                    {/* <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 font-bold">
-                            Trạng Thái <span className="text-red-600">(*)</span>
-                        </label>
-                        <select
-                            ref={(el) => (inputRefs.current[3] = el)}
-                            value={transmitUserData.status}
-                            className={`w-full h-10 pl-2 ${
-                                validInput.status ? 'border border-blue-500' : 'border border-red-500'
-                            } focus:outline-none`}
-                            onChange={(e) => handleOnchageInput(e, 'status')}
-                            onKeyDown={(e) => handleKeyDown(e, 3)}
-                        >
-                            <option value="Chờ trả">Chờ trả</option>
-                            <option value="Quá hạn">Quá hạn</option>
-                            <option value="Đã trả">Đã trả</option>
-                        </select>
-                    </div> */}
                 </div>
+
                 {/* Footer */}
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2 p-4 border-t border-gray-300">
                     <button
-                        className="bg-blue-700 text-white font-bold py-2 px-4 rounded mt-3 text-base"
-                        onClick={() => {
-                            handleUpdateUser();
-                        }}
+                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                        onClick={() => props.setIsOpenModalUpdate(false)}
                     >
-                        Confirm
+                        Hủy
+                    </button>
+                    <button
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        onClick={handleUpdateUser}
+                    >
+                        Xác nhận
                     </button>
                 </div>
             </div>
