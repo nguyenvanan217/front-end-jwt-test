@@ -1,53 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ReactPaginate from 'react-paginate';
 
-function Pagination({ items, itemsPerPage, onPageChange }) {
-    const [currentItems, setCurrentItems] = useState([]);
-    const [pageCount, setPageCount] = useState(0);
-    const [itemOffset, setItemOffset] = useState(0);
-
-    useEffect(() => {
-        const endOffset = itemOffset + itemsPerPage;
-        setCurrentItems(items.slice(itemOffset, endOffset));
-        setPageCount(Math.ceil(items.length / itemsPerPage));
-    }, [itemOffset, itemsPerPage, items]);
-
-    const handlePageClick = (event) => {
-        const newOffset = (event.selected * itemsPerPage) % items.length;
-        setItemOffset(newOffset);
-        onPageChange(items.slice(newOffset, newOffset + itemsPerPage));
-    };
-
+function Pagination({ pageCount, currentPage, onPageChange, customStyles }) {
     return (
-        <>
-            <div className="items">
-                {currentItems.map((item, index) => (
-                    <div key={index}>
-                        <h3>Item #{item}</h3>
-                    </div>
-                ))}
-            </div>
-            <ReactPaginate
-                nextLabel="next >"
-                onPageChange={handlePageClick}
-                pageRangeDisplayed={3}
-                marginPagesDisplayed={2}
-                pageCount={50}
-                previousLabel="< previous"
-                pageClassName="page-item"
-                pageLinkClassName="page-link"
-                previousClassName="page-item"
-                previousLinkClassName="page-link"
-                nextClassName="page-item"
-                nextLinkClassName="page-link"
-                breakLabel="..."
-                breakClassName="page-item"
-                breakLinkClassName="page-link"
-                containerClassName="pagination"
-                activeClassName="active"
-                renderOnZeroPageCount={null}
-            />
-        </>
+        <ReactPaginate
+            nextLabel="Sau >"
+            onPageChange={onPageChange}
+            pageRangeDisplayed={3}
+            marginPagesDisplayed={2}
+            pageCount={pageCount}
+            previousLabel="< Trước"
+            pageClassName={customStyles.pageItem}
+            pageLinkClassName={customStyles.pageLink}
+            previousClassName={`${customStyles.pageItem} ${currentPage === 1 ? customStyles.disabled : ''}`}
+            previousLinkClassName={customStyles.pageLink}
+            nextClassName={`${customStyles.pageItem} ${currentPage === pageCount ? customStyles.disabled : ''}`}
+            nextLinkClassName={customStyles.pageLink}
+            breakLabel="..."
+            breakClassName={`${customStyles.pageItem} ${customStyles.break}`}
+            breakLinkClassName={customStyles.pageLink}
+            containerClassName={customStyles.pagination}
+            activeClassName={customStyles.active}
+            renderOnZeroPageCount={null}
+            forcePage={currentPage - 1}
+        />
     );
 }
 

@@ -6,7 +6,6 @@ import ModalUserUpdate from '../modalUser/ModalUserUpdate';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
 import Pagination from '../Paginate/ReactPaginate';
-import ReactPaginate from 'react-paginate';
 import styles from './UserManagement.module.css';
 
 function UserManagement() {
@@ -18,8 +17,10 @@ function UserManagement() {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [sortOrder, setSortOrder] = useState('none');
     const [currentPage, setCurrentPage] = useState(1);
-    const [currentLimit, setCurrentLimit] = useState(5);
+    const [currentLimit, setCurrentLimit] = useState(8);
     const [totalPage, setTotalPage] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
 
     const useDebounce = (value, delay) => {
         const [debouncedValue, setDebouncedValue] = useState(value);
@@ -42,8 +43,18 @@ function UserManagement() {
     }, [currentPage]);
 
     useEffect(() => {
+        if (searchTerm) {
+            setIsLoading(true);
+            setHasSearched(false);
+        }
+    }, [searchTerm]);
+
+    useEffect(() => {
         if (debouncedSearchTerm !== undefined) {
-            fetchAllUser();
+            fetchAllUser().finally(() => {
+                setIsLoading(false);
+                setHasSearched(true);
+            });
         }
     }, [debouncedSearchTerm]);
 
@@ -223,7 +234,16 @@ function UserManagement() {
                                 ) : (
                                     <tr>
                                         <td colSpan="7" className="text-center py-4">
-                                            {searchTerm ? 'Không tìm thấy sinh viên' : 'Không có dữ liệu'}
+                                            {(searchTerm && !hasSearched) || isLoading ? (
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                                    <span>Đang tìm kiếm...</span>
+                                                </div>
+                                            ) : searchTerm && hasSearched ? (
+                                                'Không tìm thấy kết quả'
+                                            ) : (
+                                                'Không có dữ liệu'
+                                            )}
                                         </td>
                                     </tr>
                                 )}
@@ -231,28 +251,11 @@ function UserManagement() {
                         </table>
                         {totalPage > 0 && (
                             <footer>
-                                <ReactPaginate
-                                    nextLabel="Sau >"
-                                    onPageChange={handlePageClick}
-                                    pageRangeDisplayed={3}
-                                    marginPagesDisplayed={2}
+                                <Pagination
                                     pageCount={totalPage}
-                                    previousLabel="< Trước"
-                                    pageClassName={styles.pageItem}
-                                    pageLinkClassName={styles.pageLink}
-                                    previousClassName={`${styles.pageItem} ${currentPage === 1 ? styles.disabled : ''}`}
-                                    previousLinkClassName={styles.pageLink}
-                                    nextClassName={`${styles.pageItem} ${
-                                        currentPage === totalPage ? styles.disabled : ''
-                                    }`}
-                                    nextLinkClassName={styles.pageLink}
-                                    breakLabel="..."
-                                    breakClassName={`${styles.pageItem} ${styles.break}`}
-                                    breakLinkClassName={styles.pageLink}
-                                    containerClassName={styles.pagination}
-                                    activeClassName={styles.active}
-                                    renderOnZeroPageCount={null}
-                                    forcePage={currentPage - 1}
+                                    currentPage={currentPage}
+                                    onPageChange={handlePageClick}
+                                    customStyles={styles}
                                 />
                             </footer>
                         )}
