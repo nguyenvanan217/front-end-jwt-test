@@ -164,7 +164,7 @@ function BookBorrowingHistory() {
                             onChange={(e) => setStatusFilter(e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                         >
-                            <option value="all">Tất cả sách</option>
+                            <option value="all">Tất cả thông tin</option>
                             <option value="Đã trả">Đã trả</option>
                             <option value="Chờ trả">Chờ trả</option>
                             <option value="Quá hạn">Quá hạn</option>

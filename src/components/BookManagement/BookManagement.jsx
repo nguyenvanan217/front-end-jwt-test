@@ -9,9 +9,10 @@ import ModalViewDetailBook from './ModalViewDetailBook';
 import ModalAddGender from './ModalAddGender';
 import ModalDeletegenres from './ModalDeleteGenres';
 import { FaSearch } from 'react-icons/fa';
+import Pagination from '../Paginate/ReactPaginate';
+import styles from '../UserManagement/UserManagement.module.css';
 
 const BookManagementTable = () => {
-    const [books, setBooks] = useState([]);
     const [genres, setGenres] = useState([]);
     const [isOpenModalAdd, setIsOpenModalAdd] = useState(false);
     const [isOpenModalDelete, setIsOpenModalDelete] = useState(false);
@@ -25,6 +26,11 @@ const BookManagementTable = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder, setSortOrder] = useState('none');
     const [filteredBooks, setFilteredBooks] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPage, setTotalPage] = useState(0);
+    const [currentLimit] = useState(10);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
 
     useEffect(() => {
         fetchAllBook();
@@ -32,19 +38,37 @@ const BookManagementTable = () => {
     }, []);
 
     useEffect(() => {
-        filterAndSortBooks();
-    }, [books, searchTerm, sortOrder]);
+        if (searchTerm) {
+            setIsLoading(true);
+            setHasSearched(false);
+            const timer = setTimeout(() => {
+                fetchAllBook();
+                setHasSearched(true);
+            }, 1000);
+            return () => {
+                clearTimeout(timer);
+            };
+        } else {
+            setIsLoading(false);
+            fetchAllBook();
+        }
+    }, [searchTerm, currentPage]);
 
     const fetchAllBook = async () => {
         try {
-            const response = await getAllBook();
+            setIsLoading(true);
+            const response = await getAllBook(currentPage, currentLimit, searchTerm);
             if (response && response.EC === 0) {
-                setBooks(response.DT);
+                setTotalPage(response.DT.totalPages);
+                setFilteredBooks(response.DT.books || []);
             } else {
                 toast.error(response.EM);
             }
         } catch (error) {
             console.log(error);
+            toast.error('Có lỗi xảy ra khi tải dữ liệu');
+        } finally {
+            setIsLoading(false);
         }
     };
     const fetchAllGenres = async () => {
@@ -58,10 +82,7 @@ const BookManagementTable = () => {
 
     const handleAddBook = async (bookData) => {
         try {
-            console.log('Sending book data:', bookData);
             const response = await addBook(bookData);
-            console.log('Response:', response);
-
             if (response && response.EC === 0) {
                 toast.success(response.EM);
                 fetchAllBook();
@@ -136,29 +157,16 @@ const BookManagementTable = () => {
         setIsOpenModalViewDetail(true);
     };
 
-    const filterAndSortBooks = () => {
-        let filtered = [...books];
+    const handlePageClick = (event) => {
+        setCurrentPage(+event.selected + 1);
+    };
 
-        if (searchTerm.trim()) {
-            const searchLower = searchTerm.toLowerCase().trim();
-            filtered = filtered.filter(
-                (book) =>
-                    book.title.toLowerCase().includes(searchLower) || book.author.toLowerCase().includes(searchLower),
-            );
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+        if (currentPage !== 1) {
+            setCurrentPage(1);
         }
-
-        switch (sortOrder) {
-            case 'desc':
-                filtered.sort((a, b) => b.quantity - a.quantity);
-                break;
-            case 'asc':
-                filtered.sort((a, b) => a.quantity - b.quantity);
-                break;
-            default:
-                break;
-        }
-
-        setFilteredBooks(filtered);
     };
 
     return (
@@ -171,7 +179,7 @@ const BookManagementTable = () => {
                         placeholder="Tìm kiếm theo tên sách hoặc tác giả..."
                         className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={handleSearchChange}
                     />
                     <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 </div>
@@ -223,7 +231,16 @@ const BookManagementTable = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredBooks && filteredBooks.length > 0 ? (
+                    {isLoading ? (
+                        <tr>
+                            <td colSpan="7" className="text-center py-4">
+                                <div className="flex items-center justify-center gap-2">
+                                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                    <span>Đang tìm kiếm...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    ) : filteredBooks.length > 0 ? (
                         filteredBooks.map((book) => (
                             <tr key={book.id} className="text-center">
                                 <td className="border text-center px-4 py-2">{book.id}</td>
@@ -307,6 +324,17 @@ const BookManagementTable = () => {
                 <ModalAddGender setIsOpenModalAddGende={setIsOpenModalAddGende} handleAddGenre={handleAddGenre} />
             )}
             {isOpenModalDeleteGende && <ModalDeletegenres setIsOpenModalDeleteGenre={setIsOpenModalDeleteGende} />}
+
+            {totalPage > 0 && (
+                <footer className="mt-4">
+                    <Pagination
+                        pageCount={totalPage}
+                        currentPage={currentPage}
+                        onPageChange={handlePageClick}
+                        customStyles={styles}
+                    />
+                </footer>
+            )}
         </div>
     );
 };

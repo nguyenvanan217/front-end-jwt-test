@@ -1,8 +1,17 @@
 import axios from '../setup/axios';
 
-const getAllBook = async () => {
-    const URL_API = '/api/v1/books/read';
-    return axios.get(URL_API);
+const getAllBook = async (page, limit, searchTerm) => {
+    try {
+        let url = `/api/v1/books/read?page=${page}&limit=${limit}`;
+        if (searchTerm) {
+            url += `&search=${(searchTerm)}`;
+        }
+        const response = await axios.get(url);
+        return response;
+    } catch (error) {
+        console.error('Error in getAllBook:', error);
+        throw error;
+    }
 };
 
 const getAllGenres = async () => {
