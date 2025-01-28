@@ -55,8 +55,11 @@ const updateTransactionDateAndStatus = async (transactions) => {
     const URL_API = '/api/v1/transactions/update-date-and-status';
     return axios.put(URL_API, transactions);
 };
-const getAllInforUser = async () => {
-    const URL_API = '/api/v1/users/get-all-user-infor';
+const getAllInforUser = async (currentPage, currentLimit, searchTerm) => {
+    console.log('currentPage1', currentPage);
+    console.log('currentLimit1', currentLimit);
+    console.log('searchTerm1', searchTerm);
+    const URL_API = `/api/v1/users/get-all-user-infor?page=${currentPage}&limit=${currentLimit}&search=${searchTerm}`;
     return axios.get(URL_API);
 };
 export {
