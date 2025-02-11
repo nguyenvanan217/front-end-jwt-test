@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
 import Pagination from '../Paginate/ReactPaginate.jsx';
 import styles from '../UserManagement/UserManagement.module.css';
+
 function BookBorrowingHistory() {
     const [borrowingData, setBorrowingData] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -18,10 +19,6 @@ function BookBorrowingHistory() {
     const [hasSearched, setHasSearched] = useState(false);
 
     useEffect(() => {
-        fetchBorrowingData();
-    }, [currentPage, currentLimit, searchTerm]);
-    // Thêm debounce để tránh gọi API quá nhiều lần
-    useEffect(() => {
         const timeoutId = setTimeout(() => {
             if (searchTerm.trim() !== '') {
                 setCurrentPage(1); // Reset về trang 1 khi search
@@ -31,14 +28,27 @@ function BookBorrowingHistory() {
 
         return () => clearTimeout(timeoutId);
     }, [searchTerm, currentPage, currentLimit]);
+
     const fetchBorrowingData = async () => {
         try {
-            setIsLoading(true);
-            const response = await getAllInforUser(currentPage, currentLimit, searchTerm);
+            // Chỉ set loading khi tìm kiếm
+            if (searchTerm.trim()) {
+                setIsLoading(true);
+            }
+
+            let response;
+            if (searchTerm.trim()) {
+                response = await getAllInforUser(null, null, searchTerm);
+            } else {
+                response = await getAllInforUser(currentPage, currentLimit, '');
+            }
+
             if (response && response.EC === 0) {
-                console.log('response', response);
-                if (response.DT && response.DT.users) {
-                    const validUsers = response.DT.users.filter(
+                if (response.DT && (response.DT.users || response.DT)) {
+                    // Xử lý dữ liệu trả về tùy theo có tìm kiếm hay không
+                    const users = searchTerm.trim() ? response.DT : response.DT.users;
+
+                    const validUsers = users.filter(
                         (user) =>
                             user?.Transactions && Object.keys(user.Transactions).length > 0 && user.Transactions?.Book,
                     );
@@ -56,7 +66,8 @@ function BookBorrowingHistory() {
 
                     setBorrowingData(sortedUsers);
                     setFilteredData(sortedUsers);
-                    setTotalPage(response.DT.totalPages);
+                    // Chỉ set totalPage khi không có tìm kiếm
+                    setTotalPage(searchTerm.trim() ? 0 : response.DT.totalPages);
                 } else {
                     setBorrowingData([]);
                     setFilteredData([]);
@@ -75,7 +86,10 @@ function BookBorrowingHistory() {
             setFilteredData([]);
             setTotalPage(0);
         } finally {
-            setIsLoading(false);
+            // Chỉ tắt loading nếu đang trong trạng thái tìm kiếm
+            if (searchTerm.trim()) {
+                setIsLoading(false);
+            }
             setHasSearched(true);
         }
     };
@@ -135,6 +149,7 @@ function BookBorrowingHistory() {
     const handleStatusFilterChange = (e) => {
         const newStatus = e.target.value;
         setStatusFilter(newStatus);
+        setCurrentPage(1); // Reset về trang 1 khi thay đổi filter
         const filteredByStatus =
             newStatus === 'all'
                 ? borrowingData
@@ -309,7 +324,7 @@ function BookBorrowingHistory() {
                         </tbody>
                     </table>
 
-                    {!isLoading && totalPage > 0 && (
+                    {!searchTerm && !isLoading && totalPage > 0 && (
                         <footer className="mt-4">
                             <Pagination
                                 pageCount={totalPage}

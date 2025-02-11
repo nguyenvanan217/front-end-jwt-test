@@ -52,7 +52,7 @@ const BookManagementTable = () => {
             setIsLoading(false);
             fetchAllBook();
         }
-    }, [searchTerm, currentPage]);
+    }, [searchTerm, currentPage, sortOrder]);
 
     const fetchAllBook = async () => {
         try {
@@ -60,7 +60,20 @@ const BookManagementTable = () => {
             const response = await getAllBook(currentPage, currentLimit, searchTerm);
             if (response && response.EC === 0) {
                 setTotalPage(response.DT.totalPages);
-                setFilteredBooks(response.DT.books || []);
+                let sortedBooks = [...response.DT.books] || [];
+
+                // Sắp xếp sách theo số lượng
+                if (sortOrder !== 'none') {
+                    sortedBooks.sort((a, b) => {
+                        if (sortOrder === 'asc') {
+                            return a.quantity - b.quantity;
+                        } else {
+                            return b.quantity - a.quantity;
+                        }
+                    });
+                }
+
+                setFilteredBooks(sortedBooks);
             } else {
                 toast.error(response.EM);
             }
