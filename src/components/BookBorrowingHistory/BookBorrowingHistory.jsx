@@ -17,25 +17,27 @@ function BookBorrowingHistory() {
     const [totalPage, setTotalPage] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            if (searchTerm.trim() !== '') {
-                setCurrentPage(1); // Reset về trang 1 khi search
-            }
-            fetchBorrowingData();
-        }, 500);
+        if (searchTerm.trim() !== '') {
+            setIsSearching(true);
+            const timeoutId = setTimeout(() => {
+                setCurrentPage(1);
+                fetchBorrowingData();
+            }, 500);
 
-        return () => clearTimeout(timeoutId);
+            return () => {
+                clearTimeout(timeoutId);
+            };
+        } else {
+            setIsSearching(false);
+            fetchBorrowingData();
+        }
     }, [searchTerm, currentPage, currentLimit]);
 
     const fetchBorrowingData = async () => {
         try {
-            // Chỉ set loading khi tìm kiếm
-            if (searchTerm.trim()) {
-                setIsLoading(true);
-            }
-
             let response;
             if (searchTerm.trim()) {
                 response = await getAllInforUser(null, null, searchTerm);
@@ -45,7 +47,6 @@ function BookBorrowingHistory() {
 
             if (response && response.EC === 0) {
                 if (response.DT && (response.DT.users || response.DT)) {
-                    // Xử lý dữ liệu trả về tùy theo có tìm kiếm hay không
                     const users = searchTerm.trim() ? response.DT : response.DT.users;
 
                     const validUsers = users.filter(
@@ -66,7 +67,6 @@ function BookBorrowingHistory() {
 
                     setBorrowingData(sortedUsers);
                     setFilteredData(sortedUsers);
-                    // Chỉ set totalPage khi không có tìm kiếm
                     setTotalPage(searchTerm.trim() ? 0 : response.DT.totalPages);
                 } else {
                     setBorrowingData([]);
@@ -86,10 +86,7 @@ function BookBorrowingHistory() {
             setFilteredData([]);
             setTotalPage(0);
         } finally {
-            // Chỉ tắt loading nếu đang trong trạng thái tìm kiếm
-            if (searchTerm.trim()) {
-                setIsLoading(false);
-            }
+            setIsSearching(false);
             setHasSearched(true);
         }
     };
@@ -149,7 +146,7 @@ function BookBorrowingHistory() {
     const handleStatusFilterChange = (e) => {
         const newStatus = e.target.value;
         setStatusFilter(newStatus);
-        setCurrentPage(1); // Reset về trang 1 khi thay đổi filter
+        setCurrentPage(1);
         const filteredByStatus =
             newStatus === 'all'
                 ? borrowingData
@@ -207,12 +204,12 @@ function BookBorrowingHistory() {
                             </tr>
                         </thead>
                         <tbody>
-                            {isLoading ? (
+                            {isSearching ? (
                                 <tr>
                                     <td colSpan="10" className="text-center py-4">
                                         <div className="flex items-center justify-center gap-2">
                                             <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                                            <span>Đang tải dữ liệu...</span>
+                                            <span>Đang tìm kiếm...</span>
                                         </div>
                                     </td>
                                 </tr>
