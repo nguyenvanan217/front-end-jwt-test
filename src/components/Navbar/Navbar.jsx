@@ -4,11 +4,13 @@ import { FaCaretDown } from 'react-icons/fa';
 import { HiMenu } from 'react-icons/hi';
 import './Navbar.css';
 import { Link, NavLink } from 'react-router-dom';
-
+import { logoutUser } from '../../services/userService';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 function Navbar() {
     const [dropdown, setDropdown] = useState(false);
     const [mobileMenu, setMobileMenu] = useState(false);
-
+    const navigate = useNavigate();
     const handleSetting = () => {
         setDropdown(!dropdown);
     };
@@ -17,9 +19,16 @@ function Navbar() {
         setMobileMenu(!mobileMenu);
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         setDropdown(!dropdown);
         localStorage.removeItem('access_token');
+        let response = await logoutUser();
+        if (response && +response.EC === 0) {
+            toast.success(response.EM);
+            navigate('/');
+        } else {
+            toast.error(response.EM);
+        }
     };
 
     return (

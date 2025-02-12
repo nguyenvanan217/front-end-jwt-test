@@ -8,17 +8,25 @@ import UserManagement from '../components/UserManagement/UserManagement';
 import BookList from '../components/BookList/BookList';
 import BookBorrowingHistory from '../components/BookBorrowingHistory/BookBorrowingHistory';
 import BookLoanReturnDetails from '../components/BookLoanReturnDetails/BookLoanReturnDetails';
+import PrivateRoutes from './PrivateRoutes';
 
 function AppRoutes() {
     return (
         <Routes>
-            <Route path="/usermanagerment" element={<UserManagement />} />
-            <Route path="/bookmanagerment" element={<BookManagement />} />
-            <Route path="/booklist" element={<BookList />} />
-            <Route path="/bookborrowinghistory" element={<BookBorrowingHistory />} />
-            <Route path="/bookloanreturndetails/:id" element={<BookLoanReturnDetails />} />
+            {/* Public routes */}
             <Route path="/" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* Protected routes */}
+            <Route element={<PrivateRoutes />}>
+                <Route path="/usermanagerment" element={<UserManagement />} />
+                <Route path="/bookmanagerment" element={<BookManagement />} />
+                <Route path="/booklist" element={<BookList />} />
+                <Route path="/bookborrowinghistory" element={<BookBorrowingHistory />} />
+                <Route path="/bookloanreturndetails/:id" element={<BookLoanReturnDetails />} />
+            </Route>
+
+            {/* 404 route */}
             <Route
                 path="*"
                 element={

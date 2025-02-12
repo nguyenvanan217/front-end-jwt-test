@@ -62,6 +62,10 @@ const getAllInforUser = async (currentPage, currentLimit, searchTerm) => {
     const URL_API = `/api/v1/users/get-all-user-infor?page=${currentPage}&limit=${currentLimit}&search=${searchTerm}`;
     return axios.get(URL_API);
 };
+const logoutUser = async () => {
+    const URL_API = '/api/v1/logout';
+    return axios.post(URL_API);
+};
 export {
     registerNewUser,
     loginUser,
@@ -75,4 +79,5 @@ export {
     markViolationAsResolved,
     updateTransactionDateAndStatus,
     getAllInforUser,
+    logoutUser
 };
