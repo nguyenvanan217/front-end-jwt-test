@@ -65,7 +65,6 @@ function Login() {
             if (response && +response.EC === 0) {
                 // console.log('response', response.DT.access_token);
                 localStorage.setItem('access_token', response.DT.access_token);
-                
                 toast.success(response.EM);
                 navigate('/usermanagerment');
             } else {
