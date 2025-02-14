@@ -73,7 +73,7 @@ function Navbar() {
                             {dropdown && (
                                 <div className="drop-down">
                                     <Link to="/" onClick={handleLogout} className="text-red-500">
-                                        Log Out!
+                                        Đăng xuất!
                                     </Link>
                                 </div>
                             )}
@@ -111,7 +111,7 @@ function Navbar() {
                     <div className="pt-4 border-t border-slate-700 mb-2">
                         <div className="text-white mb-2">Welcome: Nguyễn An</div>
                         <Link to="/" onClick={handleLogout} className="text-red-500 block">
-                            Log Out!
+                            Đăng xuất
                         </Link>
                     </div>
                 </div>
