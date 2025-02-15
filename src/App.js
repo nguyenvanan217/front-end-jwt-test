@@ -5,7 +5,32 @@ import 'react-toastify/dist/ReactToastify.css';
 import AppRoutes from './routes/AppRoutes';
 import { useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
+import AuthContext from './components/Context/auth.context';
+import { useContext, useEffect } from 'react';
+import { getAccount } from './services/userService';
 function App() {
+    const { setAuth } = useContext(AuthContext);
+
+    const fetchAccount = async () => {
+        let response = await getAccount();
+        if (response && +response.EC === 0) {
+            setAuth({
+                isAuthenticated: true,
+                user: {
+                    email: response.DT.email,
+                    name: response.DT.username,
+                    groupWidthRoles: response.DT.groupWithRoles,
+                },
+            });
+        }
+    };
+
+    useEffect(() => {
+        // if (localStorage.getItem('access_token')) {
+        fetchAccount();
+        // }
+    }, []);
+
     const location = useLocation();
     const navbarRoutes = [
         '/usermanagerment',

@@ -157,7 +157,7 @@ const BookManagementTable = () => {
             } else if (response && +response.EC === 1) {
                 toast.warning(response.EM);
             } else {
-                toast.error(response.EM || 'Thêm thể loại thất bại');
+                toast.error(response.EM);
             }
         } catch (error) {
             console.error('Error:', error);

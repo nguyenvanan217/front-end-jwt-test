@@ -1,11 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import imglogouniver from '../../assets/img/logo university.png';
 import { toast } from 'react-toastify';
 // import axios from '../../setup/axios';
 import { Link } from 'react-router-dom';
 import { loginUser, registerNewUser } from '../../services/userService';
 import { useNavigate, NavLink } from 'react-router-dom';
+import AuthContext from '../Context/auth.context';
 function Login() {
+    const {setAuth} = useContext(AuthContext);
     let navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -66,6 +68,14 @@ function Login() {
                 // console.log('response', response.DT.access_token);
                 localStorage.setItem('access_token', response.DT.access_token);
                 toast.success(response.EM);
+                setAuth({
+                    isAuthenticated: true,
+                    user: {
+                        email: response?.DT?.email ?? '',
+                        name: response?.DT?.username ?? '',
+                        groupWidthRoles: response?.DT?.groupWithRole ?? '', 
+                    },
+                });
                 navigate('/usermanagerment');
             } else {
                 toast.error(response.EM);

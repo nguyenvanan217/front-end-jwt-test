@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { getAllUsers, deleteUser } from '../../services/userService';
 import ModalUser from '../modalUser/ModalUser';
@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
 import Pagination from '../Paginate/ReactPaginate';
 import styles from './UserManagement.module.css';
-
+import AuthContext from '../Context/auth.context';
 function UserManagement() {
     const [listUser, setListUser] = useState([]);
     const [dataModal, setDataModal] = useState({});
@@ -22,6 +22,9 @@ function UserManagement() {
     const [isLoading, setIsLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
 
+
+    const { auth } = useContext(AuthContext);
+    console.log(">>>>>>>>>>check auth", auth);
     const useDebounce = (value, delay) => {
         const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -35,7 +38,6 @@ function UserManagement() {
 
         return debouncedValue;
     };
-
     const debouncedSearchTerm = useDebounce(searchTerm, 1000);
 
     useEffect(() => {

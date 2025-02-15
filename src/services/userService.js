@@ -66,6 +66,10 @@ const logoutUser = async () => {
     const URL_API = '/api/v1/logout';
     return axios.post(URL_API);
 };
+const getAccount = async () => {
+    const URL_API = '/api/v1/account';
+    return axios.get(URL_API);
+};
 export {
     registerNewUser,
     loginUser,
@@ -79,5 +83,6 @@ export {
     markViolationAsResolved,
     updateTransactionDateAndStatus,
     getAllInforUser,
-    logoutUser
+    logoutUser,
+    getAccount
 };

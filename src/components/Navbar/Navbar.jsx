@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import imglogo from '../../assets/img/logo192.png';
 import { FaCaretDown } from 'react-icons/fa';
 import { HiMenu } from 'react-icons/hi';
@@ -7,7 +7,9 @@ import { Link, NavLink } from 'react-router-dom';
 import { logoutUser } from '../../services/userService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import AuthContext from '../Context/auth.context';
 function Navbar() {
+    const { auth } = useContext(AuthContext);
     const [dropdown, setDropdown] = useState(false);
     const [mobileMenu, setMobileMenu] = useState(false);
     const navigate = useNavigate();
@@ -62,7 +64,7 @@ function Navbar() {
 
                     {/* User Section */}
                     <div className="hidden md:flex items-center gap-4">
-                        <div className="text-white">Welcome: Nguyễn An</div>
+                        <div className="text-white">Welcome: {auth.user.name}</div>
                         <div className="relative">
                             <button
                                 className="text-white flex items-center gap-1 hover:text-[#61DAFB]"

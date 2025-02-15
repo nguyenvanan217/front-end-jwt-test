@@ -98,7 +98,7 @@ function BookBorrowingHistory() {
                 toast.success('Xác nhận trả sách thành công');
                 fetchBorrowingData();
             } else {
-                toast.error(response.EM || 'Có lỗi xảy ra');
+                toast.error(response.EM);
             }
         } catch (error) {
             console.error('Lỗi khi xác nhận:', error);
