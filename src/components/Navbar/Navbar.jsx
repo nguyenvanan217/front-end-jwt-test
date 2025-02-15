@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../Context/auth.context';
 function Navbar() {
-    const { auth } = useContext(AuthContext);
+    const { auth, setAuth } = useContext(AuthContext);
     const [dropdown, setDropdown] = useState(false);
     const [mobileMenu, setMobileMenu] = useState(false);
     const navigate = useNavigate();
@@ -24,6 +24,16 @@ function Navbar() {
     const handleLogout = async () => {
         setDropdown(!dropdown);
         localStorage.removeItem('access_token');
+        setAuth({
+            isAuthenticated: false,
+            isLoading: false,
+            user: {
+                email: '',
+                name: '',
+                groupWidthRoles: null,
+            },
+        });
+
         let response = await logoutUser();
         if (response && +response.EC === 0) {
             toast.success(response.EM);

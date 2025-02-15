@@ -232,7 +232,7 @@ function BookList() {
 
                 {!isLoading && filteredBooks.length === 0 && (
                     <div className="text-center py-8 text-gray-500">
-                        {searchTerm ? 'Không tìm thấy sách phù hợp' : 'Không có sách nào trong thư viện'}
+                        {searchTerm ? 'Không tìm thấy sách phù hợp' : 'Không có dữ liệu'}
                     </div>
                 )}
             </div>

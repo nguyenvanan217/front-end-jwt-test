@@ -1,18 +1,15 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
-// import { toast } from 'react-toastify';
-// Set config defaults when creating the instance
+
 const instance = axios.create({
     baseURL: 'http://localhost:6969',
 });
-instance.defaults.withCredentials = true;
-// // Alter defaults after instance has been created
 
-// Biến để theo dõi xem đã hiển thị toast chưa
+instance.defaults.withCredentials = true;
+
 let isShowingUnauthorizedToast = false;
 let isShowingForbiddenToast = false;
 
-// Cập nhật token trong header mỗi khi gửi request
 instance.interceptors.request.use(
     function (config) {
         const token = localStorage.getItem('access_token');
@@ -26,11 +23,8 @@ instance.interceptors.request.use(
     },
 );
 
-// Add a response interceptor
 instance.interceptors.response.use(
     function (response) {
-        // Any status code that lie within the range of 2xx cause this function to trigger
-        // Do something with response data
         return response.data;
     },
     function (error) {
@@ -44,13 +38,16 @@ instance.interceptors.response.use(
                     !isShowingUnauthorizedToast
                 ) {
                     isShowingUnauthorizedToast = true;
+                    localStorage.removeItem('access_token');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 3000);
                     toast.error('Session expired. Please log in again!', {
                         onClose: () => {
                             isShowingUnauthorizedToast = false;
                         },
                     });
                 }
-                // Trả về một Promise đã được resolve để ngăn lỗi xuất hiện trong console
                 return Promise.resolve({ data: null, status: 401 });
             }
 
@@ -80,7 +77,7 @@ instance.interceptors.response.use(
             case 409: {
                 toast.error('Data conflict!');
                 return Promise.resolve({ data: null, status: 409 });
-            }   
+            }
 
             case 422: {
                 toast.error('Invalid data!');
@@ -94,4 +91,5 @@ instance.interceptors.response.use(
         }
     },
 );
+
 export default instance;

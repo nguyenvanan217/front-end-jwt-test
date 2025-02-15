@@ -12,7 +12,7 @@
 
 /* Tùy chỉnh phần thanh cuộn */
 ::-webkit-scrollbar-thumb {
-    background-color: #4caf50; /* Màu sắc của thanh cuộn */
+    background-color: #a0b4ea; /* Màu sắc của thanh cuộn */
     border-radius: 10px; /* Bo tròn góc của thanh cuộn */
     border: 3px solid #f1f1f1; /* Màu viền xung quanh thanh cuộn */
 }
@@ -30,7 +30,7 @@
 
 /* Tùy chỉnh khi người dùng hover trên thanh cuộn */
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #45a049; /* Màu sắc thay đổi khi hover */
+    background-color: #1d4ed8; /* Màu sắc thay đổi khi hover */
 }
 
 /* Tùy chỉnh khi người dùng hover trên thanh cuộn ngang */
