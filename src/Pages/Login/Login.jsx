@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { loginUser, registerNewUser } from '../../services/userService';
 import { useNavigate, NavLink } from 'react-router-dom';
-import AuthContext from '../Context/auth.context';
+import AuthContext from '../../components/Context/auth.context';
 function Login() {
     const {setAuth} = useContext(AuthContext);
     let navigate = useNavigate();

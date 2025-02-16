@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getAllInforUser, markViolationAsResolved } from '../../services/userService';
+import { getAllInforUser, markViolationAsResolved } from '../../services/userService.js';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
-import Pagination from '../Paginate/ReactPaginate.jsx';
+import Pagination from '../../components/Paginate/ReactPaginate.jsx';
 import styles from '../UserManagement/UserManagement.module.css';
 
 function BookBorrowingHistory() {

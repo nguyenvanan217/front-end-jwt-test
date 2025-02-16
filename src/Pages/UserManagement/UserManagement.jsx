@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { getAllUsers, deleteUser } from '../../services/userService';
-import ModalUser from '../modalUser/ModalUser';
-import ModalUserUpdate from '../modalUser/ModalUserUpdate';
+import ModalUser from '../../components/modalUser/ModalUser';
+import ModalUserUpdate from '../../components/modalUser/ModalUserUpdate';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
-import Pagination from '../Paginate/ReactPaginate';
+import Pagination from '../../components/Paginate/ReactPaginate';
 import styles from './UserManagement.module.css';
-import AuthContext from '../Context/auth.context';
+import AuthContext from '../../components/Context/auth.context';
 function UserManagement() {
     const [listUser, setListUser] = useState([]);
     const [dataModal, setDataModal] = useState({});

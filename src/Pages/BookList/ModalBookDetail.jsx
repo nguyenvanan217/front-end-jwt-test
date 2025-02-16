@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaRegWindowClose } from 'react-icons/fa';
-import '../modalUser/Modal.css';
+import '../../components/modalUser/Modal.css';
 import { getAllGenres } from '../../services/bookManagerService';
 
 const ModalBookDetail = ({ isOpen, onClose, book }) => {

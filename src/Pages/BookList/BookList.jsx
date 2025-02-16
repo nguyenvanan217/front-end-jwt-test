@@ -3,7 +3,7 @@ import { getAllBook, getAllGenres } from '../../services/bookManagerService';
 import { toast } from 'react-toastify';
 import ModalBookDetail from './ModalBookDetail';
 import ModalBorrowBooks from './ModalBorrowBooks';
-import Pagination from '../Paginate/ReactPaginate';
+import Pagination from '../../components/Paginate/ReactPaginate';
 import styles from '../UserManagement/UserManagement.module.css';
 function BookList() {
     const [books, setBooks] = useState([]);

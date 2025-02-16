@@ -1,13 +1,13 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-import Login from '../components/Login/Login';
-import Register from '../components/Register/Register';
-import BookManagement from '../components/BookManagement/BookManagement';
-import UserManagement from '../components/UserManagement/UserManagement';
-import BookList from '../components/BookList/BookList';
-import BookBorrowingHistory from '../components/BookBorrowingHistory/BookBorrowingHistory';
-import BookLoanReturnDetails from '../components/BookLoanReturnDetails/BookLoanReturnDetails';
+import Login from '../Pages/Login/Login';
+import Register from '../Pages/Register/Register';
+import BookManagement from '../Pages/BookManagement/BookManagement';
+import UserManagement from '../Pages/UserManagement/UserManagement';
+import BookList from '../Pages/BookList/BookList';
+import BookBorrowingHistory from '../Pages/BookBorrowingHistory/BookBorrowingHistory';
+import BookLoanReturnDetails from '../Pages/BookLoanReturnDetails/BookLoanReturnDetails';
 import PrivateRoutes from './PrivateRoutes';
 
 function AppRoutes() {

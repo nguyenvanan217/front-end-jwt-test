@@ -9,7 +9,7 @@ import ModalViewDetailBook from './ModalViewDetailBook';
 import ModalAddGender from './ModalAddGender';
 import ModalDeletegenres from './ModalDeleteGenres';
 import { FaSearch } from 'react-icons/fa';
-import Pagination from '../Paginate/ReactPaginate';
+import Pagination from '../../components/Paginate/ReactPaginate';
 import styles from '../UserManagement/UserManagement.module.css';
 
 const BookManagementTable = () => {
