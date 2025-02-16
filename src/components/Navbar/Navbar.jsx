@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import imglogo from '../../assets/img/logo192.png';
 import { FaCaretDown } from 'react-icons/fa';
 import { HiMenu } from 'react-icons/hi';
@@ -8,11 +8,18 @@ import { logoutUser } from '../../services/userService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../Context/auth.context';
+
 function Navbar() {
     const { auth, setAuth } = useContext(AuthContext);
     const [dropdown, setDropdown] = useState(false);
     const [mobileMenu, setMobileMenu] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        setMobileMenu(false);
+        setDropdown(false);
+    }, [window.location.pathname]);
+
     const handleSetting = () => {
         setDropdown(!dropdown);
     };
@@ -22,7 +29,8 @@ function Navbar() {
     };
 
     const handleLogout = async () => {
-        setDropdown(!dropdown);
+        setDropdown(false);
+        setMobileMenu(false);
         localStorage.removeItem('access_token');
         setAuth({
             isAuthenticated: false,
@@ -43,6 +51,10 @@ function Navbar() {
         }
     };
 
+    const handleNavLinkClick = () => {
+        setMobileMenu(false);
+    };
+
     return (
         <nav className="bg-slate-950 border-b border-slate-700">
             {/* Desktop Navigation */}
@@ -58,17 +70,20 @@ function Navbar() {
 
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-5">
-                        <NavLink to="/usermanagerment" className="nav-link">
+                        <NavLink to="/usermanagerment" className="nav-link" onClick={handleNavLinkClick}>
                             Quản Lý Người Dùng
                         </NavLink>
-                        <NavLink to="/bookmanagerment" className="nav-link">
+                        <NavLink to="/bookmanagerment" className="nav-link" onClick={handleNavLinkClick}>
                             Quản Lý Sách
                         </NavLink>
-                        <NavLink to="/booklist" className="nav-link">
+                        <NavLink to="/booklist" className="nav-link" onClick={handleNavLinkClick}>
                             Sách Thư Viện
                         </NavLink>
-                        <NavLink to="/bookborrowinghistory" className="nav-link">
+                        <NavLink to="/bookborrowinghistory" className="nav-link" onClick={handleNavLinkClick}>
                             Quản Lý Mượn Sách
+                        </NavLink>
+                        <NavLink to="/rolemanagerment" className="nav-link" onClick={handleNavLinkClick}>
+                            Quản Lý Quyền
                         </NavLink>
                     </div>
 
@@ -104,24 +119,23 @@ function Navbar() {
             {/* Mobile Navigation */}
             <div className={`md:hidden bg-slate-900 mobile-menu ${mobileMenu ? 'open' : ''}`}>
                 <div className="px-4 space-y-3 py-2">
-                    <NavLink to="/usermanagerment" className="mobile-nav-link">
+                    <NavLink to="/usermanagerment" className="mobile-nav-link" onClick={handleNavLinkClick}>
                         Quản Lý Người Dùng
                     </NavLink>
-                    <NavLink to="/bookmanagerment" className="mobile-nav-link">
+                    <NavLink to="/bookmanagerment" className="mobile-nav-link" onClick={handleNavLinkClick}>
                         Quản Lý Sách
                     </NavLink>
-                    <NavLink to="/booklist" className="mobile-nav-link">
+                    <NavLink to="/booklist" className="mobile-nav-link" onClick={handleNavLinkClick}>
                         Sách Thư Viện
                     </NavLink>
-                    <NavLink to="/violationmanagerment" className="mobile-nav-link">
-                        Quản Lý Phạt Vi Phạm
-                    </NavLink>
-                    <NavLink to="/bookborrowinghistory" className="mobile-nav-link">
+                    <NavLink to="/bookborrowinghistory" className="mobile-nav-link" onClick={handleNavLinkClick}>
                         Quản Lý Mượn Sách
                     </NavLink>
-
+                    <NavLink to="/rolemanagerment" className="mobile-nav-link" onClick={handleNavLinkClick}>
+                        Quản Lý Quyền
+                    </NavLink>
                     <div className="pt-4 border-t border-slate-700 mb-2">
-                        <div className="text-white mb-2">Welcome: Nguyễn An</div>
+                        <div className="text-white mb-2">Welcome: {auth.user.name}</div>
                         <Link to="/" onClick={handleLogout} className="text-red-500 block">
                             Đăng xuất
                         </Link>

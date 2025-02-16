@@ -9,6 +9,7 @@ import BookList from '../Pages/BookList/BookList';
 import BookBorrowingHistory from '../Pages/BookBorrowingHistory/BookBorrowingHistory';
 import BookLoanReturnDetails from '../Pages/BookLoanReturnDetails/BookLoanReturnDetails';
 import PrivateRoutes from './PrivateRoutes';
+import RolesManagerment from '../Pages/Roles/RolesManagerment';
 
 function AppRoutes() {
     return (
@@ -24,6 +25,7 @@ function AppRoutes() {
                 <Route path="/booklist" element={<BookList />} />
                 <Route path="/bookborrowinghistory" element={<BookBorrowingHistory />} />
                 <Route path="/bookloanreturndetails/:id" element={<BookLoanReturnDetails />} />
+                <Route path="/rolemanagerment" element={<RolesManagerment />} />
             </Route>
 
             {/* 404 route */}
