@@ -20,7 +20,7 @@ function ModalViewDetailBook({ setIsOpenModalViewDetail, bookViewDetail }) {
                 </div>
 
                 {/* Cover Image with larger size */}
-                <div className="mt-4 h-[300px] flex justify-center items-center border border-blue-500 rounded-md bg-gray-50">
+                <div className="mt-4 h-[300px] flex justify-center items-center bg-gray-50">
                     <img 
                         src={bookViewDetail?.cover_image} 
                         alt={bookViewDetail?.title} 

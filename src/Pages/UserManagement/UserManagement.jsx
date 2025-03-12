@@ -143,7 +143,7 @@ function UserManagement() {
             )}
             <div className={styles.container}>
                 <div className="w-[97%] mx-auto mt-4">
-                    <div className="text-3xl font-bold mb-6 text-center">Quản lý tài khoản sinh viên:</div>
+                    <div className="text-3xl font-bold mb-6 text-center">Quản Lý Tài Khoản Sinh Viên:</div>
                     <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                         <div className="relative w-full md:w-[96%]">
                             <input

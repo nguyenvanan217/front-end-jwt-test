@@ -183,7 +183,7 @@ const BookManagementTable = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 my-6">
+        <div className="container mx-auto px-4 mt-4">
             <h1 className="text-3xl font-bold mb-6 text-center">Quản Lý Sách Trong Thư Viện</h1>
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div className="relative w-full md:w-[70%]">

@@ -128,7 +128,7 @@ function BookList() {
     };
 
     return (
-        <div className="w-[95%] md:w-[90%] mx-auto p-4">
+        <div className="w-[95%] md:w-[90%] mx-auto mt-4 mb-4">
             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-center my-4">
                 Tủ Sách Thư Viện Đại Học Khoa Học Huế
             </h1>
