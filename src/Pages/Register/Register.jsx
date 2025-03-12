@@ -107,7 +107,7 @@ function Register() {
                         <input
                             type="email"
                             value={email}
-                            placeholder="Nhập vào địa chỉ Email"
+                            placeholder="Nhập vào địa chỉ Email sinh viên"
                             className={`w-full px-4 py-2 border rounded-md ${
                                 valueInput.email ? 'border-blue-500' : 'border-red-500'
                             } focus:outline-none`}

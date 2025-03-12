@@ -228,7 +228,7 @@ const BookManagementTable = () => {
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
                 >
                     <IoMdAdd />
-                    Xóa thể loại sách
+                    Xem thể loại sách
                 </button>
             </div>
             <table className="table-auto w-full border-collapse border border-gray-300">

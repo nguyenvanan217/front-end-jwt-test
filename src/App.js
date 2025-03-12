@@ -1,18 +1,18 @@
 import './index.css';
 // import Navbar from "./components/Navbar/Navbar";
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AppRoutes from './routes/AppRoutes';
-import { useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
 import AuthContext from './components/Context/auth.context';
 import { useContext, useEffect } from 'react';
 import { getAccount } from './services/userService';
 import LoadingPage from './components/Loading/LoadingPage';
-
+import { useNavigate } from 'react-router-dom';
 function App() {
     const { auth, setAuth } = useContext(AuthContext);
-
+    const navigate = useNavigate();
     const fetchAccount = async () => {
         let response = await getAccount();
         if (response && +response.EC === 0) {
@@ -25,11 +25,22 @@ function App() {
                     groupWidthRoles: response.DT.groupWithRoles,
                 },
             });
+        } else if (response.data === null) {
+            console.log('check >>>>>>>>>>>>>>>>response.data', response.data);
+            toast.warning('Session expirer please login again!');
+            setTimeout(() => {
+                setAuth({
+                    isLoading: false,
+                    isAuthenticated: false,
+                    user: { id: '', name: '', groupWidthRoles: '' },
+                });
+                navigate('/');
+            }, 2000);
+            return;
         }
     };
 
     useEffect(() => {
-
         if (localStorage.getItem('access_token')) {
             fetchAccount();
         } else {
@@ -68,6 +79,7 @@ function App() {
                 draggable
                 pauseOnHover
                 theme="colored"
+                limit={3}
             />
             {/* Same as */}
         </>
