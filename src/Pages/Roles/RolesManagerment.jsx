@@ -8,7 +8,7 @@ function RolesManagerment() {
     const [groupWithRole, setGroupWithRole] = useState([]);
     const [selectedPermissions, setSelectedPermissions] = useState([]);
     const [selectedGroupId, setSelectedGroupId] = useState(null);
-    const [optionValue, setOptionValue] = useState(null);
+
     useEffect(() => {
         handleFetchGroup();
         // handleFetchRole();
@@ -57,14 +57,13 @@ function RolesManagerment() {
     const handleOnchangeGroup = async (value) => {
         if (value === '0') {
             setSelectedGroupId(null);
-            setOptionValue(0);
             setGroupWithRole([]);
             setSelectedPermissions([]);
             setAllRole([]);
             return;
         }
         setSelectedGroupId(value);
-        setOptionValue(value);
+
         try {
             if (value) {
                 const data = await handleFetchGroupWithRole(value);
@@ -77,7 +76,6 @@ function RolesManagerment() {
                     setGroupWithRole([]);
                     setSelectedPermissions([]);
                 }
-                // Gọi hàm fetch tất cả quyền (nếu cần)
                 await handleFetchRole();
             }
         } catch (error) {
@@ -157,7 +155,7 @@ function RolesManagerment() {
                         <h1 className="text-2xl font-bold">Thông Tin Quyền Hạn:</h1>
                         <div className="flex justify-end">
                             <select
-                                className="w-[500px] h-[40px] border border-gray-400 rounded-md pl-4"
+                                className="w-[500px] h-[40px] border border-blue-400 focus:outline-none focus:border-blue-500 rounded-md pl-4"
                                 onChange={(event) => handleOnchangeGroup(event.target.value)}
                             >
                                 <option value="0">Chọn Đối Tượng Để Xem Quyền Hạn Tại Đây!</option>
@@ -193,7 +191,7 @@ function RolesManagerment() {
                                 <tr>
                                     <td
                                         colSpan="4"
-                                        className="border border-gray-400 px-4 py-2 text-center text-gray-500"
+                                        className="border border-gray-400 px-4 py-2 text-center text-xl text-red-500"
                                     >
                                         Bạn chưa chọn đối tượng để xem quyền hạn hoặc chưa có dữ liệu
                                     </td>
@@ -203,7 +201,9 @@ function RolesManagerment() {
                                     <tr key={index}>
                                         <td className="border border-gray-400 px-4 py-2">{item.id}</td>
                                         <td className="border border-gray-400 px-4 py-2">{item.url}</td>
-                                        <td className="border border-gray-400 px-4 py-2">{item.description}</td>
+                                        <td className="border border-gray-400 px-4 py-2">
+                                            <strong>{item.description}</strong>
+                                        </td>
                                         <td className="border border-gray-400 px-4 py-2 text-center">
                                             <input
                                                 type="checkbox"

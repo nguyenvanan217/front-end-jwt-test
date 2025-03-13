@@ -23,6 +23,7 @@ function App() {
                 isLoading: false,
                 isAuthenticated: true,
                 user: {
+                    id: data?.id || '',
                     email: data?.email || '',
                     name: data?.username || '',
                     groupWithRoles: data?.groupWithRoles || null,
@@ -35,7 +36,7 @@ function App() {
                 setAuth({
                     isLoading: false,
                     isAuthenticated: false,
-                    user: { email: '', name: '', groupWithRoles: null },
+                    user: { id: '', email: '', name: '', groupWithRoles: null },
                 });
                 navigate('/');
             }, 2000);
@@ -51,6 +52,7 @@ function App() {
                 isAuthenticated: false,
                 isLoading: false,
                 user: {
+                    id: '',
                     email: '',
                     name: '',
                     groupWithRoles: null,

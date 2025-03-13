@@ -7,7 +7,7 @@ import { loginUser, registerNewUser } from '../../services/userService';
 import { useNavigate, NavLink } from 'react-router-dom';
 import AuthContext from '../../components/Context/auth.context';
 function Login() {
-    const {setAuth} = useContext(AuthContext);
+    const { setAuth } = useContext(AuthContext);
     let navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -65,15 +65,17 @@ function Login() {
         if (check) {
             let response = await loginUser(email, password);
             if (response && +response.EC === 0) {
+                console.log('mới check>>>>>>>>>>>>>>>>', response.DT);
                 // console.log('response', response.DT.access_token);
-                localStorage.setItem('access_token', response.DT.access_token); 
+                localStorage.setItem('access_token', response.DT.access_token);
                 toast.success(response.EM);
                 setAuth({
                     isAuthenticated: true,
                     user: {
+                        id: response?.DT?.id ?? '',
                         email: response?.DT?.email ?? '',
                         name: response?.DT?.username ?? '',
-                        groupWithRoles: response?.DT?.groupWithRole ?? '', 
+                        groupWithRoles: response?.DT?.groupWithRole ?? '',
                     },
                 });
                 navigate('/usermanagerment');

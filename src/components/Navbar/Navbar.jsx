@@ -8,7 +8,8 @@ import { logoutUser } from '../../services/userService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../Context/auth.context';
-
+import { LuLogOut } from 'react-icons/lu';
+import { FaUserAlt } from 'react-icons/fa';
 function Navbar() {
     const { auth, setAuth } = useContext(AuthContext);
     const [dropdown, setDropdown] = useState(false);
@@ -36,6 +37,7 @@ function Navbar() {
             isAuthenticated: false,
             isLoading: false,
             user: {
+                id: '',
                 email: '',
                 name: '',
                 groupWithRoles: null,
@@ -98,9 +100,25 @@ function Navbar() {
                                 Settings <FaCaretDown />
                             </button>
                             {dropdown && (
-                                <div className="drop-down">
-                                    <Link to="/" onClick={handleLogout} className="text-red-500">
-                                        Đăng xuất!
+                                <div className="drop-down flex flex-col gap-2">
+                                    <Link
+                                        to="/accountinformation"
+                                        className="text-red-500 flex items-center justify-between gap-2"
+                                    >
+                                        <span>
+                                            <FaUserAlt />
+                                        </span>
+                                        <strong>Thông Tin Tài Khoản </strong>
+                                    </Link>
+                                    <Link
+                                        to="/"
+                                        onClick={handleLogout}
+                                        className="text-red-500 flex items-center gap-2"
+                                    >
+                                        <span className="text-xl">
+                                            <LuLogOut />
+                                        </span>
+                                        <strong>Đăng xuất </strong>
                                     </Link>
                                 </div>
                             )}
@@ -134,10 +152,19 @@ function Navbar() {
                     <NavLink to="/rolemanagerment" className="mobile-nav-link" onClick={handleNavLinkClick}>
                         Quản Lý Quyền
                     </NavLink>
-                    <div className="pt-4 border-t border-slate-700 mb-2">
+                    <div className="pt-4 border-t border-slate-700 mb-2 flex flex-col gap-3">
                         <div className="text-white mb-2">Welcome: {auth.user.name}</div>
-                        <Link to="/" onClick={handleLogout} className="text-red-500 block">
-                            Đăng xuất
+                        <Link to="/accountinformation" className="text-red-500 flex items-center gap-2">
+                            <span className="">
+                                <FaUserAlt />
+                            </span>
+                            <strong>Thông Tin Tài Khoản</strong>
+                        </Link>
+                        <Link to="/" onClick={handleLogout} className="text-red-500 flex items-center gap-2">
+                            <span className="text-xl">
+                                <LuLogOut />
+                            </span>
+                            <strong>Đăng xuất </strong>
                         </Link>
                     </div>
                 </div>
