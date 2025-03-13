@@ -5,7 +5,7 @@ const fetchRole = async () => {
     return axios.get(URL_API);
 };  
 const fetchGroupWithRole = async (id) => {
-    const URL_API = `/api/v1/roles/read-group-with-role?id=${id}`;
+    const URL_API = `/api/v1/roles/read-group-with-role/${id}`;
     return axios.get(URL_API);
 };
 export { fetchRole, fetchGroupWithRole };

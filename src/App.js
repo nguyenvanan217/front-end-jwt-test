@@ -14,25 +14,28 @@ function App() {
     const { auth, setAuth } = useContext(AuthContext);
     const navigate = useNavigate();
     const fetchAccount = async () => {
+        console.log(typeof toast.destroy); 
         let response = await getAccount();
         if (response && +response.EC === 0) {
+            let data = response.DT;
+            console.log('API Response:', data);
             setAuth({
                 isLoading: false,
                 isAuthenticated: true,
                 user: {
-                    email: response.DT.email,
-                    name: response.DT.username,
-                    groupWidthRoles: response.DT.groupWithRoles,
+                    email: data?.email || '',
+                    name: data?.username || '',
+                    groupWithRoles: data?.groupWithRoles || null,
                 },
             });
-        } else if (response.data === null) {
-            console.log('check >>>>>>>>>>>>>>>>response.data', response.data);
-            toast.warning('Session expirer please login again!');
+        } else {
+            console.log('API Error Response:', response);
+            toast.warning('Session expired, please login again!');
             setTimeout(() => {
                 setAuth({
                     isLoading: false,
                     isAuthenticated: false,
-                    user: { id: '', name: '', groupWidthRoles: '' },
+                    user: { email: '', name: '', groupWithRoles: null },
                 });
                 navigate('/');
             }, 2000);
@@ -50,11 +53,12 @@ function App() {
                 user: {
                     email: '',
                     name: '',
-                    groupWidthRoles: null,
+                    groupWithRoles: null,
                 },
             });
         }
     }, []);
+
     return (
         <>
             {auth.isAuthenticated && <Navbar />}
@@ -71,7 +75,7 @@ function App() {
             <ToastContainer
                 position="top-left"
                 autoClose={3000}
-                hideProgressBar={false}
+                hideProgressBar={true}
                 newestOnTop={false}
                 closeOnClick
                 rtl={false}

@@ -66,14 +66,14 @@ function Login() {
             let response = await loginUser(email, password);
             if (response && +response.EC === 0) {
                 // console.log('response', response.DT.access_token);
-                localStorage.setItem('access_token', response.DT.access_token);
+                localStorage.setItem('access_token', response.DT.access_token); 
                 toast.success(response.EM);
                 setAuth({
                     isAuthenticated: true,
                     user: {
                         email: response?.DT?.email ?? '',
                         name: response?.DT?.username ?? '',
-                        groupWidthRoles: response?.DT?.groupWithRole ?? '', 
+                        groupWithRoles: response?.DT?.groupWithRole ?? '', 
                     },
                 });
                 navigate('/usermanagerment');

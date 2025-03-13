@@ -38,7 +38,7 @@ function Navbar() {
             user: {
                 email: '',
                 name: '',
-                groupWidthRoles: null,
+                groupWithRoles: null,
             },
         });
 

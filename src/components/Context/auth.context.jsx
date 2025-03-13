@@ -7,7 +7,7 @@ const AuthContext = createContext({
         user: {
             email: '',
             name: '',
-            groupWidthRoles: null,
+            groupWithRoles: null,
         },
     },
     setAuth: () => {},
@@ -20,15 +20,11 @@ export const AuthWrapper = ({ children }) => {
         user: {
             email: '',
             name: '',
-            groupWidthRoles: null,
+            groupWithRoles: null,
         },
     });
 
-    return (
-        <AuthContext.Provider value={{ auth, setAuth }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={{ auth, setAuth }}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;
