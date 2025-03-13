@@ -8,4 +8,13 @@ const fetchGroupWithRole = async (id) => {
     const URL_API = `/api/v1/roles/read-group-with-role/${id}`;
     return axios.get(URL_API);
 };
-export { fetchRole, fetchGroupWithRole };
+const updateRole = async (groupId, selectedPermissions) => { 
+    console.log("groupId:", groupId); 
+    console.log("selectedPermissions:", selectedPermissions);
+
+    const URL_API = `/api/v1/roles/update-role-for-group/${groupId}`;
+    return axios.put(URL_API, { roles: selectedPermissions });
+};
+
+
+export { fetchRole, fetchGroupWithRole, updateRole };

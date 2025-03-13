@@ -75,7 +75,7 @@ const ModalBorrowBooks = ({ isOpen, onClose, book, onBorrowSuccess }) => {
                 onBorrowSuccess(book.id);
                 onClose();
             } else {
-                toast.error(response.EM || 'Có lỗi xảy ra');
+                toast.error(response.EM);
             }
         } catch (error) {
             console.error('Lỗi khi đăng ký mượn sách:', error);
