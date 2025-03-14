@@ -39,7 +39,7 @@ const fetchStatus = async (id) => {
     return axios.get(URL_API);
 };
 const getUserDetailsById = async (id) => {
-    const URL_API = `/api/v1/users/read/${id}`;
+    const URL_API = `/api/v1/users/get-detail/${id}`;
     return axios.get(URL_API);
 };
 const deleteTransaction = async (transactionId) => {
@@ -84,5 +84,5 @@ export {
     updateTransactionDateAndStatus,
     getAllInforUser,
     logoutUser,
-    getAccount
+    getAccount,
 };

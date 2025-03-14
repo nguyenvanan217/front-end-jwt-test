@@ -11,6 +11,7 @@ import BookLoanReturnDetails from '../Pages/BookLoanReturnDetails/BookLoanReturn
 import PrivateRoutes from './PrivateRoutes';
 import RolesManagerment from '../Pages/Roles/RolesManagerment';
 import AccountInformation from '../Pages/AccountInformation/AccountInformation';
+import Messenger from '../Pages/Messenger/Messenger';
 
 function AppRoutes() {
     return (
@@ -28,6 +29,7 @@ function AppRoutes() {
                 <Route path="/bookloanreturndetails/:id" element={<BookLoanReturnDetails />} />
                 <Route path="/rolemanagerment" element={<RolesManagerment />} />
                 <Route path="/accountinformation" element={<AccountInformation />} />
+                <Route path="/messenger" element={<Messenger />} />
             </Route>
 
             {/* 404 route */}

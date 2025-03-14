@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthContext from '../Context/auth.context';
 import { LuLogOut } from 'react-icons/lu';
 import { FaUserAlt } from 'react-icons/fa';
+import { FaFacebookMessenger } from "react-icons/fa";
 function Navbar() {
     const { auth, setAuth } = useContext(AuthContext);
     const [dropdown, setDropdown] = useState(false);
@@ -123,6 +124,9 @@ function Navbar() {
                                 </div>
                             )}
                         </div>
+                        <Link to="/messenger" className="nav-link" onClick={handleNavLinkClick}>
+                            <FaFacebookMessenger className='text-white text-xl'/>
+                        </Link>
                     </div>
 
                     {/* Mobile Menu Button */}
