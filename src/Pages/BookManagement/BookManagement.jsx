@@ -79,7 +79,6 @@ const BookManagementTable = () => {
             }
         } catch (error) {
             console.log(error);
-            toast.error('Có lỗi xảy ra khi tải dữ liệu');
         } finally {
             setIsLoading(false);
         }
@@ -105,7 +104,7 @@ const BookManagementTable = () => {
             }
         } catch (error) {
             console.error('Error details:', error.response?.data || error);
-            toast.error(error.response?.data?.EM || 'Có lỗi xảy ra khi thêm sách');
+            toast.error(error.response?.data?.EM );
         }
     };
     const handleOpenDeleteModal = (book) => {
@@ -125,7 +124,6 @@ const BookManagementTable = () => {
             }
         } catch (error) {
             console.error('Error:', error);
-            toast.error('Có lỗi xảy ra khi xóa sách');
         }
     };
     const handleOpenUpdateModal = (book) => {
@@ -142,7 +140,6 @@ const BookManagementTable = () => {
             return response;
         } catch (error) {
             console.error('Error:', error);
-            toast.error('Có lỗi xảy ra khi cập nhật sách');
         }
     };
     const handleAddGenre = async (genreName) => {
@@ -161,7 +158,6 @@ const BookManagementTable = () => {
             }
         } catch (error) {
             console.error('Error:', error);
-            toast.error('Có lỗi xảy ra khi thêm thể loại');
         }
     };
 

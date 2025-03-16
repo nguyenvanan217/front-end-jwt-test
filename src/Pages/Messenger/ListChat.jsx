@@ -1,37 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 
-function ListChat({ onSelectChat, selectedChatId }) {
+function ListChat({ handleChatSelect, selectedChatId, chatList }) {
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Mock data for chat list
-    const chatList = [
-        {
-            id: 1,
-            name: 'Nguyễn Văn A',
-            lastMessage: 'Xin chào, tôi muốn mượn sách',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=1',
-            unread: 2,
-            lastTime: '12:30',
-        },
-        {
-            id: 2,
-            name: 'Trần Thị B',
-            lastMessage: 'Cảm ơn bạn đã giúp đỡ',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=2',
-            unread: 0,
-            lastTime: 'Hôm qua',
-        },
-        {
-            id: 3,
-            name: 'Lê Văn C',
-            lastMessage: 'Khi nào sách về vậy?',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=3',
-            unread: 1,
-            lastTime: '10:15',
-        },
-    ];
-
+    useEffect(() => {
+        console.log('check chatList >>>>>>>>>>>>>>>>>', chatList.map((chat) => chat.lastTime));
+    }, [chatList]);
     const filteredChats = chatList.filter(
         (chat) =>
             chat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,13 +34,20 @@ function ListChat({ onSelectChat, selectedChatId }) {
                 {filteredChats.map((chat) => (
                     <div
                         key={chat.id}
-                        onClick={() => onSelectChat(chat)}
+                        onClick={() => handleChatSelect(chat)}
                         className={`flex items-center gap-3 p-4 hover:bg-gray-100 cursor-pointer border-b border-gray-100
                             ${selectedChatId === chat.id ? 'bg-gray-100' : ''}`}
                     >
                         {/* Avatar */}
                         <div className="relative">
-                            <img src={chat.avatar} alt={chat.name} className="w-12 h-12 rounded-full" />
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300 text-white font-bold">  
+                                {chat.avatar.startsWith('http') ? (
+                                    <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-full" />
+                                ) : (
+                                    chat.avatar
+                                )}
+                            </div>
+
                             {chat.unread > 0 && (
                                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                                     {chat.unread}
@@ -79,7 +61,7 @@ function ListChat({ onSelectChat, selectedChatId }) {
                                 <h3 className="font-semibold text-gray-800">{chat.name}</h3>
                                 <span className="text-xs text-gray-500">{chat.lastTime}</span>
                             </div>
-                            <p className="text-sm text-gray-600 truncate">{chat.lastMessage}</p>
+                            <p className="text-sm text-gray-600 truncate max-w-[200px]">{chat.lastMessage}</p>
                         </div>
                     </div>
                 ))}

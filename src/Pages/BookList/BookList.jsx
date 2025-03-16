@@ -43,7 +43,6 @@ function BookList() {
             }
         } catch (error) {
             console.log(error);
-            toast.error('Có lỗi xảy ra khi tải dữ liệu');
         } finally {
             setIsLoading(false);
         }

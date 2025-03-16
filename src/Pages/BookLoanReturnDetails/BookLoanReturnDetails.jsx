@@ -30,7 +30,6 @@ function BookLoanReturnDetails() {
             }
         } catch (error) {
             console.error('Lỗi khi cập nhật trạng thái:', error);
-            toast.error('Có lỗi xảy ra khi kiểm tra trạng thái giao dịch');
         }
     };
 
@@ -163,7 +162,6 @@ function BookLoanReturnDetails() {
             }
         } catch (error) {
             console.error('Lỗi khi cập nhật:', error);
-            toast.error('Có lỗi xảy ra khi cập nhật');
         }
     };
 

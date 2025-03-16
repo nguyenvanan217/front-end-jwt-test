@@ -24,7 +24,6 @@ function AccountInformation() {
             }
         } catch (error) {
             console.error('Lỗi khi lấy thông tin người dùng:', error);
-            toast.error('Có lỗi xảy ra khi lấy thông tin người dùng');
         }
     };
 
