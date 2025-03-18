@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 
-function ListChat({ handleChatSelect, selectedChatId, chatList }) {
+function ListChat({ handleChatSelect, selectedChatId, chatList, isAdmin }) {
     const [searchTerm, setSearchTerm] = useState('');
-
+    const [adminChatList, setAdminChatList] = useState(false);
     useEffect(() => {
-        console.log('check chatList >>>>>>>>>>>>>>>>>', chatList.map((chat) => chat.lastTime));
-    }, [chatList]);
+        if (isAdmin) {
+            setAdminChatList(true);
+        }
+    }, [isAdmin]);
     const filteredChats = chatList.filter(
         (chat) =>
             chat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,7 +63,16 @@ function ListChat({ handleChatSelect, selectedChatId, chatList }) {
                                 <h3 className="font-semibold text-gray-800">{chat.name}</h3>
                                 <span className="text-xs text-gray-500">{chat.lastTime}</span>
                             </div>
-                            <p className="text-sm text-gray-600 truncate max-w-[200px]">{chat.lastMessage}</p>
+                            {/* //hiển thị bạn nếu là admin nhắn cho user */}
+                            {isAdmin ? (
+                                <p className="text-sm text-gray-600 truncate max-w-[200px]">
+                                    Bạn: {chat.lastMessage}
+                                </p>
+                            ) : (
+                                <p className="text-sm text-gray-600 truncate max-w-[200px]">
+                                    {chat.lastMessage}
+                                </p>
+                            )}
                         </div>
                     </div>
                 ))}

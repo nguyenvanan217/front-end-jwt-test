@@ -7,13 +7,14 @@ const getChatHistory = async (userId) => {
 
  // Gửi tin nhắn mới
  const sendMessage = async (data) => {
-    const url = '/v1/sendMessage';
+    const url = '/api/v1/sendMessage';
+    console.log("?>>>>>>>>>>>>>>>>data", data);
     return await axios.post(url, data);
  };
 
  // get all chat của admin
  const getAllChat = async () => {
-    const url = '/v1/getAllChat';
+    const url = '/api/v1/getAllChat';
     return await axios.get(url);
  };
 export { getChatHistory, sendMessage, getAllChat };

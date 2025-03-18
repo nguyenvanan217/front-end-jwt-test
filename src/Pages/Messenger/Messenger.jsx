@@ -3,18 +3,21 @@ import ListChat from './ListChat';
 import { IoSend } from 'react-icons/io5';
 import { FaImage } from 'react-icons/fa';
 import AuthContext from '../../components/Context/auth.context';
-import { getChatHistory, getAllChat } from '../../services/messengerService';
+import { getChatHistory, getAllChat, sendMessage } from '../../services/messengerService';
 
 function Messenger() {
     const { auth } = useContext(AuthContext);
     const userId = auth?.user?.id;
-    const isAdmin = auth?.user?.role === 'Admin';
+    const isAdmin = auth?.user?.groupWithRoles.group.name === 'Quản Lý Thư Viện';
     console.log('userId', userId);
+    console.log('isAdmin', isAdmin);
 
     const [message, setMessage] = useState('');
     const [selectedChat, setSelectedChat] = useState(null);
     const [messageByChat, setMessageByChat] = useState([]);
     const [chatList, setChatList] = useState([]);
+    const [localTime, setLocalTime] = useState(new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }));
+
     const getAvatar = (user) => {
         if (user?.username) {
             return user.username.charAt(0).toUpperCase();
@@ -22,10 +25,20 @@ function Messenger() {
         return '?';
     };
 
-    // Hàm chuyển đổi thời gian UTC sang giờ Việt Nam
+    // Hàm chuyển đổi thời gian để hiển thị đúng như trong database
     const formatTimeToVN = (utcTime) => {
         try {
-            return new Date(utcTime).toISOString().slice(11, 16);
+            if (!utcTime) return '--:--';
+            const date = new Date(utcTime);
+            if (isNaN(date.getTime())) return '--:--';
+
+            // Chuyển đổi sang múi giờ Việt Nam (UTC+7)
+            return date.toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Ho_Chi_Minh',
+            });
         } catch (error) {
             console.error('Error formatting time:', error);
             return '--:--';
@@ -39,11 +52,11 @@ function Messenger() {
             console.log('fetchAllMessage response', response);
 
             // Lưu trữ toàn bộ tin nhắn gốc
-            setMessageByChat(response.DT || []);
+            const sortedMessages = response.DT.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            setMessageByChat(sortedMessages);
 
             // Transform messages into chat list format
-            const transformedChats = [];
-            const processedUsers = new Set();
+            const transformedChats = new Map(); // Sử dụng Map để theo dõi tin nhắn mới nhất
 
             response.DT.forEach((chat) => {
                 const otherUser = isAdmin
@@ -54,15 +67,20 @@ function Messenger() {
                     ? chat.receiver
                     : chat.sender;
 
-                // Chỉ thêm user chưa được xử lý
-                if (!processedUsers.has(otherUser.id)) {
-                    processedUsers.add(otherUser.id);
-                    transformedChats.push({
+                const existingChat = transformedChats.get(otherUser.id);
+                const currentMessageTime = new Date(chat.createdAt).getTime();
+
+                // Cập nhật chat nếu tin nhắn này mới hơn
+                if (
+                    !existingChat ||
+                    (existingChat && currentMessageTime > new Date(existingChat.createdAt).getTime())
+                ) {
+                    transformedChats.set(otherUser.id, {
                         id: chat.message_id,
                         userId: otherUser.id,
                         name: otherUser.username,
                         lastMessage: chat.content,
-                        lastTime: new Date(chat.createdAt).toISOString().slice(11, 16),
+                        lastTime: formatTimeToVN(chat.createdAt),
                         avatar: getAvatar(otherUser),
                         unread: chat.status === 'Sent' ? 1 : 0,
                         createdAt: chat.createdAt,
@@ -70,8 +88,10 @@ function Messenger() {
                 }
             });
 
-            // Sort by latest message
-            const sortedChats = transformedChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            // Convert Map to array and sort by latest message
+            const sortedChats = Array.from(transformedChats.values()).sort(
+                (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+            );
 
             setChatList(sortedChats);
         } catch (error) {
@@ -117,52 +137,82 @@ function Messenger() {
                     newState.push(msg);
                 }
             });
-            return newState;
+            return newState.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         });
     };
 
-    const handleSendMessage = (e) => {
+    const handleSendMessage = async (e) => {
         e.preventDefault();
         if (message.trim() && selectedChat) {
-            const now = new Date();
-            const utcTime = now.toISOString();
+            try {
+                const createdAtVN = new Date()
+                    .toLocaleString('en-CA', {
+                        timeZone: 'Asia/Ho_Chi_Minh',
+                        hour12: false,
+                    })
+                    .replace(',', '');
 
-            const newMessage = {
-                message_id: Date.now(),
-                sender_id: userId,
-                receiver_id: selectedChat.userId,
-                content: message,
-                createdAt: utcTime,
-                status: 'Sent',
-                sender: {
-                    id: userId,
-                    username: 'You',
-                },
-                receiver: {
-                    id: selectedChat.userId,
-                    username: selectedChat.name,
-                },
-            };
+                console.log('createdAtVN', createdAtVN);
+                // Gọi API để gửi tin nhắn
+                const response = await sendMessage({
+                    sender_id: userId,
+                    receiver_id: selectedChat.userId,
+                    created_at: createdAtVN,
+                    content: message.trim(),
+                });
 
-            // Cập nhật messageByChat với tin nhắn mới
-            setMessageByChat((prevMessages) => [...prevMessages, newMessage]);
-
-            // Cập nhật chatList để hiển thị tin nhắn mới nhất
-            setChatList((prevChats) => {
-                const updatedChats = [...prevChats];
-                const chatIndex = updatedChats.findIndex((chat) => chat.userId === selectedChat.userId);
-                if (chatIndex !== -1) {
-                    updatedChats[chatIndex] = {
-                        ...updatedChats[chatIndex],
-                        lastMessage: message,
-                        lastTime: new Date(utcTime).toISOString().slice(11, 16),
-                        createdAt: utcTime,
+                if (response && response.EC === '0') {
+                    const newMessage = {
+                        message_id: response.DT.id || Date.now(),
+                        sender_id: userId,
+                        receiver_id: selectedChat.userId,
+                        content: message,
+                        createdAt: response.DT.created_at,
+                        status: 'Sent',
+                        sender: {
+                            id: userId,
+                            username: 'You',
+                        },
+                        receiver: {
+                            id: selectedChat.userId,
+                            username: selectedChat.name,
+                        },
                     };
-                }
-                return updatedChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            });
 
-            setMessage('');
+                    // Cập nhật messageByChat với tin nhắn mới
+                    setMessageByChat((prevMessages) => {
+                        const newMessages = [...prevMessages, newMessage];
+                        return newMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                    });
+
+                    // Cập nhật chatList để hiển thị tin nhắn mới nhất
+                    setChatList((prevChats) => {
+                        const updatedChats = [...prevChats];
+                        const chatIndex = updatedChats.findIndex((chat) => chat.userId === selectedChat.userId);
+                        if (chatIndex !== -1) {
+                            updatedChats[chatIndex] = {
+                                ...updatedChats[chatIndex],
+                                lastMessage: message,
+                                lastTime: formatTimeToVN(newMessage.createdAt),
+                                createdAt: newMessage.createdAt,
+                            };
+                        }
+                        return updatedChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    });
+
+                    // Clear input message
+                    setMessage('');
+
+                    // Refresh messages after sending
+                    await fetchAllMessage();
+                } else {
+                    console.error('Failed to send message:', response?.EM);
+                    alert('Không thể gửi tin nhắn. Vui lòng thử lại sau!');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Có lỗi xảy ra khi gửi tin nhắn!');
+            }
         }
     };
 
@@ -177,7 +227,7 @@ function Messenger() {
               .map((msg) => ({
                   id: msg.message_id,
                   content: msg.content,
-                  timestamp: new Date(msg.createdAt).toISOString().slice(11, 16),
+                  timestamp: formatTimeToVN(msg.createdAt),
                   isSender: msg.sender_id === userId,
                   avatar:
                       msg.sender_id === userId
@@ -196,6 +246,7 @@ function Messenger() {
                 fetchAllMessage={fetchAllMessage}
                 chatList={chatList}
                 getAvatar={getAvatar}
+                isAdmin={isAdmin}
             />
 
             {/* Chat Interface */}
