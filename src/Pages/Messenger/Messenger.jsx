@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import ListChat from './ListChat';
 import { IoSend } from 'react-icons/io5';
 import { FaImage } from 'react-icons/fa';
@@ -8,9 +8,10 @@ import { getChatHistory, getAllChat, sendMessage } from '../../services/messenge
 function Messenger() {
     const { auth } = useContext(AuthContext);
     const userId = auth?.user?.id;
-    const isAdmin = auth?.user?.groupWithRoles.group.name === 'Quản Lý Thư Viện';
+    const isAdmin = auth?.user?.groupWithRoles.group.name.includes('Quản Lý Thư Viện');
     console.log('userId', userId);
     console.log('isAdmin', isAdmin);
+    
 
     const [message, setMessage] = useState('');
     const [selectedChat, setSelectedChat] = useState(null);
@@ -236,7 +237,20 @@ function Messenger() {
               }))
               .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
         : [];
+    const fileInputRef = useRef(null);
 
+    const [showImageUpload, setShowImageUpload] = useState(false);
+    const [previewImages, setPreviewImages] = useState([]);
+    const handleOpenImageUpload = () => {
+        fileInputRef.current.click(); // Khi bấm FaImage, mở hộp thoại chọn file
+    };
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            setPreviewImages([...previewImages, imageUrl]);
+        }
+    };
     return (
         <div className="flex h-[calc(100vh-64px)] bg-gray-100">
             {/* Chat List */}
@@ -297,13 +311,51 @@ function Messenger() {
 
                         {/* Message Input */}
                         <form onSubmit={handleSendMessage} className="bg-white p-4 border-t border-gray-300">
-                            <div className="flex items-center gap-2">
+                            {/* Image Previews */}
+                            {previewImages.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    {previewImages.map((image, index) => (
+                                        <div key={index} className="relative">
+                                            <img
+                                                src={image}
+                                                alt={`Preview ${index}`}
+                                                className="w-20 h-20 object-cover rounded-md"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newPreviewImages = previewImages.filter(
+                                                        (_, i) => i !== index,
+                                                    );
+                                                    setPreviewImages(newPreviewImages);
+                                                }}
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-2 relative">
                                 <button
                                     type="button"
                                     className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
+                                    onClick={handleOpenImageUpload}
                                 >
                                     <FaImage size={20} />
                                 </button>
+
+                                {/* Input file bị ẩn */}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    onChange={handleImageUpload}
+                                />
+
                                 <input
                                     type="text"
                                     value={message}
@@ -311,11 +363,15 @@ function Messenger() {
                                     placeholder="Nhập tin nhắn..."
                                     className="flex-1 p-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
                                 />
+
+                                {/* Nút gửi */}
                                 <button
                                     type="submit"
-                                    disabled={!message.trim()}
+                                    disabled={!message.trim() && previewImages.length === 0}
                                     className={`p-2 rounded-full ${
-                                        message.trim() ? 'text-blue-500 hover:bg-blue-50' : 'text-gray-400'
+                                        message.trim() || previewImages.length > 0
+                                            ? 'text-blue-500 hover:bg-blue-50' // Khi có nội dung hoặc ảnh -> màu xanh
+                                            : 'text-gray-400' // Khi không có gì -> màu xám
                                     } transition-colors`}
                                 >
                                     <IoSend size={20} />

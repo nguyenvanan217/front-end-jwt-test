@@ -10,6 +10,8 @@ import { useContext, useEffect } from 'react';
 import { getAccount } from './services/userService';
 import LoadingPage from './components/Loading/LoadingPage';
 import { useNavigate } from 'react-router-dom';
+import MessengerWithAdmin from './components/MessengerWithAdmin/MessengerWithAdmin';
+
 function App() {
     const { auth, setAuth } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -71,6 +73,9 @@ function App() {
             ) : (
                 <div className="App">
                     <AppRoutes />
+                    {auth.isAuthenticated && !auth?.user?.groupWithRoles?.group?.name?.includes('Quản Lý') && (
+                        <MessengerWithAdmin />
+                    )}
                 </div>
             )}
 

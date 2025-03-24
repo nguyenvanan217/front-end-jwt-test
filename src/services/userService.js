@@ -70,6 +70,10 @@ const getAccount = async () => {
     const URL_API = '/api/v1/account';
     return axios.get(URL_API);
 };
+const getAdminChatId = async () => {
+    const URL_API = '/api/v1/get-admin-chat-id';
+    return axios.get(URL_API);
+};
 export {
     registerNewUser,
     loginUser,
@@ -85,4 +89,5 @@ export {
     getAllInforUser,
     logoutUser,
     getAccount,
+    getAdminChatId,
 };
