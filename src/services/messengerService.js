@@ -4,17 +4,32 @@ const getChatHistory = async (userId) => {
     const URL_API = `/api/v1/getChatHistory/${userId}`;
     return axios.get(URL_API);  
 };
-
- // Gửi tin nhắn mới
- const sendMessage = async (data) => {
-    const url = '/api/v1/sendMessage';
-    console.log("?>>>>>>>>>>>>>>>>data", data);
-    return await axios.post(url, data);
- };
+//gửi tin nhắn
+const sendMessage = (data) => {
+   const url = `/api/v1/sendMessage`;
+   const formData = new FormData();
+ 
+   formData.append('sender_id', data.sender_id);
+   formData.append('receiver_id', data.receiver_id);
+   formData.append('content', data.content || '');
+   formData.append('created_at', data.created_at);
+ 
+   if (data.imageFiles && data.imageFiles.length > 0) {
+       data.imageFiles.forEach((file) => {
+           formData.append('images', file, file.name);
+       });
+   }
+ 
+   return axios.post(url, formData, {
+       headers: {
+           'Content-Type': 'multipart/form-data',
+       },
+   });
+};
 
  // get all chat của admin
- const getAllChat = async () => {
+ const getAllChatAdmin = async () => {
     const url = '/api/v1/getAllChat';
     return await axios.get(url);
  };
-export { getChatHistory, sendMessage, getAllChat };
+export { getChatHistory, sendMessage, getAllChatAdmin };
