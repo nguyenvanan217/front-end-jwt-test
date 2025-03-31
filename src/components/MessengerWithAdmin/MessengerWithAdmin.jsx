@@ -19,10 +19,16 @@ const MessengerWithAdmin = () => {
     const userId = auth?.user?.id;
     const messagesEndRef = useRef(null);
 
-    // State cho upload ảnh
     const [previewImages, setPreviewImages] = useState([]);
     const fileInputRef = useRef(null);
     const [uploading, setUploading] = useState(false);
+
+    
+    const [selectedImage, setSelectedImage] = useState({
+        url: null,
+        index: null,
+        images: [],
+    });
 
     const getAdminId = async () => {
         try {
@@ -75,7 +81,6 @@ const MessengerWithAdmin = () => {
         }
     };
 
-    // Hàm xử lý upload ảnh
     const handleImageUpload = (e) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
@@ -87,7 +92,7 @@ const MessengerWithAdmin = () => {
             const file = files[i];
             if (!file.type.match('image.*')) continue;
 
-            newFiles.push(file); // Lưu file gốc
+            newFiles.push(file);
             const reader = new FileReader();
             reader.onload = (event) => {
                 newPreviewUrls.push(event.target.result);
@@ -152,13 +157,7 @@ const MessengerWithAdmin = () => {
             setUploading(false);
         }
     };
-    const [selectedImage, setSelectedImage] = useState({
-        url: null,
-        index: null,
-        images: [],
-    });
 
-    // Khi click vào ảnh
     const handleImageClick = (imgUrl, index, imageSource = 'preview') => {
         let imageList = [];
         if (imageSource === 'preview') {
@@ -182,7 +181,6 @@ const MessengerWithAdmin = () => {
 
             {isOpen && (
                 <div className="fixed bottom-24 right-4 w-[350px] bg-white rounded-lg shadow-xl border border-gray-200">
-                    {/* Header */}
                     <div className="bg-blue-600 rounded-t-md text-white flex justify-between items-center p-4 border-b">
                         <div className="flex items-center gap-3">
                             <img src={logo} alt="Logo" className="w-8 h-8" />
@@ -193,13 +191,12 @@ const MessengerWithAdmin = () => {
                         </button>
                     </div>
 
-                    {/* Messages */}
                     <div className="h-96 overflow-y-auto p-4">
                         {messages.map((msg, index) => (
                             <div key={msg.id} className={`flex ${msg.isSender ? 'justify-end' : 'justify-start'} mb-4`}>
                                 {!msg.isSender && (
-                                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center mr-2">
-                                        <MdOutlineSupportAgent className="text-white text-lg" size={24} />
+                                    <div className="w-8 h-8 flex items-center justify-center mr-2">
+                                       <img src={logo} alt="Logo" className="w-8 h-8" />
                                     </div>
                                 )}
                                 <div
@@ -207,16 +204,15 @@ const MessengerWithAdmin = () => {
                                         msg.isSender ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'
                                     }`}
                                 >
-                                    {msg.imageUrl ? (
+                                    {msg.imageUrl && (
                                         <img
                                             src={msg.imageUrl}
                                             alt="Hình ảnh"
-                                            className="max-w-full max-h-64 rounded-md mb-1 cursor-pointer"
+                                            className="max-w-full max-h-64 rounded-md mb-2 cursor-pointer"
                                             onClick={() => handleImageClick(msg.imageUrl, index, 'messages')}
                                         />
-                                    ) : (
-                                        <p className="text-sm">{msg.content}</p>
                                     )}
+                                    {msg.content && <p className="text-sm mb-2">{msg.content}</p>}
                                     <span className="text-xs mt-1 block opacity-75">{msg.timestamp}</span>
                                 </div>
                             </div>
@@ -224,9 +220,7 @@ const MessengerWithAdmin = () => {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Input với chức năng upload ảnh */}
                     <form onSubmit={handleSendMessage} className="border-t p-4">
-                        {/* Preview images */}
                         {previewImages.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-3 max-h-32 overflow-y-auto py-4">
                                 {previewImages.map((img, index) => (
@@ -293,7 +287,7 @@ const MessengerWithAdmin = () => {
                     </form>
                 </div>
             )}
-            {selectedImage && (
+            {selectedImage.url && (
                 <ModalViewPreviewImage
                     imageUrl={selectedImage.url}
                     onClose={() => setSelectedImage({ url: null, index: null, images: [] })}

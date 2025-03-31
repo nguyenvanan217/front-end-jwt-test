@@ -20,6 +20,7 @@ const Messenger = () => {
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const [previewImages, setPreviewImages] = useState([]);
+    const [imageFiles, setImageFiles] = useState([]); // Thêm state cho file gốc
     const [selectedImage, setSelectedImage] = useState({
         url: null,
         index: null,
@@ -62,31 +63,33 @@ const Messenger = () => {
         try {
             const response = (await getAllChatAdmin()) || null;
             if (!response?.DT) return;
-
+    
             const adminMessages = response.DT.filter(
                 (chat) => chat.sender_id === userId || chat.receiver_id === userId,
             );
-
+    
             const sortedMessages = adminMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             setMessageByChat(sortedMessages);
-
+    
             const transformedChats = new Map();
-
+    
             adminMessages.forEach((chat) => {
                 if (chat.sender_id !== userId && chat.receiver_id !== userId) return;
-
+    
                 const otherUser = chat.sender_id === userId ? chat.receiver : chat.sender;
                 if (!otherUser?.id) return;
-
+    
                 const existingChat = transformedChats.get(otherUser.id);
                 const currentTime = new Date(chat.createdAt).getTime();
-
+    
                 if (!existingChat || currentTime > new Date(existingChat.createdAt).getTime()) {
                     transformedChats.set(otherUser.id, {
                         id: chat.message_id,
                         userId: otherUser.id,
-                        name: otherUser.username,
+                        name: otherUser.username, // Tên của người kia
                         lastMessage: chat.content,
+                        lastSenderId: chat.sender_id, // ID người gửi tin nhắn cuối
+                        lastImageUrl: chat.image_url, // URL ảnh của tin nhắn cuối (nếu có)
                         lastTime: formatTimeToVN(chat.createdAt),
                         avatar: getAvatar(otherUser),
                         unread: chat.status === 'Sent' ? 1 : 0,
@@ -94,7 +97,7 @@ const Messenger = () => {
                     });
                 }
             });
-
+    
             const sortedChats = Array.from(transformedChats.values()).sort(
                 (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
             );
@@ -129,7 +132,7 @@ const Messenger = () => {
                 id: message.message_id,
                 sender: message.sender_id === userId ? 'You' : chat.name,
                 content: message.content,
-                imageUrl: message.image_url ? `${process.env.REACT_APP_BACKEND_URL}${message.image_url}` : null, // Thêm imageUrl
+                imageUrl: message.image_url ? `${process.env.REACT_APP_BACKEND_URL}${message.image_url}` : null,
                 timestamp: formatTimeToVN(message.createdAt),
                 isSender: message.sender_id === userId,
                 avatar:
@@ -151,87 +154,40 @@ const Messenger = () => {
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (message.trim() && selectedChat) {
-            try {
-                const createdAtVN = new Date()
-                    .toLocaleString('en-CA', {
-                        timeZone: 'Asia/Ho_Chi_Minh',
-                        hour12: false,
-                    })
-                    .replace(',', '');
+        if ((!message.trim() && imageFiles.length === 0) || !selectedChat) return;
 
-                const response = await sendMessage({
-                    sender_id: userId,
-                    receiver_id: selectedChat.userId,
-                    created_at: createdAtVN,
-                    content: message.trim(),
-                });
+        try {
+            const createdAtVN = new Date()
+                .toLocaleString('en-CA', {
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                    hour12: false,
+                })
+                .replace(',', '');
 
-                if (response && response.EC === '0') {
-                    const newMessage = {
-                        message_id: response.DT.id || Date.now(),
-                        sender_id: userId,
-                        receiver_id: selectedChat.userId,
-                        content: message,
-                        image_url: response.DT.image_url || null, // Nếu backend trả về image_url
-                        createdAt: response.DT.created_at,
-                        status: 'Sent',
-                        sender: { id: userId, username: 'You' },
-                        receiver: { id: selectedChat.userId, username: selectedChat.name },
-                    };
+            const messageData = {
+                sender_id: userId,
+                receiver_id: selectedChat.userId,
+                created_at: createdAtVN,
+                content: message.trim() || '',
+                imageFiles: imageFiles,
+            };
 
-                    setMessageByChat((prevMessages) => {
-                        const newMessages = [...prevMessages, newMessage];
-                        return newMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-                    });
+            const response = await sendMessage(messageData);
 
-                    setChatList((prevChats) => {
-                        const updatedChats = [...prevChats];
-                        const chatIndex = updatedChats.findIndex((chat) => chat.userId === selectedChat.userId);
-                        if (chatIndex !== -1) {
-                            updatedChats[chatIndex] = {
-                                ...updatedChats[chatIndex],
-                                lastMessage: message,
-                                lastTime: formatTimeToVN(newMessage.createdAt),
-                                createdAt: newMessage.createdAt,
-                            };
-                        }
-                        return updatedChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                    });
-
-                    setMessage('');
-                    await fetchAllMessage();
-                } else {
-                    console.error('Failed to send message:', response?.EM);
-                    alert('Không thể gửi tin nhắn. Vui lòng thử lại sau!');
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Có lỗi xảy ra khi gửi tin nhắn!');
+            if (response && response.EC === '0') {
+                setMessage('');
+                setPreviewImages([]);
+                setImageFiles([]);
+                await fetchAllMessage();
+            } else {
+                console.error('Failed to send message:', response?.EM);
+                alert('Không thể gửi tin nhắn: ' + response?.EM);
             }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Có lỗi xảy ra khi gửi tin nhắn!');
         }
     };
-
-    const selectedChatMessages = selectedChat
-        ? messageByChat
-              .filter(
-                  (msg) =>
-                      (msg.sender_id === userId && msg.receiver_id === selectedChat.userId) ||
-                      (msg.sender_id === selectedChat.userId && msg.receiver_id === userId),
-              )
-              .map((msg) => ({
-                  id: msg.message_id,
-                  content: msg.content,
-                  imageUrl: msg.image_url ? `${process.env.REACT_APP_BACKEND_URL}${msg.image_url}` : null, // Thêm imageUrl
-                  timestamp: formatTimeToVN(msg.createdAt),
-                  isSender: msg.sender_id === userId,
-                  avatar:
-                      msg.sender_id === userId
-                          ? getAvatar({ username: 'You' })
-                          : getAvatar({ username: selectedChat.name }),
-              }))
-              .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-        : [];
 
     const handleOpenImageUpload = () => {
         fileInputRef.current.click();
@@ -239,8 +195,26 @@ const Messenger = () => {
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
-        const imageUrls = files.map((file) => URL.createObjectURL(file));
-        setPreviewImages((prev) => [...prev, ...imageUrls]);
+        if (!files || files.length === 0) return;
+
+        const newPreviewUrls = [];
+        const newFiles = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (!file.type.match('image.*')) continue;
+
+            newFiles.push(file);
+            newPreviewUrls.push(URL.createObjectURL(file));
+        }
+
+        setPreviewImages((prev) => [...prev, ...newPreviewUrls]);
+        setImageFiles((prev) => [...prev, ...newFiles]);
+    };
+
+    const handleRemoveImage = (index) => {
+        setPreviewImages((prev) => prev.filter((_, i) => i !== index));
+        setImageFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
     const handleImageClick = (imageUrl, index, imageSource = 'preview') => {
@@ -260,6 +234,27 @@ const Messenger = () => {
         });
     };
 
+    const selectedChatMessages = selectedChat
+        ? messageByChat
+              .filter(
+                  (msg) =>
+                      (msg.sender_id === userId && msg.receiver_id === selectedChat.userId) ||
+                      (msg.sender_id === selectedChat.userId && msg.receiver_id === userId),
+              )
+              .map((msg) => ({
+                  id: msg.message_id,
+                  content: msg.content,
+                  imageUrl: msg.image_url ? `${process.env.REACT_APP_BACKEND_URL}${msg.image_url}` : null,
+                  timestamp: formatTimeToVN(msg.createdAt),
+                  isSender: msg.sender_id === userId,
+                  avatar:
+                      msg.sender_id === userId
+                          ? getAvatar({ username: 'You' })
+                          : getAvatar({ username: selectedChat.name }),
+              }))
+              .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+        : [];
+
     return (
         <div className="flex h-[calc(100vh-64px)] bg-gray-100">
             <ListChat
@@ -269,6 +264,7 @@ const Messenger = () => {
                 chatList={chatList}
                 getAvatar={getAvatar}
                 isAdmin={isAdmin}
+                userId={userId}
             />
 
             <div className="flex-1 flex flex-col">
@@ -307,16 +303,15 @@ const Messenger = () => {
                                                 : 'bg-white rounded-r-lg rounded-bl-lg'
                                         } p-3 shadow-sm`}
                                     >
-                                        {msg.imageUrl ? (
+                                        {msg.imageUrl && (
                                             <img
                                                 src={msg.imageUrl}
                                                 alt="Message Image"
                                                 className="max-w-full max-h-64 rounded-md mb-1 cursor-pointer"
                                                 onClick={() => handleImageClick(msg.imageUrl, index, 'messages')}
                                             />
-                                        ) : (
-                                            <p>{msg.content}</p>
                                         )}
+                                        {msg.content && <p>{msg.content}</p>}
                                         <span className="text-xs text-gray-400 mt-1 block">{msg.timestamp}</span>
                                     </div>
                                 </div>
@@ -337,11 +332,9 @@ const Messenger = () => {
                                             />
                                             <button
                                                 type="button"
-                                                onClick={() => {
-                                                    const newPreviewImages = previewImages.filter(
-                                                        (_, i) => i !== index,
-                                                    );
-                                                    setPreviewImages(newPreviewImages);
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRemoveImage(index);
                                                 }}
                                                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600"
                                             >
@@ -377,9 +370,9 @@ const Messenger = () => {
                                 />
                                 <button
                                     type="submit"
-                                    disabled={!message.trim() && previewImages.length === 0}
+                                    disabled={!message.trim() && imageFiles.length === 0}
                                     className={`p-2 rounded-full ${
-                                        message.trim() || previewImages.length > 0
+                                        message.trim() || imageFiles.length > 0
                                             ? 'text-blue-500 hover:bg-blue-50'
                                             : 'text-gray-400'
                                     } transition-colors`}

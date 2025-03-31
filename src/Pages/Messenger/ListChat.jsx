@@ -1,19 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 
-function ListChat({ handleChatSelect, selectedChatId, chatList, isAdmin }) {
+function ListChat({ handleChatSelect, selectedChatId, chatList, isAdmin, userId }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [adminChatList, setAdminChatList] = useState(false);
+
     useEffect(() => {
         if (isAdmin) {
             setAdminChatList(true);
         }
     }, [isAdmin]);
+
     const filteredChats = chatList.filter(
         (chat) =>
             chat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase()),
     );
+
+    const getLastMessageDisplay = (chat) => {
+        const isSender = chat.lastSenderId === userId; // Kiểm tra xem bạn có phải người gửi cuối không
+        const hasImage = !!chat.lastImageUrl; // Kiểm tra xem tin nhắn cuối có ảnh không
+        const hasContent = chat.lastMessage && chat.lastMessage.trim() !== ''; // Kiểm tra xem có nội dung văn bản không
+
+        if (isSender) {
+            // Tin nhắn cuối do bạn gửi
+            if (hasImage && !hasContent) {
+                return 'Bạn: đã gửi một ảnh';
+            }
+            return `Bạn: ${chat.lastMessage}`;
+        } else {
+            // Tin nhắn cuối do người khác gửi
+            if (hasImage && !hasContent) {
+                return `${chat.name}: đã gửi một ảnh`;
+            }
+            return `${chat.name}: ${chat.lastMessage}`;
+        }
+    };
 
     return (
         <div className="w-[300px] h-[calc(100vh-64px)] bg-white border-r border-gray-300">
@@ -42,14 +64,13 @@ function ListChat({ handleChatSelect, selectedChatId, chatList, isAdmin }) {
                     >
                         {/* Avatar */}
                         <div className="relative">
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300 text-white font-bold">  
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300 text-white font-bold">
                                 {chat.avatar.startsWith('http') ? (
                                     <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-full" />
                                 ) : (
                                     chat.avatar
                                 )}
                             </div>
-
                             {chat.unread > 0 && (
                                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                                     {chat.unread}
@@ -63,16 +84,9 @@ function ListChat({ handleChatSelect, selectedChatId, chatList, isAdmin }) {
                                 <h3 className="font-semibold text-gray-800">{chat.name}</h3>
                                 <span className="text-xs text-gray-500">{chat.lastTime}</span>
                             </div>
-                            {/* //hiển thị bạn nếu là admin nhắn cho user */}
-                            {isAdmin ? (
-                                <p className="text-sm text-gray-600 truncate max-w-[200px]">
-                                    Bạn: {chat.lastMessage}
-                                </p>
-                            ) : (
-                                <p className="text-sm text-gray-600 truncate max-w-[200px]">
-                                    {chat.lastMessage}
-                                </p>
-                            )}
+                            <p className="text-sm text-gray-600 truncate max-w-[200px]">
+                                {getLastMessageDisplay(chat)}
+                            </p>
                         </div>
                     </div>
                 ))}
