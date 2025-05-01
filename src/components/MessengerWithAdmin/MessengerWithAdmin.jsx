@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { IoSend, IoClose } from 'react-icons/io5';
-import { MdOutlineSupportAgent } from 'react-icons/md';
 import { FaImage } from 'react-icons/fa';
 import IconChat from './IconChat';
 import AuthContext from '../Context/auth.context';
@@ -8,6 +7,8 @@ import { getChatHistory, sendMessage } from '../../services/messengerService';
 import logo from '../../assets/img/logo university.png';
 import { getAdminChatId } from '../../services/userService';
 import ModalViewPreviewImage from './ModalViewPreviewImage';
+import { toast } from 'react-toastify';
+import { connectSocket, setMessageCallback } from '../../setup/socket';
 
 const MessengerWithAdmin = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -16,14 +17,13 @@ const MessengerWithAdmin = () => {
     const [adminId, setAdminId] = useState([]);
     const [imageFiles, setImageFiles] = useState([]);
     const { auth } = useContext(AuthContext);
-    const userId = auth?.user?.id;
+    const userId = String(auth?.user?.id);
     const messagesEndRef = useRef(null);
 
     const [previewImages, setPreviewImages] = useState([]);
     const fileInputRef = useRef(null);
     const [uploading, setUploading] = useState(false);
 
-    
     const [selectedImage, setSelectedImage] = useState({
         url: null,
         index: null,
@@ -45,12 +45,49 @@ const MessengerWithAdmin = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
+    // Đăng ký callback ngay khi component mount
     useEffect(() => {
-        if (isOpen) {
+        const handleMessage = (newMessage) => {
+            console.log('Received real-time message (component):', newMessage);
+            const { messageId, sender_id, receiver_id, content, imageUrl, timestamp } = newMessage;
+            const senderIdStr = String(sender_id);
+            const receiverIdStr = String(receiver_id);
+            const userIdStr = String(userId);
+
+            if (senderIdStr === userIdStr || receiverIdStr === userIdStr) {
+                setMessages((prev) => [
+                    ...prev,
+                    {
+                        id: messageId,
+                        content,
+                        imageUrl: imageUrl ? `${process.env.REACT_APP_BACKEND_URL}${imageUrl}` : null,
+                        timestamp: new Date(timestamp).toLocaleTimeString('vi-VN', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                            timeZone: 'Asia/Ho_Chi_Minh',
+                        }),
+                        isSender: senderIdStr === userIdStr, // Use string comparison
+                    },
+                ]);
+            }
+        };
+
+        setMessageCallback(handleMessage);
+
+        return () => {
+            setMessageCallback(null);
+        };
+    }, [userId]);
+
+    useEffect(() => {
+        if (isOpen && userId) {
+            console.log('Current userId:', userId);
+            connectSocket(userId);
             fetchMessages();
             getAdminId();
         }
-    }, [isOpen]);
+    }, [isOpen, userId]);
 
     useEffect(() => {
         scrollToBottom();
@@ -59,7 +96,6 @@ const MessengerWithAdmin = () => {
     const fetchMessages = async () => {
         try {
             const response = await getChatHistory(userId);
-            console.log('Response from getChatHistory:', response);
             if (response.EC === '0') {
                 const formattedMessages = response.DT.map((msg) => ({
                     id: msg.message_id,
@@ -71,10 +107,11 @@ const MessengerWithAdmin = () => {
                         hour12: false,
                         timeZone: 'Asia/Ho_Chi_Minh',
                     }),
-                    isSender: msg.sender_id === userId,
+                    isSender: String(msg.sender_id) === String(userId), // Convert both to strings before comparing
                 }));
+
+                console.log('Formatted messages:', formattedMessages); // Add logging
                 setMessages(formattedMessages);
-                scrollToBottom();
             }
         } catch (error) {
             console.error('Error fetching messages:', error);
@@ -83,8 +120,10 @@ const MessengerWithAdmin = () => {
 
     const handleImageUpload = (e) => {
         const files = e.target.files;
-        if (!files || files.length === 0) return;
-
+        if (!files || files.length === 0 || files.length > 5) {
+            toast.error('Vui lòng chỉ chọn tối đa 5 ảnh');
+            return;
+        }
         const newPreviewUrls = [];
         const newFiles = [];
 
@@ -140,19 +179,105 @@ const MessengerWithAdmin = () => {
                 const response = await sendMessage(messageData);
                 console.log('Response from sendMessage:', response);
                 if (response.EC === '0') {
+                    // Nếu có hình ảnh, thêm các ảnh trước
+                    if (previewImages.length > 0) {
+                        // Nếu có url trả về từ response thì dùng url đó
+                        if (response.DT?.imageUrls && response.DT.imageUrls.length > 0) {
+                            // Thêm các hình ảnh không kèm nội dung trước
+                            for (let i = 0; i < response.DT.imageUrls.length - 1; i++) {
+                                const imgMsg = {
+                                    id: `${response.DT?.messageId || Date.now().toString()}-img-${i}`,
+                                    content: '',
+                                    imageUrl: `${process.env.REACT_APP_BACKEND_URL}${response.DT.imageUrls[i]}`,
+                                    isSender: true,
+                                    timestamp: new Date().toLocaleTimeString('vi-VN', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        hour12: false,
+                                        timeZone: 'Asia/Ho_Chi_Minh',
+                                    }),
+                                };
+                                setMessages((prev) => [...prev, imgMsg]);
+                            }
+
+                            // Thêm ảnh cuối cùng kèm nội dung tin nhắn
+                            const lastIndex = response.DT.imageUrls.length - 1;
+                            const lastImgMsg = {
+                                id: `${response.DT?.messageId || Date.now().toString()}-img-${lastIndex}`,
+                                content: message.trim() || '',
+                                imageUrl: `${process.env.REACT_APP_BACKEND_URL}${response.DT.imageUrls[lastIndex]}`,
+                                isSender: true,
+                                timestamp: new Date().toLocaleTimeString('vi-VN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: false,
+                                    timeZone: 'Asia/Ho_Chi_Minh',
+                                }),
+                            };
+                            setMessages((prev) => [...prev, lastImgMsg]);
+                        } else {
+                            // Nếu chưa có url trả về, dùng tạm preview
+                            // Thêm các hình ảnh không kèm nội dung trước
+                            for (let i = 0; i < previewImages.length - 1; i++) {
+                                const imgMsg = {
+                                    id: `${response.DT?.messageId || Date.now().toString()}-img-${i}`,
+                                    content: '',
+                                    imageUrl: previewImages[i],
+                                    isSender: true,
+                                    timestamp: new Date().toLocaleTimeString('vi-VN', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        hour12: false,
+                                        timeZone: 'Asia/Ho_Chi_Minh',
+                                    }),
+                                };
+                                setMessages((prev) => [...prev, imgMsg]);
+                            }
+
+                            // Thêm ảnh cuối cùng kèm nội dung tin nhắn
+                            const lastIndex = previewImages.length - 1;
+                            const lastImgMsg = {
+                                id: `${response.DT?.messageId || Date.now().toString()}-img-${lastIndex}`,
+                                content: message.trim() || '',
+                                imageUrl: previewImages[lastIndex],
+                                isSender: true,
+                                timestamp: new Date().toLocaleTimeString('vi-VN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: false,
+                                    timeZone: 'Asia/Ho_Chi_Minh',
+                                }),
+                            };
+                            setMessages((prev) => [...prev, lastImgMsg]);
+                        }
+                    } else {
+                        // Nếu không có hình ảnh, thêm tin nhắn text
+                        const newMessage = {
+                            id: response.DT?.messageId || Date.now().toString(),
+                            content: message.trim() || '',
+                            isSender: true,
+                            timestamp: new Date().toLocaleTimeString('vi-VN', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                                timeZone: 'Asia/Ho_Chi_Minh',
+                            }),
+                        };
+                        setMessages((prev) => [...prev, newMessage]);
+                    }
+
                     setMessage('');
                     setPreviewImages([]);
                     setImageFiles([]);
-                    await fetchMessages();
                 } else {
-                    alert('Không thể gửi tin nhắn: ' + response.EM);
+                    toast.error('Không thể gửi tin nhắn: ' + response.EM);
                 }
             } else {
-                alert('Không tìm thấy admin để gửi tin nhắn');
+                toast.error('Không tìm thấy admin để gửi tin nhắn');
             }
         } catch (error) {
             console.error('Error sending message:', error);
-            alert('Có lỗi xảy ra khi gửi tin nhắn');
+            toast.error('Có lỗi xảy ra khi gửi tin nhắn');
         } finally {
             setUploading(false);
         }
@@ -178,7 +303,6 @@ const MessengerWithAdmin = () => {
     return (
         <>
             <IconChat onClick={() => setIsOpen(!isOpen)} />
-
             {isOpen && (
                 <div className="fixed bottom-24 right-4 w-[350px] bg-white rounded-lg shadow-xl border border-gray-200">
                     <div className="bg-blue-600 rounded-t-md text-white flex justify-between items-center p-4 border-b">
@@ -196,7 +320,7 @@ const MessengerWithAdmin = () => {
                             <div key={msg.id} className={`flex ${msg.isSender ? 'justify-end' : 'justify-start'} mb-4`}>
                                 {!msg.isSender && (
                                     <div className="w-8 h-8 flex items-center justify-center mr-2">
-                                       <img src={logo} alt="Logo" className="w-8 h-8" />
+                                        <img src={logo} alt="Logo" className="w-8 h-8" />
                                     </div>
                                 )}
                                 <div

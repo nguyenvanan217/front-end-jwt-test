@@ -1,10 +1,12 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import ListChat from './ListChat';
 import { IoSend } from 'react-icons/io5';
 import { FaImage } from 'react-icons/fa';
 import AuthContext from '../../components/Context/auth.context';
 import { getAllChatAdmin, sendMessage } from '../../services/messengerService';
 import ModalViewPreviewImage from '../../components/MessengerWithAdmin/ModalViewPreviewImage';
+import { connectSocket, addMessageCallback, removeMessageCallback } from '../../setup/socket';
+import socket from '../../setup/socket';
 
 const Messenger = () => {
     const { auth } = useContext(AuthContext);
@@ -26,6 +28,7 @@ const Messenger = () => {
         index: null,
         images: [],
     });
+    const [selectedChatMessages, setSelectedChatMessages] = useState([]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -63,25 +66,25 @@ const Messenger = () => {
         try {
             const response = (await getAllChatAdmin()) || null;
             if (!response?.DT) return;
-    
+
             const adminMessages = response.DT.filter(
                 (chat) => chat.sender_id === userId || chat.receiver_id === userId,
             );
-    
+
             const sortedMessages = adminMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             setMessageByChat(sortedMessages);
-    
+
             const transformedChats = new Map();
-    
+
             adminMessages.forEach((chat) => {
                 if (chat.sender_id !== userId && chat.receiver_id !== userId) return;
-    
+
                 const otherUser = chat.sender_id === userId ? chat.receiver : chat.sender;
                 if (!otherUser?.id) return;
-    
+
                 const existingChat = transformedChats.get(otherUser.id);
                 const currentTime = new Date(chat.createdAt).getTime();
-    
+
                 if (!existingChat || currentTime > new Date(existingChat.createdAt).getTime()) {
                     transformedChats.set(otherUser.id, {
                         id: chat.message_id,
@@ -97,7 +100,7 @@ const Messenger = () => {
                     });
                 }
             });
-    
+
             const sortedChats = Array.from(transformedChats.values()).sort(
                 (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
             );
@@ -110,6 +113,90 @@ const Messenger = () => {
     useEffect(() => {
         fetchAllMessage();
     }, []);
+
+    // Connect socket khi component mount và chỉ chạy một lần duy nhất
+    useEffect(() => {
+        if (!userId) return;
+
+        console.log('Connecting socket for user ID:', userId);
+        connectSocket(userId);
+
+        return () => {
+            // No cleanup needed for connectSocket
+        };
+    }, [userId]);
+
+    // Xử lý tin nhắn socket riêng biệt với useCallback
+    const handleSocketMessage = useCallback(
+        (newMessage) => {
+            console.log('Received real-time message in Messenger:', newMessage);
+            const { messageId, sender_id, receiver_id, content, imageUrl, timestamp } = newMessage;
+            const senderIdStr = String(sender_id);
+            const receiverIdStr = String(receiver_id);
+            const userIdStr = String(userId);
+
+            // Only process messages where this user is sender or receiver
+            if (senderIdStr === userIdStr || receiverIdStr === userIdStr) {
+                // Find sender info from the chat list if available
+                let senderName = 'User';
+                const otherUserId = senderIdStr === userIdStr ? receiverIdStr : senderIdStr;
+
+                // Tìm thông tin người gửi từ danh sách chat
+                const relevantChat = chatList.find((chat) => String(chat.userId) === otherUserId);
+
+                if (relevantChat) {
+                    senderName = relevantChat.name;
+                }
+
+                // Format tin nhắn để phù hợp với cấu trúc API
+                const newMsg = {
+                    message_id: messageId,
+                    sender_id: sender_id,
+                    receiver_id: receiver_id,
+                    content: content || '',
+                    image_url: imageUrl
+                        ? imageUrl.startsWith('http')
+                            ? imageUrl
+                            : `${process.env.REACT_APP_BACKEND_URL}${imageUrl}`
+                        : null,
+                    createdAt: timestamp,
+                    sender: {
+                        id: sender_id,
+                        username: senderIdStr === userIdStr ? 'You' : senderName,
+                    },
+                    receiver: {
+                        id: receiver_id,
+                        username: receiverIdStr === userIdStr ? 'You' : senderName,
+                    },
+                    status: 'Sent',
+                };
+
+                console.log('Adding new message to state:', newMsg);
+
+                // Cập nhật state messageByChat
+                setMessageByChat((prevMessages) => {
+                    // Kiểm tra xem tin nhắn đã tồn tại chưa
+                    const exists = prevMessages.some((msg) => String(msg.message_id) === String(messageId));
+                    if (exists) return prevMessages;
+                    return [...prevMessages, newMsg];
+                });
+            }
+        },
+        [userId, chatList],
+    );
+
+    // Đăng ký lắng nghe tin nhắn socket
+    useEffect(() => {
+        if (!userId) return;
+
+        console.log('Setting up message listener in Messenger');
+        addMessageCallback(handleSocketMessage);
+
+        return () => {
+            console.log('Cleaning up message listener in Messenger');
+            removeMessageCallback(handleSocketMessage);
+        };
+    }, [userId, handleSocketMessage]);
 
     const handleChatSelect = (chat) => {
         console.log('Selected chat:', chat);
@@ -132,7 +219,11 @@ const Messenger = () => {
                 id: message.message_id,
                 sender: message.sender_id === userId ? 'You' : chat.name,
                 content: message.content,
-                imageUrl: message.image_url ? `${process.env.REACT_APP_BACKEND_URL}${message.image_url}` : null,
+                imageUrl: message.image_url
+                    ? message.image_url.startsWith('http')
+                        ? message.image_url
+                        : `${process.env.REACT_APP_BACKEND_URL}${message.image_url}`
+                    : null,
                 timestamp: formatTimeToVN(message.createdAt),
                 isSender: message.sender_id === userId,
                 avatar:
@@ -234,37 +325,77 @@ const Messenger = () => {
         });
     };
 
-    const selectedChatMessages = selectedChat
-        ? messageByChat
-              .filter(
-                  (msg) =>
-                      (msg.sender_id === userId && msg.receiver_id === selectedChat.userId) ||
-                      (msg.sender_id === selectedChat.userId && msg.receiver_id === userId),
-              )
-              .map((msg) => ({
-                  id: msg.message_id,
-                  content: msg.content,
-                  imageUrl: msg.image_url ? `${process.env.REACT_APP_BACKEND_URL}${msg.image_url}` : null,
-                  timestamp: formatTimeToVN(msg.createdAt),
-                  isSender: msg.sender_id === userId,
-                  avatar:
-                      msg.sender_id === userId
-                          ? getAvatar({ username: 'You' })
-                          : getAvatar({ username: selectedChat.name }),
-              }))
-              .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-        : [];
+    // Theo dõi messageByChat để cập nhật lại selectedChatMessages một cách tự động
+    useEffect(() => {
+        if (!selectedChat) {
+            setSelectedChatMessages([]);
+            return;
+        }
+
+        const messages = messageByChat
+            .filter((msg) => {
+                // Chỉ hiển thị tin nhắn thuộc cuộc trò chuyện hiện tại
+                const isCurrentConversation =
+                    (String(msg.sender_id) === String(userId) &&
+                        String(msg.receiver_id) === String(selectedChat.userId)) ||
+                    (String(msg.sender_id) === String(selectedChat.userId) &&
+                        String(msg.receiver_id) === String(userId));
+                return isCurrentConversation;
+            })
+            .map((msg) => ({
+                id: msg.message_id,
+                content: msg.content,
+                imageUrl: msg.image_url
+                    ? msg.image_url.startsWith('http')
+                        ? msg.image_url
+                        : `${process.env.REACT_APP_BACKEND_URL}${msg.image_url}`
+                    : null,
+                timestamp: formatTimeToVN(msg.createdAt),
+                isSender: String(msg.sender_id) === String(userId),
+                avatar:
+                    String(msg.sender_id) === String(userId)
+                        ? getAvatar({ username: 'You' })
+                        : getAvatar({ username: selectedChat.name }),
+            }))
+            .sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+
+        setSelectedChatMessages(messages);
+        // Cuộn xuống phía dưới khi có tin nhắn mới
+        setTimeout(scrollToBottom, 100);
+    }, [messageByChat, selectedChat, userId]);
+
+    // Theo dõi messageByChat để tự động cập nhật selectedChatMessages khi có tin nhắn mới
+    useEffect(() => {
+        // Khi có tin nhắn mới được nhận, cần tạo thông báo nếu chưa chọn chat hoặc tin nhắn từ người khác
+        if (messageByChat.length > 0 && !selectedChat) {
+            // Đây là thời điểm tốt để hiển thị thông báo có tin nhắn mới
+            console.log('Có tin nhắn mới khi chưa có cuộc trò chuyện nào được chọn');
+        } else if (messageByChat.length > 0 && selectedChat) {
+            // Kiểm tra xem tin nhắn mới có thuộc về cuộc trò chuyện hiện tại không
+            const latestMessage = messageByChat[messageByChat.length - 1];
+            const isForeignMessage =
+                String(latestMessage.sender_id) !== String(userId) &&
+                (String(latestMessage.sender_id) === String(selectedChat.userId) ||
+                    String(latestMessage.receiver_id) === String(selectedChat.userId));
+
+            if (isForeignMessage) {
+                console.log('Tin nhắn mới từ đối tác trong cuộc trò chuyện hiện tại', latestMessage);
+                // Đảm bảo cuộn xuống cuối cùng
+                setTimeout(scrollToBottom, 100);
+            }
+        }
+    }, [messageByChat, selectedChat, userId]);
 
     return (
         <div className="flex h-[calc(100vh-64px)] bg-gray-100">
             <ListChat
                 handleChatSelect={handleChatSelect}
                 selectedChatId={selectedChat?.id}
-                fetchAllMessage={fetchAllMessage}
                 chatList={chatList}
-                getAvatar={getAvatar}
-                isAdmin={isAdmin}
+                setChatList={setChatList}
                 userId={userId}
+                socket={socket}
+                formatTimeToVN={formatTimeToVN}
             />
 
             <div className="flex-1 flex flex-col">
