@@ -8,7 +8,7 @@ import logo from '../../assets/img/logo university.png';
 import { getAdminChatId } from '../../services/userService';
 import ModalViewPreviewImage from './ModalViewPreviewImage';
 import { toast } from 'react-toastify';
-import { connectSocket, setMessageCallback } from '../../setup/socket';
+import { connectSocket, addMessageCallback, removeMessageCallback } from '../../setup/socket';
 
 const MessengerWithAdmin = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -19,6 +19,7 @@ const MessengerWithAdmin = () => {
     const { auth } = useContext(AuthContext);
     const userId = String(auth?.user?.id);
     const messagesEndRef = useRef(null);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const [previewImages, setPreviewImages] = useState([]);
     const fileInputRef = useRef(null);
@@ -45,53 +46,98 @@ const MessengerWithAdmin = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    // Đăng ký callback ngay khi component mount
+    // Kết nối socket và lấy dữ liệu ngay khi component được mount, không phụ thuộc vào isOpen
     useEffect(() => {
-        const handleMessage = (newMessage) => {
-            console.log('Received real-time message (component):', newMessage);
+        if (userId) {
+            console.log('Connecting socket from MessengerWithAdmin for user ID:', userId);
+            connectSocket(userId);
+            getAdminId();
+
+            // Chỉ cần fetch messages khi mở chat lần đầu
+            if (isOpen && messages.length === 0) {
+                fetchMessages();
+            }
+        }
+    }, [userId, isOpen]);
+
+    // Xử lý tin nhắn socket với useCallback để tránh tạo lại hàm này mỗi khi render
+    const handleSocketMessage = React.useCallback(
+        (newMessage) => {
+            console.log('MessengerWithAdmin received socket message:', newMessage);
             const { messageId, sender_id, receiver_id, content, imageUrl, timestamp } = newMessage;
             const senderIdStr = String(sender_id);
             const receiverIdStr = String(receiver_id);
             const userIdStr = String(userId);
 
+            // Chỉ xử lý tin nhắn liên quan đến người dùng hiện tại
             if (senderIdStr === userIdStr || receiverIdStr === userIdStr) {
-                setMessages((prev) => [
-                    ...prev,
-                    {
-                        id: messageId,
-                        content,
-                        imageUrl: imageUrl ? `${process.env.REACT_APP_BACKEND_URL}${imageUrl}` : null,
-                        timestamp: new Date(timestamp).toLocaleTimeString('vi-VN', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
-                            timeZone: 'Asia/Ho_Chi_Minh',
-                        }),
-                        isSender: senderIdStr === userIdStr, // Use string comparison
-                    },
-                ]);
-            }
-        };
+                // Kiểm tra xem tin nhắn này đã được hiển thị chưa
+                setMessages((prev) => {
+                    // Kiểm tra có trùng lặp không (dựa vào messageId và cả các ID tạm thời bắt đầu bằng messageId)
+                    const messageExists = prev.some(
+                        (msg) =>
+                            String(msg.id) === String(messageId) ||
+                            (msg.id && msg.id.startsWith && msg.id.startsWith(String(messageId))),
+                    );
 
-        setMessageCallback(handleMessage);
+                    if (messageExists) {
+                        return prev; // Nếu tin nhắn đã tồn tại, không thêm vào nữa
+                    }
+
+                    // Nếu không phải là người gửi và chat chưa mở thì tăng unreadCount
+                    if (senderIdStr !== userIdStr && !isOpen) {
+                        setUnreadCount((count) => count + 1);
+                    }
+
+                    // Chỉ thêm tin nhắn nếu người gửi KHÔNG phải là người dùng hiện tại
+                    // (tin nhắn từ người dùng hiện tại đã được thêm bởi handleSendMessage)
+                    if (senderIdStr !== userIdStr) {
+                        const newMsg = {
+                            id: messageId,
+                            content: content || '',
+                            imageUrl: imageUrl ? `${process.env.REACT_APP_BACKEND_URL}${imageUrl}` : null,
+                            timestamp: new Date(timestamp).toLocaleTimeString('vi-VN', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                                timeZone: 'Asia/Ho_Chi_Minh',
+                            }),
+                            isSender: false, // Tin nhắn nhận từ socket và không phải từ người dùng hiện tại thì chắc chắn là isSender = false
+                        };
+                        return [...prev, newMsg];
+                    }
+                    return prev;
+                });
+            }
+        },
+        [userId, isOpen],
+    );
+
+    // Đăng ký lắng nghe tin nhắn socket - luôn hoạt động kể cả khi chat chưa mở
+    useEffect(() => {
+        if (!userId) return;
+
+        console.log('Setting up message listener in MessengerWithAdmin');
+        addMessageCallback(handleSocketMessage);
 
         return () => {
-            setMessageCallback(null);
+            console.log('Cleaning up message listener in MessengerWithAdmin');
+            removeMessageCallback(handleSocketMessage);
         };
-    }, [userId]);
+    }, [userId, handleSocketMessage]);
 
+    // Reset unreadCount khi mở chat
     useEffect(() => {
-        if (isOpen && userId) {
-            console.log('Current userId:', userId);
-            connectSocket(userId);
-            fetchMessages();
-            getAdminId();
+        if (isOpen) {
+            setUnreadCount(0);
         }
-    }, [isOpen, userId]);
+    }, [isOpen]);
 
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+        if (isOpen) {
+            scrollToBottom();
+        }
+    }, [messages, isOpen]);
 
     const fetchMessages = async () => {
         try {
@@ -302,7 +348,7 @@ const MessengerWithAdmin = () => {
 
     return (
         <>
-            <IconChat onClick={() => setIsOpen(!isOpen)} />
+            <IconChat onClick={() => setIsOpen(!isOpen)} unreadCount={unreadCount} />
             {isOpen && (
                 <div className="fixed bottom-24 right-4 w-[350px] bg-white rounded-lg shadow-xl border border-gray-200">
                     <div className="bg-blue-600 rounded-t-md text-white flex justify-between items-center p-4 border-b">
