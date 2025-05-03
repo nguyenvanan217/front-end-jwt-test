@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { deleteTransaction, getUserDetailsById, updateTransactionDateAndStatus } from '../../services/userService';
+import {
+    deleteTransaction,
+    getUserDetailsById,
+    updateTransactionDateAndStatus,
+    markViolationAsResolved,
+} from '../../services/userService';
 import { toast } from 'react-toastify';
 import './BookLoanReturnDetails.css';
 import ModalDeleteTransaction from './ModalDeleteTransaction';
@@ -23,10 +28,15 @@ function BookLoanReturnDetails() {
     const autoUpdateStatus = async () => {
         try {
             const response = await autoUpdateStatusInDB();
-            console.log('response check cú', response);
-            if (response && response.DT.hasChanges === true) {
-                toast.success(response.EM);
-                await fetchUserDetails();
+            console.log('Response from autoUpdateStatus:', response);
+
+            if (response && response.data && response.data.EC === 0) {
+                if (response.data.DT && response.data.DT.hasChanges) {
+                    toast.success(response.data.EM);
+                    await fetchUserDetails();
+                }
+            } else {
+                console.log('No changes needed or invalid response format');
             }
         } catch (error) {
             console.error('Lỗi khi cập nhật trạng thái:', error);
@@ -165,6 +175,40 @@ function BookLoanReturnDetails() {
         }
     };
 
+    // Thêm hàm handleConfirmReturn
+    const handleConfirmReturn = async (transactionId) => {
+        try {
+            const response = await markViolationAsResolved(transactionId);
+            if (response && response.EC === 0) {
+                toast.success('Xác nhận trạng thái thành công');
+                await autoUpdateStatus();
+                await fetchUserDetails();
+            } else {
+                toast.error(response.EM);
+            }
+        } catch (error) {
+            console.error('Lỗi khi xác nhận:', error);
+            toast.error('Không thể xác nhận trạng thái');
+        }
+    };
+
+    // Thêm hàm handleConfirmStatusUpdate
+    const handleConfirmStatusUpdate = async (transactionId) => {
+        try {
+            const response = await markViolationAsResolved(transactionId);
+            if (response && response.EC === 0) {
+                toast.success('Cập nhật trạng thái thành công');
+                await autoUpdateStatus();
+                await fetchUserDetails();
+            } else {
+                toast.error(response.EM || 'Không thể cập nhật trạng thái');
+            }
+        } catch (error) {
+            console.error('Lỗi khi cập nhật trạng thái:', error);
+            toast.error('Không thể cập nhật trạng thái');
+        }
+    };
+
     // Thêm hàm tính toán số lượng theo trạng thái
     const calculateStatusCounts = () => {
         if (!userDetails?.Transactions) return { returned: 0, pending: 0, overdue: 0 };
@@ -187,6 +231,71 @@ function BookLoanReturnDetails() {
                 return acc;
             },
             { returned: 0, pending: 0, overdue: 0 },
+        );
+    };
+
+    const formatCurrentDate = () => {
+        const today = new Date();
+        return formatDate(today);
+    };
+
+    const calculateDays = (returnDate) => {
+        if (!returnDate) return 0;
+
+        const end = new Date(returnDate);
+        const today = new Date();
+
+        // Reset time về 00:00:00
+        end.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        // Chỉ tính ngày quá hạn nếu ngày hiện tại > ngày trả
+        if (today > end) {
+            const diffTime = today - end;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            console.log('Return date:', end.toLocaleDateString());
+            console.log('Today:', today.toLocaleDateString());
+            console.log('Days overdue:', diffDays);
+
+            return diffDays;
+        }
+        return 0;
+    };
+
+    const calculateOverdueDays = (returnDate) => {
+        return calculateDays(returnDate);
+    };
+
+    const calculateFine = (returnDate) => {
+        const overdueDays = calculateOverdueDays(returnDate);
+        const fine = overdueDays * 10000;
+        console.log('Fine amount:', fine);
+        return fine;
+    };
+
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        }).format(amount);
+    };
+
+    // Tính tổng số ngày quá hạn và tiền phạt
+    const calculateTotalOverdueDaysAndFine = () => {
+        if (!userDetails?.Transactions) return { totalDays: 0, totalFine: 0 };
+
+        return userDetails.Transactions.reduce(
+            (acc, transaction) => {
+                if (transaction.status === 'Quá hạn') {
+                    const overdueDays = calculateOverdueDays(transaction.return_date);
+                    const fine = calculateFine(transaction.return_date);
+                    acc.totalDays += overdueDays;
+                    acc.totalFine += fine;
+                }
+                return acc;
+            },
+            { totalDays: 0, totalFine: 0 },
         );
     };
 
@@ -260,6 +369,30 @@ function BookLoanReturnDetails() {
                                         </span>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td className="px-4 py-2 font-medium">Ngày hiện tại:</td>
+                                    <td className="px-4 py-2 text-blue-600 font-medium">{formatCurrentDate()}</td>
+                                </tr>
+                                {calculateStatusCounts().overdue > 0 && (
+                                    <>
+                                        <tr>
+                                            <td className="px-4 py-2 font-medium">Tổng số ngày quá hạn:</td>
+                                            <td className="px-4 py-2">
+                                                <span className="text-red-500 font-bold px-2 py-1 rounded">
+                                                    {calculateTotalOverdueDaysAndFine().totalDays} ngày
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-medium">Tiền phạt:</td>
+                                            <td className="px-4 py-2">
+                                                <span className="text-red-500 font-bold px-2 py-1 rounded">
+                                                    {formatCurrency(calculateTotalOverdueDaysAndFine().totalFine)}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -337,6 +470,26 @@ function BookLoanReturnDetails() {
                                                 <td className="px-4 py-2">{formatDate(transaction.return_date)}</td>
                                             )}
                                         </tr>
+                                        {transaction.status === 'Quá hạn' && (
+                                            <>
+                                                <tr>
+                                                    <td className="px-4 py-2 font-medium">Số ngày quá hạn:</td>
+                                                    <td className="px-4 py-2">
+                                                        <span className="text-red-500 font-medium">
+                                                            {calculateOverdueDays(transaction.return_date)} ngày
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="px-4 py-2 font-medium">Tiền phạt:</td>
+                                                    <td className="px-4 py-2">
+                                                        <span className="text-red-500 font-medium">
+                                                            {formatCurrency(calculateFine(transaction.return_date))}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </>
+                                        )}
                                         {dateErrors[transaction.id] && (
                                             <tr>
                                                 <td colSpan="2" className="px-4 py-2">
@@ -349,8 +502,8 @@ function BookLoanReturnDetails() {
                                         <tr>
                                             <td className="px-4 py-2 font-medium">Trạng thái:</td>
                                             <td className="px-4 py-2">
-                                                <span
-                                                    className={`px-2 py-1 rounded ${
+                                                <div className="flex items-center gap-4">
+                                                    <span className={`px-2 py-1 rounded ${
                                                         transaction.status === 'Quá hạn'
                                                             ? 'bg-red-500 text-white'
                                                             : transaction.status === 'Chờ trả'
@@ -358,10 +511,24 @@ function BookLoanReturnDetails() {
                                                             : transaction.status === 'Đã trả'
                                                             ? 'bg-green-500 text-white'
                                                             : ''
-                                                    }`}
-                                                >
-                                                    {transaction.status}
-                                                </span>
+                                                    }`}>
+                                                        {transaction.status}
+                                                    </span>
+                                                    {(transaction.status === 'Quá hạn' || transaction.status === 'Chờ trả') && (
+                                                        <button
+                                                            onClick={() => handleConfirmReturn(transaction.id)}
+                                                            className={`text-white font-bold py-1 px-3 rounded text-sm ${
+                                                                transaction.status === 'Quá hạn'
+                                                                    ? 'bg-blue-500 hover:bg-blue-700'
+                                                                    : 'bg-green-500 hover:bg-green-700'
+                                                            }`}
+                                                        >
+                                                            {transaction.status === 'Quá hạn'
+                                                                ? 'Xác nhận đã nộp phạt'
+                                                                : 'Xác nhận đã trả sách'}
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     </tbody>

@@ -11,13 +11,11 @@ function BookBorrowingHistory() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredData, setFilteredData] = useState([]);
     const [statusFilter, setStatusFilter] = useState('all');
-
     const [currentPage, setCurrentPage] = useState(1);
-    const [currentLimit, setCurrentLimit] = useState(8);
+    const [currentLimit] = useState(8);
     const [totalPage, setTotalPage] = useState(0);
-    const [isLoading, setIsLoading] = useState(false);
-    const [hasSearched, setHasSearched] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
 
     useEffect(() => {
         if (searchTerm.trim() !== '') {
@@ -26,10 +24,7 @@ function BookBorrowingHistory() {
                 setCurrentPage(1);
                 fetchBorrowingData();
             }, 500);
-
-            return () => {
-                clearTimeout(timeoutId);
-            };
+            return () => clearTimeout(timeoutId);
         } else {
             setIsSearching(false);
             fetchBorrowingData();
@@ -48,7 +43,6 @@ function BookBorrowingHistory() {
             if (response && response.EC === 0) {
                 if (response.DT && (response.DT.users || response.DT)) {
                     const users = searchTerm.trim() ? response.DT : response.DT.users;
-
                     const validUsers = users.filter(
                         (user) =>
                             user?.Transactions && Object.keys(user.Transactions).length > 0 && user.Transactions?.Book,
@@ -59,32 +53,14 @@ function BookBorrowingHistory() {
                             ? validUsers
                             : validUsers.filter((user) => user.Transactions.status === statusFilter);
 
-                    const sortedUsers = filteredByStatus.sort((a, b) => {
-                        const dateA = new Date(a.Transactions.borrow_date);
-                        const dateB = new Date(b.Transactions.borrow_date);
-                        return dateB - dateA;
-                    });
-
-                    setBorrowingData(sortedUsers);
-                    setFilteredData(sortedUsers);
+                    setBorrowingData(filteredByStatus);
+                    setFilteredData(filteredByStatus);
                     setTotalPage(searchTerm.trim() ? 0 : response.DT.totalPages);
-                } else {
-                    setBorrowingData([]);
-                    setFilteredData([]);
-                    setTotalPage(0);
                 }
-            } else {
-                toast.error(response.EM);
-                setBorrowingData([]);
-                setFilteredData([]);
-                setTotalPage(0);
             }
         } catch (error) {
             console.error('Lỗi khi lấy dữ liệu:', error);
             toast.error('Không thể lấy dữ liệu mượn sách');
-            setBorrowingData([]);
-            setFilteredData([]);
-            setTotalPage(0);
         } finally {
             setIsSearching(false);
             setHasSearched(true);
@@ -115,20 +91,39 @@ function BookBorrowingHistory() {
         return `${day}-${month}-${year}`;
     };
 
-    const calculateFine = (returnDate) => {
+    const calculateDays = (returnDate) => {
         if (!returnDate) return 0;
 
+        const end = new Date(returnDate);
         const today = new Date();
-        const dueDate = new Date(returnDate);
-        today.setHours(0, 0, 0, 0);
-        dueDate.setHours(0, 0, 0, 0);
 
-        if (today > dueDate) {
-            const diffTime = Math.abs(today - dueDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays * 10000;
+        // Reset time về 00:00:00
+        end.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        // Chỉ tính ngày quá hạn nếu ngày hiện tại > ngày trả
+        if (today > end) {
+            const diffTime = today - end;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            console.log('Return date:', end.toLocaleDateString());
+            console.log('Today:', today.toLocaleDateString());
+            console.log('Days overdue:', diffDays);
+
+            return diffDays;
         }
         return 0;
+    };
+
+    const calculateOverdueDays = (returnDate) => {
+        return calculateDays(returnDate);
+    };
+
+    const calculateFine = (returnDate) => {
+        const overdueDays = calculateOverdueDays(returnDate);
+        const fine = overdueDays * 10000;
+        console.log('Fine amount:', fine);
+        return fine;
     };
 
     const formatCurrency = (amount) => {
@@ -136,6 +131,11 @@ function BookBorrowingHistory() {
             style: 'currency',
             currency: 'VND',
         }).format(amount);
+    };
+
+    const formatCurrentDate = () => {
+        const today = new Date();
+        return formatDate(today);
     };
 
     const handlePageClick = (event) => {
@@ -191,22 +191,24 @@ function BookBorrowingHistory() {
                     <table className="min-w-full bg-white border border-gray-300">
                         <thead className="bg-gray-100">
                             <tr>
-                                <th className="py-3 px-4 text-left border-b whitespace-nowrap">ID</th>
-                                <th className="py-3 px-4 text-left border-b whitespace-nowrap">Tên sinh viên</th>
-                                <th className="py-3 px-4 text-left border-b whitespace-nowrap">Email</th>
-                                <th className="py-3 px-4 text-left border-b whitespace-nowrap">Tên sách</th>
+                                {/* <th className="py-3 px-4 text-left border-b">ID</th> */}
+                                <th className="py-3 px-4 text-left border-b">Tên sinh viên</th>
+                                <th className="py-3 px-4 text-left border-b">Email</th>
+                                <th className="py-3 px-4 text-left border-b">Tên sách</th>
                                 <th className="py-3 px-4 text-left border-b whitespace-nowrap">Ngày mượn</th>
-                                <th className="py-3 px-4 text-left border-b whitespace-nowrap">Ngày trả</th>
-                                <th className="py-3 px-4 text-left border-b whitespace-nowrap w-[120px]">Tiền phạt</th>
-                                <th className="py-3 px-4 text-left border-b whitespace-nowrap">Trạng thái</th>
-                                <th className="py-3 px-4 text-left border-b whitespace-nowrap">Chi tiết</th>
-                                <th className="py-3 px-4 text-left border-b whitespace-nowrap">Xác nhận</th>
+                                <th className="py-3 px-4 text-left border-b">Ngày trả</th>
+                                <th className="py-3 px-4 text-left border-b whitespace-nowrap">Ngày hiện tại</th>
+                                <th className="py-3 px-4 text-left border-b">Số ngày quá hạn</th>
+                                <th className="py-3 px-4 text-left border-b">Tiền phạt</th>
+                                <th className="py-3 px-4 text-left border-b">Trạng thái</th>
+                                <th className="py-3 px-4 text-left border-b">Chi tiết</th>
+                                <th className="py-3 px-4 text-left border-b">Xác nhận</th>
                             </tr>
                         </thead>
                         <tbody>
                             {isSearching ? (
                                 <tr>
-                                    <td colSpan="10" className="text-center py-4">
+                                    <td colSpan="11" className="text-center py-4">
                                         <div className="flex items-center justify-center gap-2">
                                             <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                                             <span>Đang tìm kiếm...</span>
@@ -217,30 +219,36 @@ function BookBorrowingHistory() {
                                 filteredData.map((user) => {
                                     if (!user?.Transactions?.Book) return null;
 
-                                    const transactionKey = `${user.Transactions.id}-${user.Transactions.Book.id}`;
-
                                     const fine =
                                         user.Transactions.status === 'Quá hạn'
                                             ? calculateFine(user.Transactions.return_date)
                                             : 0;
 
+                                    const overdueDays =
+                                        user.Transactions.status === 'Quá hạn'
+                                            ? calculateOverdueDays(user.Transactions.return_date)
+                                            : 0;
+
                                     return (
-                                        <tr key={transactionKey} className="hover:bg-gray-50">
-                                            <td className="py-2 px-4 border-b whitespace-nowrap">{user.id}</td>
+                                        <tr
+                                            key={`${user.Transactions.id}-${user.Transactions.Book.id}`}
+                                            className="hover:bg-gray-50"
+                                        >
+                                            {/* <td className="py-2 px-4 border-b">{user.id}</td> */}
                                             <td className="py-2 px-4 border-b">
-                                                <div className="w-[140px] truncate" title={user.username || ''}>
+                                                <div className="w-[140px] truncate" title={user.username}>
                                                     {user.username}
                                                 </div>
                                             </td>
                                             <td className="py-2 px-4 border-b">
-                                                <div className="w-[140px] truncate" title={user.email || ''}>
+                                                <div className="w-[140px] truncate" title={user.email}>
                                                     {user.email}
                                                 </div>
                                             </td>
                                             <td className="py-2 px-4 border-b">
                                                 <div
                                                     className="w-[160px] truncate"
-                                                    title={user.Transactions.Book.title || ''}
+                                                    title={user.Transactions.Book.title}
                                                 >
                                                     {user.Transactions.Book.title}
                                                 </div>
@@ -251,26 +259,28 @@ function BookBorrowingHistory() {
                                             <td className="py-2 px-4 border-b whitespace-nowrap">
                                                 {formatDate(user.Transactions.return_date)}
                                             </td>
-                                            <td className="py-2 px-4 border-b whitespace-nowrap w-[120px]">
+                                            <td className="py-2 px-4 border-b text-blue-600 font-medium">
+                                                {formatCurrentDate()}
+                                            </td>
+                                            <td className="py-2 px-4 border-b whitespace-nowrap">
                                                 {user.Transactions.status === 'Quá hạn' ? (
-                                                    <div
-                                                        className="w-full truncate text-red-500 font-medium"
-                                                        title={formatCurrency(fine)}
-                                                    >
+                                                    <div className="text-red-500 font-medium">{overdueDays} ngày</div>
+                                                ) : (
+                                                    <div className="text-gray-500">0 ngày</div>
+                                                )}
+                                            </td>
+                                            <td className="py-2 px-4 border-b">
+                                                {user.Transactions.status === 'Quá hạn' ? (
+                                                    <div className="text-red-500 font-medium">
                                                         {formatCurrency(fine)}
                                                     </div>
                                                 ) : (
-                                                    <div
-                                                        className="w-full truncate text-gray-500"
-                                                        title="Không có tiền phạt"
-                                                    >
-                                                        Không có
-                                                    </div>
+                                                    <div className="text-gray-500">Không có</div>
                                                 )}
                                             </td>
-                                            <td className="py-2 px-4 border-b whitespace-nowrap">
+                                            <td className="py-2 px-4 border-b">
                                                 <span
-                                                    className={`px-2 py-1 rounded text-white inline-block
+                                                    className={`px-2 py-1 rounded text-white inline-block whitespace-nowrap
                                                     ${
                                                         user.Transactions.status === 'Quá hạn'
                                                             ? 'bg-red-500'
@@ -282,15 +292,15 @@ function BookBorrowingHistory() {
                                                     {user.Transactions.status}
                                                 </span>
                                             </td>
-                                            <td className="py-2 px-4 border-b whitespace-nowrap">
+                                            <td className="py-2 px-4 border-b">
                                                 <Link
                                                     to={`/bookloanreturndetails/${user.id}`}
-                                                    className="text-blue-500 hover:text-blue-700"
+                                                    className="whitespace-nowrap text-blue-500 hover:text-blue-700 decoration-sliced underline"
                                                 >
                                                     Chi tiết
                                                 </Link>
                                             </td>
-                                            <td className="py-2 px-4 border-b whitespace-nowrap">
+                                            <td className="py-2 px-4 border-b">
                                                 {user.Transactions.status === 'Quá hạn' && (
                                                     <button
                                                         onClick={() => handleConfirmReturn(user.Transactions.id)}
@@ -302,7 +312,7 @@ function BookBorrowingHistory() {
                                                 {user.Transactions.status === 'Chờ trả' && (
                                                     <button
                                                         onClick={() => handleConfirmReturn(user.Transactions.id)}
-                                                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm whitespace-nowrap"
+                                                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm"
                                                     >
                                                         Xác nhận đã trả sách
                                                     </button>
@@ -313,7 +323,7 @@ function BookBorrowingHistory() {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan="10" className="text-center py-4 text-gray-500">
+                                    <td colSpan="11" className="text-center py-4 text-gray-500">
                                         {searchTerm ? 'Không tìm thấy sinh viên này' : 'Không có dữ liệu'}
                                     </td>
                                 </tr>
@@ -321,7 +331,7 @@ function BookBorrowingHistory() {
                         </tbody>
                     </table>
 
-                    {!searchTerm && !isLoading && totalPage > 0 && (
+                    {!searchTerm && !isSearching && totalPage > 0 && (
                         <footer className="mt-4">
                             <Pagination
                                 pageCount={totalPage}

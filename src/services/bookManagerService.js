@@ -4,7 +4,7 @@ const getAllBook = async (page, limit, searchTerm) => {
     try {
         let url = `/api/v1/books/read?page=${page}&limit=${limit}`;
         if (searchTerm) {
-            url += `&search=${(searchTerm)}`;
+            url += `&search=${searchTerm}`;
         }
         const response = await axios.get(url);
         return response;
@@ -76,7 +76,7 @@ const autoUpdateStatusInDB = async () => {
     try {
         const URL_API = `/api/v1/transactions/autoupdatestatus`;
         const response = await axios.put(URL_API);
-        return response;
+        return response.data; 
     } catch (error) {
         console.error('Lỗi trong hàm autoUpdateStatusInDB:', error);
         throw error;

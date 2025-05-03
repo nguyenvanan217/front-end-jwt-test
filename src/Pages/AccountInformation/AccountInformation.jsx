@@ -36,6 +36,65 @@ function AccountInformation() {
         return `${day}-${month}-${year}`;
     };
 
+    const formatCurrentDate = () => {
+        const today = new Date();
+        return formatDate(today);
+    };
+
+    const calculateDays = (returnDate) => {
+        if (!returnDate) return 0;
+
+        const end = new Date(returnDate);
+        const today = new Date();
+
+        // Reset time về 00:00:00
+        end.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        // Chỉ tính ngày quá hạn nếu ngày hiện tại > ngày trả
+        if (today > end) {
+            const diffTime = today - end;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+        return 0;
+    };
+
+    const calculateOverdueDays = (returnDate) => {
+        return calculateDays(returnDate);
+    };
+
+    const calculateFine = (returnDate) => {
+        const overdueDays = calculateOverdueDays(returnDate);
+        const fine = overdueDays * 10000;
+        return fine;
+    };
+
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        }).format(amount);
+    };
+
+    // Tính tổng số ngày quá hạn và tiền phạt
+    const calculateTotalOverdueDaysAndFine = () => {
+        if (!userDetails?.Transactions) return { totalDays: 0, totalFine: 0 };
+
+        return userDetails.Transactions.reduce(
+            (acc, transaction) => {
+                if (transaction.status === 'Quá hạn') {
+                    const overdueDays = calculateOverdueDays(transaction.return_date);
+                    const fine = calculateFine(transaction.return_date);
+                    acc.totalDays += overdueDays;
+                    acc.totalFine += fine;
+                }
+                return acc;
+            },
+            { totalDays: 0, totalFine: 0 },
+        );
+    };
+
     // Tính toán số lượng sách theo trạng thái
     const calculateStatusCounts = () => {
         if (!userDetails?.Transactions) return { returned: 0, pending: 0, overdue: 0 };
@@ -63,7 +122,9 @@ function AccountInformation() {
 
     return (
         <div className="p-6 bg-white rounded-lg">
-            <h2 className="text-3xl font-bold text-center text-blue-600 mb-10">Thông Tin Tài Khoản Và Lịch Sử Mượn Trả</h2>
+            <h2 className="text-3xl font-bold text-center text-blue-600 mb-10">
+                Thông Tin Tài Khoản Và Lịch Sử Mượn Trả
+            </h2>
 
             <div className="flex justify-between gap-6">
                 {/* Thông tin cá nhân */}
@@ -78,7 +139,7 @@ function AccountInformation() {
                         <p className="text-gray-600">{auth.user?.email}</p>
                     </div>
 
-                        <h4 className="font-semibold text-2xl text-green-600 mb-4">Thống kê mượn sách:</h4>
+                    <h4 className="font-semibold text-2xl text-green-600 mb-4">Thống kê mượn sách:</h4>
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
@@ -99,13 +160,35 @@ function AccountInformation() {
                                     {calculateStatusCounts().overdue} sách
                                 </span>
                             </div>
+                            <div className="flex justify-between items-center">
+                                <span>Ngày hiện tại:</span>
+                                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                                    {formatCurrentDate()}
+                                </span>
+                            </div>
+                            {calculateStatusCounts().overdue > 0 && (
+                                <>
+                                    <div className="flex justify-between items-center">
+                                        <span>Tổng số ngày quá hạn:</span>
+                                        <span className="text-red-500 font-bold px-3 py-1 rounded-full">
+                                            {calculateTotalOverdueDaysAndFine().totalDays} ngày
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span>Tổng số Tiền phạt:</span>
+                                        <span className=" text-red-500 font-bold px-3 py-1 rounded-full">
+                                            {formatCurrency(calculateTotalOverdueDaysAndFine().totalFine)}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Chi tiết mượn trả */}
                 <div className="w-3/5">
-                    <h3 className="font-semibold text-2xl text-green-600 mb-4">Lịch sử mượn trả sách:</h3>
+                    <h3 className="font-semibold text-2xl text-green-600 mb-4">Lịch sử mượn trả sách của bạn:</h3>
                     <div className="space-y-4">
                         {userDetails?.Transactions?.length > 0 ? (
                             userDetails.Transactions.map((transaction) => (
@@ -130,6 +213,17 @@ function AccountInformation() {
                                             <p className="text-gray-600">Ngày trả:</p>
                                             <p className="font-medium">{formatDate(transaction.return_date)}</p>
                                         </div>
+                                        {transaction.status === 'Quá hạn' && (
+                                            <div className="col-span-2">
+                                                <p className="text-gray-600">Số ngày quá hạn:</p>
+                                                <p className="font-medium text-red-600">
+                                                    {calculateOverdueDays(transaction.return_date)} ngày
+                                                    <span className="ml-2">
+                                                        ({formatCurrency(calculateFine(transaction.return_date))})
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        )}
                                         <div className="col-span-2">
                                             <p className="text-gray-600">Trạng thái:</p>
                                             <span
