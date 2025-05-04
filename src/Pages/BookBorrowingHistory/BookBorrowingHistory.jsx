@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
 import Pagination from '../../components/Paginate/ReactPaginate.jsx';
 import styles from '../UserManagement/UserManagement.module.css';
-
+import { autoUpdateStatusInDB } from '../../services/bookManagerService';
 function BookBorrowingHistory() {
     const [borrowingData, setBorrowingData] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -30,6 +30,31 @@ function BookBorrowingHistory() {
             fetchBorrowingData();
         }
     }, [searchTerm, currentPage, currentLimit]);
+
+    useEffect(() => {
+        const init = async () => {
+            await autoUpdateStatus();
+            await fetchBorrowingData();
+        };
+        init();
+    }, []);
+
+    const autoUpdateStatus = async () => {
+        try {
+            const response = await autoUpdateStatusInDB();
+            console.log('Response from autoUpdateStatus:', response);
+
+            if (response && response.EC === 0) {
+                if (response.DT && response.DT.hasChanges) {
+                    toast.success(response.EM);
+                    // Fetch lại dữ liệu ngay lập tức sau khi có thay đổi
+                    await fetchBorrowingData();
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi khi cập nhật trạng thái:', error);
+        }
+    };
 
     const fetchBorrowingData = async () => {
         try {
@@ -95,7 +120,7 @@ function BookBorrowingHistory() {
         if (!returnDate) return 0;
 
         const end = new Date(returnDate);
-        const today = new Date();
+        const today = new Date(TEST_DATE); // Sử dụng TEST_DATE thay vì new Date()
 
         // Reset time về 00:00:00
         end.setHours(0, 0, 0, 0);
@@ -133,9 +158,13 @@ function BookBorrowingHistory() {
         }).format(amount);
     };
 
+    // Thêm biến TEST_DATE để dễ dàng thay đổi ngày test
+    const TEST_DATE = '2025-05-07'; // Format YYYY-MM-DD
+
     const formatCurrentDate = () => {
-        const today = new Date();
-        return formatDate(today);
+        // Sử dụng ngày test thay vì ngày hiện tại
+        const testDate = new Date(TEST_DATE);
+        return formatDate(testDate);
     };
 
     const handlePageClick = (event) => {
