@@ -20,9 +20,11 @@ function BookLoanReturnDetails() {
     const [dateInput, setDateInput] = useState(false);
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [getTransactionId, setGetTransactionId] = useState('');
-    const [dateErrors, setDateErrors] = useState({});
+    const [dateError, setDateError] = useState(''); // Đổi thành single string error
     const [isLoading, setIsLoading] = useState(true);
-    const [needsStatusUpdate, setNeedsStatusUpdate] = useState(false);
+    const [statusUpdated, setStatusUpdated] = useState(false); // Thêm state để track việc cập nhật status
+    const [invalidDateMessage, setInvalidDateMessage] = useState('');
+    const [isSendingEmail, setIsSendingEmail] = useState(false);
 
     // Sử dụng custom hook cho các tính toán
     const { statusCounts, overdueDaysAndFine, calculateOverdueDays, calculateFine } = useTransactionCalculations(
@@ -46,7 +48,6 @@ function BookLoanReturnDetails() {
         }).format(amount);
     }, []);
 
-    // Tách logic validate dates
     const validateDates = useCallback((transactions) => {
         const errors = {};
         transactions.forEach((transaction) => {
@@ -79,12 +80,6 @@ function BookLoanReturnDetails() {
                     ...userResponse.DT,
                     Transactions: validTransactions,
                 });
-
-                // Kiểm tra xem có cần update status không
-                const hasOverdueOrPending = validTransactions.some((trans) =>
-                    ['Chờ trả', 'Quá hạn'].includes(trans.status),
-                );
-                setNeedsStatusUpdate(hasOverdueOrPending);
             } else {
                 toast.error(userResponse?.EM || 'Không thể tải thông tin người dùng.');
             }
@@ -96,26 +91,44 @@ function BookLoanReturnDetails() {
         }
     }, [id]);
 
-    // Update status chỉ khi cần thiết
+    // Chỉ gọi autoUpdateStatusInDB khi component mount
     useEffect(() => {
-        fetchData();
+        const init = async () => {
+            if (!statusUpdated) {
+                // Chỉ cập nhật status một lần
+                const response = await autoUpdateStatusInDB();
+                if (response?.EC === 0) {
+                    setStatusUpdated(true);
+                }
+            }
+            await fetchData();
+        };
+        init();
     }, [fetchData]);
-
-    useEffect(() => {
-        if (needsStatusUpdate) {
-            autoUpdateStatusInDB().then(() => {
-                fetchData();
-                setNeedsStatusUpdate(false);
-            });
-        }
-    }, [needsStatusUpdate, fetchData]);
 
     // Tối ưu các handlers với useCallback
     const handleDateChange = useCallback((event, transactionId, dateType) => {
+        const newDate = event.target.value;
+        if (!newDate) return;
+
+        // Parse ngày từ giá trị input (YYYY-MM-DD)
+        const [year, month, day] = newDate.split('-');
+
+        // Tạo đối tượng Date để kiểm tra tính hợp lệ
+        const date = new Date(year, parseInt(month) - 1, day);
+
+        // Kiểm tra xem ngày có hợp lệ không
+        if (date.getMonth() !== parseInt(month) - 1) {
+            setDateError(`Không có ngày ${day} tháng ${month} trong năm ${year}`);
+            return;
+        }
+
+        // Nếu ngày hợp lệ, xóa thông báo lỗi và cập nhật state
+        setDateError('');
         setUserDetails((prev) => ({
             ...prev,
             Transactions: prev.Transactions.map((transaction) =>
-                transaction.id === transactionId ? { ...transaction, [dateType]: event.target.value } : transaction,
+                transaction.id === transactionId ? { ...transaction, [dateType]: newDate } : transaction,
             ),
         }));
     }, []);
@@ -124,12 +137,12 @@ function BookLoanReturnDetails() {
         try {
             const errors = validateDates(userDetails.Transactions);
             if (Object.keys(errors).length > 0) {
-                setDateErrors(errors);
+                setDateError(errors[Object.keys(errors)[0]]); // Lấy thông báo lỗi đầu tiên
                 toast.error('Vui lòng kiểm tra lại thông tin ngày mượn/trả');
                 return;
             }
 
-            setDateErrors({});
+            setDateError('');
             const transactions = userDetails.Transactions.map(({ id, status, borrow_date, return_date }) => ({
                 id,
                 status,
@@ -137,13 +150,34 @@ function BookLoanReturnDetails() {
                 return_date,
             }));
 
+            // Cập nhật ngày trả trong database
             const response = await updateTransactionDateAndStatus(transactions);
 
             if (response?.EC === 0) {
-                toast.success(response.EM);
+                // Cập nhật status ngay lập tức
+                const today = new Date();
+                const updatedTransactions = userDetails.Transactions.map((trans) => {
+                    const returnDate = new Date(trans.return_date);
+                    returnDate.setHours(0, 0, 0, 0);
+                    today.setHours(0, 0, 0, 0);
+
+                    // Cập nhật trạng thái dựa trên ngày
+                    const newStatus = today > returnDate ? 'Quá hạn' : 'Chờ trả';
+                    return { ...trans, status: newStatus };
+                });
+
+                // Cập nhật state với trạng thái mới
+                setUserDetails((prev) => ({
+                    ...prev,
+                    Transactions: updatedTransactions,
+                }));
+
+                // Gọi API để cập nhật trong database
+                await autoUpdateStatusInDB();
+
+                toast.success('Cập nhật thông tin thành công');
                 setDateInput(false);
                 setButtonUpdate(false);
-                setNeedsStatusUpdate(true);
             } else {
                 toast.error(response?.EM || 'Cập nhật thất bại');
             }
@@ -154,20 +188,26 @@ function BookLoanReturnDetails() {
     }, [userDetails, validateDates]);
 
     // Tối ưu các handlers khác
-    const handleConfirmReturn = useCallback(async (transactionId) => {
-        try {
-            const response = await markViolationAsResolved(transactionId);
-            if (response?.EC === 0) {
-                toast.success('Xác nhận trạng thái thành công');
-                setNeedsStatusUpdate(true);
-            } else {
-                toast.error(response.EM);
+    const handleConfirmReturn = useCallback(
+        async (transactionId) => {
+            try {
+                setIsSendingEmail(true);
+                const response = await markViolationAsResolved(transactionId);
+                if (response?.EC === 0) {
+                    toast.success('Xác nhận trạng thái thành công');
+                    await fetchData();
+                } else {
+                    toast.error(response.EM);
+                }
+            } catch (error) {
+                console.error('Lỗi khi xác nhận:', error);
+                toast.error('Không thể xác nhận trạng thái');
+            } finally {
+                setIsSendingEmail(false);
             }
-        } catch (error) {
-            console.error('Lỗi khi xác nhận:', error);
-            toast.error('Không thể xác nhận trạng thái');
-        }
-    }, []);
+        },
+        [fetchData],
+    );
 
     const handleConfirmDeleteTransaction = useCallback(async () => {
         try {
@@ -211,15 +251,17 @@ function BookLoanReturnDetails() {
         setGetTransactionId(transactionId);
     };
 
-    const TEST_DATE = '2025-05-07'; // Format YYYY-MM-DD
-
-    const formatCurrentDate = () => {
-        const testDate = new Date(TEST_DATE);
-        return formatDate(testDate);
-    };
-
     return (
         <>
+            {isSendingEmail && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+                        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-lg font-semibold text-gray-700">Đang xử lý...</p>
+                    </div>
+                </div>
+            )}
+
             {isOpenModal && (
                 <ModalDeleteTransaction
                     isOpen={isOpenModal}
@@ -297,7 +339,9 @@ function BookLoanReturnDetails() {
                                     </tr>
                                     <tr>
                                         <td className="px-4 py-2 font-medium">Ngày hiện tại:</td>
-                                        <td className="px-4 py-2 text-blue-600 font-medium">{formatCurrentDate()}</td>
+                                        <td className="px-4 py-2 text-blue-600 font-medium">
+                                            {formatDate(new Date())}
+                                        </td>
                                     </tr>
                                     {statusCounts.overdue > 0 && (
                                         <>
@@ -310,7 +354,7 @@ function BookLoanReturnDetails() {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td className="px-4 py-2 font-medium">Tiền phạt:</td>
+                                                <td className="px-4 py-2 font-medium">Tổng tiền phạt:</td>
                                                 <td className="px-4 py-2">
                                                     <span className="text-red-500 font-bold px-2 py-1 rounded">
                                                         {formatCurrency(overdueDaysAndFine.totalFine)}
@@ -361,18 +405,27 @@ function BookLoanReturnDetails() {
                                                     <td className="px-4 py-2 font-medium">Ngày mượn:</td>
                                                     {dateInput ? (
                                                         <td className="px-4 py-2">
-                                                            <input
-                                                                type="date"
-                                                                value={transaction.borrow_date?.split('T')[0]}
-                                                                onChange={(e) =>
-                                                                    handleDateChange(e, transaction.id, 'borrow_date')
-                                                                }
-                                                                className={`border ${
-                                                                    dateErrors[transaction.id]
-                                                                        ? 'border-red-500'
-                                                                        : 'border-gray-300'
-                                                                } rounded px-2 py-1 outline-none`}
-                                                            />
+                                                            <div className="flex flex-col">
+                                                                <input
+                                                                    type="date"
+                                                                    value={transaction.borrow_date?.split('T')[0]}
+                                                                    onChange={(e) =>
+                                                                        handleDateChange(
+                                                                            e,
+                                                                            transaction.id,
+                                                                            'borrow_date',
+                                                                        )
+                                                                    }
+                                                                    className={`border ${
+                                                                        dateError ? 'border-red-500' : 'border-gray-300'
+                                                                    } rounded px-2 py-1 outline-none`}
+                                                                />
+                                                                {dateError && (
+                                                                    <div className="text-red-500 text-sm mt-1">
+                                                                        {dateError}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     ) : (
                                                         <td className="px-4 py-2">
@@ -384,18 +437,27 @@ function BookLoanReturnDetails() {
                                                     <td className="px-4 py-2 font-medium">Ngày trả:</td>
                                                     {dateInput ? (
                                                         <td className="px-4 py-2">
-                                                            <input
-                                                                type="date"
-                                                                value={transaction.return_date?.split('T')[0]}
-                                                                onChange={(e) =>
-                                                                    handleDateChange(e, transaction.id, 'return_date')
-                                                                }
-                                                                className={`border ${
-                                                                    dateErrors[transaction.id]
-                                                                        ? 'border-red-500'
-                                                                        : 'border-gray-300'
-                                                                } rounded px-2 py-1 outline-none`}
-                                                            />
+                                                            <div className="flex flex-col">
+                                                                <input
+                                                                    type="date"
+                                                                    value={transaction.return_date?.split('T')[0]}
+                                                                    onChange={(e) =>
+                                                                        handleDateChange(
+                                                                            e,
+                                                                            transaction.id,
+                                                                            'return_date',
+                                                                        )
+                                                                    }
+                                                                    className={`border ${
+                                                                        dateError ? 'border-red-500' : 'border-gray-300'
+                                                                    } rounded px-2 py-1 outline-none`}
+                                                                />
+                                                                {dateError && (
+                                                                    <div className="text-red-500 text-sm mt-1">
+                                                                        {dateError}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     ) : (
                                                         <td className="px-4 py-2">
@@ -424,15 +486,6 @@ function BookLoanReturnDetails() {
                                                             </td>
                                                         </tr>
                                                     </>
-                                                )}
-                                                {dateErrors[transaction.id] && (
-                                                    <tr>
-                                                        <td colSpan="2" className="px-4 py-2">
-                                                            <span className="text-red-500 text-sm">
-                                                                {dateErrors[transaction.id]}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
                                                 )}
                                                 <tr>
                                                     <td className="px-4 py-2 font-medium">Trạng thái:</td>

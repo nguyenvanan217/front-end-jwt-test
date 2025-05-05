@@ -16,6 +16,7 @@ function BookBorrowingHistory() {
     const [totalPage, setTotalPage] = useState(0);
     const [isSearching, setIsSearching] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
+    const [isSendingEmail, setIsSendingEmail] = useState(false);
 
     useEffect(() => {
         if (searchTerm.trim() !== '') {
@@ -94,6 +95,7 @@ function BookBorrowingHistory() {
 
     const handleConfirmReturn = async (transactionId) => {
         try {
+            setIsSendingEmail(true); // Bắt đầu hiển thị loading
             const response = await markViolationAsResolved(transactionId);
             if (response && response.EC === 0) {
                 toast.success('Xác nhận trả sách thành công');
@@ -104,6 +106,8 @@ function BookBorrowingHistory() {
         } catch (error) {
             console.error('Lỗi khi xác nhận:', error);
             toast.error('Không thể xác nhận trả sách');
+        } finally {
+            setIsSendingEmail(false); // Kết thúc loading bất kể thành công hay thất bại
         }
     };
 
@@ -120,7 +124,7 @@ function BookBorrowingHistory() {
         if (!returnDate) return 0;
 
         const end = new Date(returnDate);
-        const today = new Date(TEST_DATE); // Sử dụng TEST_DATE thay vì new Date()
+        const today = new Date(); // Sử dụng ngày hiện tại
 
         // Reset time về 00:00:00
         end.setHours(0, 0, 0, 0);
@@ -130,11 +134,6 @@ function BookBorrowingHistory() {
         if (today > end) {
             const diffTime = today - end;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-            console.log('Return date:', end.toLocaleDateString());
-            console.log('Today:', today.toLocaleDateString());
-            console.log('Days overdue:', diffDays);
-
             return diffDays;
         }
         return 0;
@@ -158,13 +157,9 @@ function BookBorrowingHistory() {
         }).format(amount);
     };
 
-    // Thêm biến TEST_DATE để dễ dàng thay đổi ngày test
-    const TEST_DATE = '2025-05-07'; // Format YYYY-MM-DD
-
     const formatCurrentDate = () => {
-        // Sử dụng ngày test thay vì ngày hiện tại
-        const testDate = new Date(TEST_DATE);
-        return formatDate(testDate);
+        // Sử dụng ngày hiện tại
+        return formatDate(new Date());
     };
 
     const handlePageClick = (event) => {
@@ -185,6 +180,16 @@ function BookBorrowingHistory() {
 
     return (
         <>
+            {/* Thêm Loading Overlay */}
+            {isSendingEmail && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+                        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-lg font-semibold text-gray-700">Đang xử lý...</p>
+                    </div>
+                </div>
+            )}
+
             <div className="w-[96%] mx-auto mt-4">
                 <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-center my-4">Quản lý mượn trả sách</h1>
 
