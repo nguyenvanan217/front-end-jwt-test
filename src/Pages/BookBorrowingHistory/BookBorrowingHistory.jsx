@@ -346,7 +346,7 @@ function BookBorrowingHistory() {
                                                 {user.Transactions.status === 'Chờ trả' && (
                                                     <button
                                                         onClick={() => handleConfirmReturn(user.Transactions.id)}
-                                                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm"
+                                                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm whitespace-nowrap"
                                                     >
                                                         Xác nhận đã trả sách
                                                     </button>

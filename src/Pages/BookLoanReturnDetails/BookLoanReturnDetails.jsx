@@ -510,8 +510,8 @@ function BookLoanReturnDetails() {
                                                                     onClick={() => handleConfirmReturn(transaction.id)}
                                                                     className={`text-white font-bold py-1 px-3 rounded text-sm ${
                                                                         transaction.status === 'Quá hạn'
-                                                                            ? 'bg-blue-500 hover:bg-blue-700'
-                                                                            : 'bg-green-500 hover:bg-green-700'
+                                                                            ? 'bg-blue-500 hover:bg-blue-700 whitespace-nowrap'
+                                                                            : 'bg-green-500 hover:bg-green-700 whitespace-nowrap'
                                                                     }`}
                                                                 >
                                                                     {transaction.status === 'Quá hạn'
