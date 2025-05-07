@@ -3,10 +3,12 @@ import avatar from '../../assets/img/avatar.jpg';
 import AuthContext from '../../components/Context/auth.context';
 import { getUserDetailsById } from '../../services/userService';
 import { toast } from 'react-toastify';
+import ModalPayment from '../../components/BankQR/ModalPayment';
 
 function AccountInformation() {
     const { auth } = useContext(AuthContext);
     const [userDetails, setUserDetails] = useState(null);
+    const [isOpenModalPayMent, setIsOpenModalPayMent] = useState(false);
 
     useEffect(() => {
         fetchUserDetails();
@@ -120,134 +122,164 @@ function AccountInformation() {
         );
     };
 
-    return (
-        <div className="p-6 bg-white rounded-lg">
-            <h2 className="text-3xl font-bold text-center text-blue-600 mb-10">
-                Thông Tin Tài Khoản Và Lịch Sử Mượn Trả
-            </h2>
+    const getOverdueBooks = () => {
+        if (!userDetails?.Transactions) return [];
+        return userDetails.Transactions.filter((trans) => trans.status === 'Quá hạn').map((trans) => ({
+            bookId: trans.bookId,
+            Book: trans.Book,
+        }));
+    };
 
-            <div className="flex justify-between gap-6">
-                {/* Thông tin cá nhân */}
-                <div className="w-2/5">
-                    <div className="text-center mb-6">
-                        <img
-                            src={avatar}
-                            alt="Avatar"
-                            className="w-48 h-48 rounded-full mx-auto mb-4 border-4 border-blue-500"
-                        />
-                        <h3 className="text-xl font-semibold">Tên Sinh Viên: {auth.user?.name}</h3>
-                        <p className="text-gray-600">{auth.user?.email}</p>
+    const handlePaymentmodalOpen = () => {
+        setIsOpenModalPayMent(true);
+    };
+
+    return (
+        <>
+            <ModalPayment
+                isOpen={isOpenModalPayMent}
+                setIsOpenModal={setIsOpenModalPayMent}
+                totalPrice={formatCurrency(calculateTotalOverdueDaysAndFine().totalFine)}
+                userDetails={userDetails}
+                overdueBooks={getOverdueBooks()}
+            />
+            <div className="p-6 bg-white rounded-lg">
+                <h2 className="text-3xl font-bold text-center text-blue-600 mb-10">
+                    Thông Tin Tài Khoản Và Lịch Sử Mượn Trả
+                </h2>
+
+                <div className="flex justify-between gap-6">
+                    {/* Thông tin cá nhân */}
+                    <div className="w-2/5">
+                        <div className="text-center mb-6">
+                            <img
+                                src={avatar}
+                                alt="Avatar"
+                                className="w-48 h-48 rounded-full mx-auto mb-4 border-4 border-blue-500"
+                            />
+                            <h3 className="text-xl font-semibold">Tên Sinh Viên: {auth.user?.name}</h3>
+                            <p className="text-gray-600">{auth.user?.email}</p>
+                        </div>
+
+                        <h4 className="font-semibold text-2xl text-green-600 mb-4">Thống kê mượn sách:</h4>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <span>Đã trả:</span>
+                                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                                        {calculateStatusCounts().returned} sách
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span>Chờ trả:</span>
+                                    <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full">
+                                        {calculateStatusCounts().pending} sách
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span>Quá hạn:</span>
+                                    <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full">
+                                        {calculateStatusCounts().overdue} sách
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span>Ngày hiện tại:</span>
+                                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                                        {formatCurrentDate()}
+                                    </span>
+                                </div>
+                                {calculateStatusCounts().overdue > 0 && (
+                                    <>
+                                        <div className="flex justify-between items-center">
+                                            <span>Tổng số ngày quá hạn:</span>
+                                            <span className="text-red-500 font-bold px-3 py-1 rounded-full">
+                                                {calculateTotalOverdueDaysAndFine().totalDays} ngày
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span>Tổng số Tiền phạt:</span>
+                                            <span className="text-red-500 font-bold px-3 py-1 rounded-full">
+                                                {formatCurrency(calculateTotalOverdueDaysAndFine().totalFine)}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span>Thanh toán:</span>
+                                            <button
+                                                onClick={handlePaymentmodalOpen}
+                                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                            >
+                                                Thanh toán tại đây
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
-                    <h4 className="font-semibold text-2xl text-green-600 mb-4">Thống kê mượn sách:</h4>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <span>Đã trả:</span>
-                                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
-                                    {calculateStatusCounts().returned} sách
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span>Chờ trả:</span>
-                                <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full">
-                                    {calculateStatusCounts().pending} sách
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span>Quá hạn:</span>
-                                <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full">
-                                    {calculateStatusCounts().overdue} sách
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span>Ngày hiện tại:</span>
-                                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-                                    {formatCurrentDate()}
-                                </span>
-                            </div>
-                            {calculateStatusCounts().overdue > 0 && (
-                                <>
-                                    <div className="flex justify-between items-center">
-                                        <span>Tổng số ngày quá hạn:</span>
-                                        <span className="text-red-500 font-bold px-3 py-1 rounded-full">
-                                            {calculateTotalOverdueDaysAndFine().totalDays} ngày
-                                        </span>
+                    {/* Chi tiết mượn trả */}
+                    <div className="w-3/5">
+                        <h3 className="font-semibold text-2xl text-green-600 mb-4">Lịch sử mượn trả sách của bạn:</h3>
+                        <div className="space-y-4">
+                            {userDetails?.Transactions?.length > 0 ? (
+                                userDetails.Transactions.map((transaction) => (
+                                    <div
+                                        key={transaction.id}
+                                        className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                                    >
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <p className="text-gray-600">ID giao dịch:</p>
+                                                <p className="font-medium">{transaction.id}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-600">Tên sách:</p>
+                                                <p className="font-medium">{transaction.Book?.title}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-600">Ngày mượn:</p>
+                                                <p className="font-medium">{formatDate(transaction.borrow_date)}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-600">Ngày trả:</p>
+                                                <p className="font-medium">{formatDate(transaction.return_date)}</p>
+                                            </div>
+                                            {transaction.status === 'Quá hạn' && (
+                                                <div className="col-span-2">
+                                                    <p className="text-gray-600">Số ngày quá hạn:</p>
+                                                    <p className="font-medium text-red-600">
+                                                        {calculateOverdueDays(transaction.return_date)} ngày
+                                                        <span className="ml-2">
+                                                            ({formatCurrency(calculateFine(transaction.return_date))})
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            )}
+                                            <div className="col-span-2">
+                                                <p className="text-gray-600">Trạng thái:</p>
+                                                <span
+                                                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                                                        transaction.status === 'Quá hạn'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : transaction.status === 'Chờ trả'
+                                                            ? 'bg-orange-100 text-orange-800'
+                                                            : 'bg-green-100 text-green-800'
+                                                    }`}
+                                                >
+                                                    {transaction.status}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between items-center">
-                                        <span>Tổng số Tiền phạt:</span>
-                                        <span className=" text-red-500 font-bold px-3 py-1 rounded-full">
-                                            {formatCurrency(calculateTotalOverdueDaysAndFine().totalFine)}
-                                        </span>
-                                    </div>
-                                </>
+                                ))
+                            ) : (
+                                <div className="text-center text-gray-500 py-4">Bạn chưa có lịch sử mượn sách nào</div>
                             )}
                         </div>
                     </div>
                 </div>
-
-                {/* Chi tiết mượn trả */}
-                <div className="w-3/5">
-                    <h3 className="font-semibold text-2xl text-green-600 mb-4">Lịch sử mượn trả sách của bạn:</h3>
-                    <div className="space-y-4">
-                        {userDetails?.Transactions?.length > 0 ? (
-                            userDetails.Transactions.map((transaction) => (
-                                <div
-                                    key={transaction.id}
-                                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
-                                >
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <p className="text-gray-600">ID giao dịch:</p>
-                                            <p className="font-medium">{transaction.id}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-600">Tên sách:</p>
-                                            <p className="font-medium">{transaction.Book?.title}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-600">Ngày mượn:</p>
-                                            <p className="font-medium">{formatDate(transaction.borrow_date)}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-600">Ngày trả:</p>
-                                            <p className="font-medium">{formatDate(transaction.return_date)}</p>
-                                        </div>
-                                        {transaction.status === 'Quá hạn' && (
-                                            <div className="col-span-2">
-                                                <p className="text-gray-600">Số ngày quá hạn:</p>
-                                                <p className="font-medium text-red-600">
-                                                    {calculateOverdueDays(transaction.return_date)} ngày
-                                                    <span className="ml-2">
-                                                        ({formatCurrency(calculateFine(transaction.return_date))})
-                                                    </span>
-                                                </p>
-                                            </div>
-                                        )}
-                                        <div className="col-span-2">
-                                            <p className="text-gray-600">Trạng thái:</p>
-                                            <span
-                                                className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                                                    transaction.status === 'Quá hạn'
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : transaction.status === 'Chờ trả'
-                                                        ? 'bg-orange-100 text-orange-800'
-                                                        : 'bg-green-100 text-green-800'
-                                                }`}
-                                            >
-                                                {transaction.status}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-center text-gray-500 py-4">Bạn chưa có lịch sử mượn sách nào</div>
-                        )}
-                    </div>
-                </div>
             </div>
-        </div>
+        </>
     );
 }
 

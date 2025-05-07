@@ -1,49 +1,82 @@
 import { useMemo } from 'react';
 
 export const useTransactionCalculations = (transactions) => {
-    // Tính toán số lượng theo trạng thái
+    // Format date
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
+
+    // Format currency
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        }).format(amount);
+    };
+
+    // Calculate overdue days
+    const calculateOverdueDays = (returnDate) => {
+        if (!returnDate) return 0;
+        const end = new Date(returnDate);
+        const today = new Date();
+
+        // Reset time to 00:00:00
+        end.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        if (today > end) {
+            const diffTime = today - end;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+        return 0;
+    };
+
+    // Calculate fine
+    const calculateFine = (returnDate) => {
+        const overdueDays = calculateOverdueDays(returnDate);
+        return overdueDays * 10000; // 10,000 VND per day
+    };
+
+    // Calculate status counts
     const statusCounts = useMemo(() => {
         if (!transactions) return { returned: 0, pending: 0, overdue: 0 };
-
         return transactions.reduce(
             (acc, transaction) => {
-                if (transaction.status === 'Đã trả') acc.returned++;
-                else if (transaction.status === 'Chờ trả') acc.pending++;
-                else if (transaction.status === 'Quá hạn') acc.overdue++;
+                switch (transaction.status) {
+                    case 'Đã trả':
+                        acc.returned++;
+                        break;
+                    case 'Chờ trả':
+                        acc.pending++;
+                        break;
+                    case 'Quá hạn':
+                        acc.overdue++;
+                        break;
+                    default:
+                        break;
+                }
                 return acc;
             },
             { returned: 0, pending: 0, overdue: 0 },
         );
     }, [transactions]);
 
-    // Tính số ngày giữa hai ngày
-    const calculateDays = (returnDate) => {
-        if (!returnDate) return 0;
-
-        const end = new Date(returnDate);
-        const today = new Date();
-
-        // Reset time về 00:00:00
-        end.setHours(0, 0, 0, 0);
-        today.setHours(0, 0, 0, 0);
-
-        if (today > end) {
-            const diffTime = today - end;
-            return Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        }
-        return 0;
-    };
-
-    // Tính tổng ngày quá hạn và tiền phạt
+    // Calculate total overdue days and fine
     const overdueDaysAndFine = useMemo(() => {
         if (!transactions) return { totalDays: 0, totalFine: 0 };
-
         return transactions.reduce(
             (acc, transaction) => {
                 if (transaction.status === 'Quá hạn') {
-                    const overdueDays = calculateDays(transaction.return_date);
+                    const overdueDays = calculateOverdueDays(transaction.return_date);
+                    const fine = calculateFine(transaction.return_date);
                     acc.totalDays += overdueDays;
-                    acc.totalFine += overdueDays * 10000; // 10,000 VND mỗi ngày
+                    acc.totalFine += fine;
                 }
                 return acc;
             },
@@ -51,19 +84,12 @@ export const useTransactionCalculations = (transactions) => {
         );
     }, [transactions]);
 
-    // Tính số ngày quá hạn cho một giao dịch cụ thể
-    const calculateOverdueDays = (returnDate) => calculateDays(returnDate);
-
-    // Tính tiền phạt cho một giao dịch cụ thể
-    const calculateFine = (returnDate) => {
-        const overdueDays = calculateOverdueDays(returnDate);
-        return overdueDays * 10000; // 10,000 VND mỗi ngày
-    };
-
     return {
-        statusCounts,
-        overdueDaysAndFine,
+        formatDate,
+        formatCurrency,
         calculateOverdueDays,
         calculateFine,
+        statusCounts,
+        overdueDaysAndFine,
     };
 };

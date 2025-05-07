@@ -80,6 +80,7 @@ function BookLoanReturnDetails() {
                     ...userResponse.DT,
                     Transactions: validTransactions,
                 });
+                console.log('>>>>userDetails:', userResponse.DT);
             } else {
                 toast.error(userResponse?.EM || 'Không thể tải thông tin người dùng.');
             }
@@ -250,7 +251,6 @@ function BookLoanReturnDetails() {
         setIsOpenModal(true);
         setGetTransactionId(transactionId);
     };
-
     return (
         <>
             {isSendingEmail && (
@@ -261,7 +261,6 @@ function BookLoanReturnDetails() {
                     </div>
                 </div>
             )}
-
             {isOpenModal && (
                 <ModalDeleteTransaction
                     isOpen={isOpenModal}
@@ -391,9 +390,13 @@ function BookLoanReturnDetails() {
                                                 )}
                                             </thead>
                                             <tbody className="body-content-book">
-                                                <tr>
+                                                {/* <tr>
                                                     <td className="px-4 py-2 font-medium">Id giao dịch:</td>
                                                     <td className="px-4 py-2 text-ellipsis">{transaction.id}</td>
+                                                </tr> */}
+                                                <tr>
+                                                    <td className="px-4 py-2 font-medium">Id sách:</td>
+                                                    <td className="px-4 py-2 text-ellipsis">{transaction.bookId}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="px-4 py-2 font-medium">Tên sách:</td>
