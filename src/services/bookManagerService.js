@@ -96,36 +96,35 @@ export const importBooksFromExcel = async (formData) => {
             },
         });
 
-        console.log('Raw response:', response);
-
-        // Kiểm tra và trả về dữ liệu từ response
-        if (response && response.data) {
-            return response.data;
+        // Kiểm tra và trả về response.DT
+        if (response && response.DT) {
+            console.log('Import response:', response.DT);
+            return {
+                EC: 0,
+                EM: `Import thành công ${response.DT.successCount}/${response.DT.totalProcessed} sách`,
+                DT: response.DT,
+            };
         }
 
         throw new Error('Không nhận được phản hồi từ server');
     } catch (error) {
         console.error('Import error:', error);
 
-        // Nếu là lỗi từ server
-        if (error.response?.data) {
-            throw error.response.data;
-        }
-
-        // Nếu là lỗi network
-        if (error.request) {
-            throw {
-                EM: 'Lỗi kết nối server',
+        if (error.response?.DT) {
+            return {
                 EC: -1,
-                DT: { error: 'Network Error' },
+                EM: 'Import thất bại',
+                DT: error.response.DT,
             };
         }
 
-        // Các lỗi khác
-        throw {
-            EM: error.message,
+        return {
+            EM: error.message || 'Có lỗi xảy ra',
             EC: -1,
-            DT: { error: error.message },
+            DT: {
+                error: error.message,
+                details: [],
+            },
         };
     }
 };

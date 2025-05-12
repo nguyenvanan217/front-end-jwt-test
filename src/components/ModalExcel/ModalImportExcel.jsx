@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 
 const ModalImportExcel = ({ isOpen, onClose, importResult }) => {
+    useEffect(() => {
+        console.log('Check import result', importResult);
+    }, []);
     if (!isOpen) return null;
-
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg w-[90%] max-w-4xl max-h-[90vh] overflow-y-auto p-6">

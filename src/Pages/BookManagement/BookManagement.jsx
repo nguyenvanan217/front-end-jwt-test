@@ -43,7 +43,11 @@ const BookManagementTable = () => {
     const [isOpenModalImport, setIsOpenModalImport] = useState(false);
     const [importResult, setImportResult] = useState(null);
     const fileInputRef = useRef(null);
-
+    useEffect(() => {
+        if (importResult) {
+            console.log('Import result:', importResult);
+        }
+    }, []);
     const handleCloseImportModal = () => {
         setIsOpenModalImport(false);
         // Chỉ refresh khi import thành công
@@ -212,7 +216,7 @@ const BookManagementTable = () => {
         try {
             setIsLoading(true);
             const response = await importBooksFromExcel(formData);
-            console.log('Import response:', response);
+            console.log('Import response check >>>>>>:', response);
 
             // Kiểm tra response
             if (response && response.EC === 0) {
