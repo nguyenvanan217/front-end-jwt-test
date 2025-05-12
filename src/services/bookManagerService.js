@@ -76,10 +76,57 @@ const autoUpdateStatusInDB = async () => {
     try {
         const URL_API = `/api/v1/transactions/autoupdatestatus`;
         const response = await axios.put(URL_API);
-        return response.data; 
+        return response.data;
     } catch (error) {
         console.error('Lỗi trong hàm autoUpdateStatusInDB:', error);
         throw error;
+    }
+};
+
+export const importBooksFromExcel = async (formData) => {
+    try {
+        const file = formData.get('file');
+        if (!file) {
+            throw new Error('Không tìm thấy file');
+        }
+
+        const response = await axios.post('/api/v1/books/import-excel', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        console.log('Raw response:', response);
+
+        // Kiểm tra và trả về dữ liệu từ response
+        if (response && response.data) {
+            return response.data;
+        }
+
+        throw new Error('Không nhận được phản hồi từ server');
+    } catch (error) {
+        console.error('Import error:', error);
+
+        // Nếu là lỗi từ server
+        if (error.response?.data) {
+            throw error.response.data;
+        }
+
+        // Nếu là lỗi network
+        if (error.request) {
+            throw {
+                EM: 'Lỗi kết nối server',
+                EC: -1,
+                DT: { error: 'Network Error' },
+            };
+        }
+
+        // Các lỗi khác
+        throw {
+            EM: error.message,
+            EC: -1,
+            DT: { error: error.message },
+        };
     }
 };
 

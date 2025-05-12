@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { getAllBook, getAllGenres } from '../../services/bookManagerService';
+import React, { useEffect, useState, useRef } from 'react';
+import { getAllBook, getAllGenres, importBooksFromExcel } from '../../services/bookManagerService';
 import { toast } from 'react-toastify';
 import ModalBookDetail from './ModalBookDetail';
 import ModalBorrowBooks from './ModalBorrowBooks';
@@ -18,6 +18,10 @@ function BookList() {
     const [currentPage, setCurrentPage] = useState(1);
     const [currentLimit, setCurrentLimit] = useState(8);
     const [isLoading, setIsLoading] = useState(false);
+    const [importResult, setImportResult] = useState(null);
+    const [isOpenModalImport, setIsOpenModalImport] = useState(false);
+    const fileInputRef = useRef(null);
+
     useEffect(() => {
         fetchAllBook();
         fetchGenres();
@@ -124,6 +128,44 @@ function BookList() {
         setFilteredBooks((prevBooks) =>
             prevBooks.map((book) => (book.id === bookId ? { ...book, quantity: book.quantity - 1 } : book)),
         );
+    };
+
+    const handleImportExcel = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+    
+        const formData = new FormData();
+        formData.append('file', file);
+    
+        try {
+            const response = await importBooksFromExcel(formData);
+            setImportResult(response);
+            setIsOpenModalImport(true);
+            
+            // Chỉ refresh danh sách khi import thành công
+            if (response && response.EC === 0) {
+                await fetchAllBook();
+            }
+        } catch (error) {
+            console.error('Import error:', error);
+            const errorResult = error.response?.data || {
+                EM: "Lỗi khi import file Excel",
+                EC: -1,
+                DT: { error: error.message }
+            };
+            setImportResult(errorResult);
+            setIsOpenModalImport(true);
+        } finally {
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+    
+    const handleCloseImportModal = () => {
+        setIsOpenModalImport(false);
+        // Không cần gọi fetchAllBook ở đây vì đã gọi trong handleImportExcel
+        setImportResult(null);
     };
 
     return (

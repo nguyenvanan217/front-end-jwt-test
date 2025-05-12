@@ -37,15 +37,6 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
         cover_image: '',
     });
 
-    const validateUrl = (url) => {
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
-        }
-    };
-
     const validateForm = () => {
         let isValid = true;
         const newErrors = {
@@ -81,9 +72,6 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
 
         if (!bookData.cover_image.trim()) {
             newErrors.cover_image = 'Bạn chưa nhập URL ảnh bìa';
-            isValid = false;
-        } else if (!validateUrl(bookData.cover_image)) {
-            newErrors.cover_image = 'URL ảnh không hợp lệ';
             isValid = false;
         }
 
@@ -179,9 +167,7 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
                                 ))}
                             </select>
                             <div className="h-5">
-                                {errors.genre_name && (
-                                    <p className="text-red-500 text-sm">{errors.genre_name}</p>
-                                )}
+                                {errors.genre_name && <p className="text-red-500 text-sm">{errors.genre_name}</p>}
                             </div>
                         </div>
 

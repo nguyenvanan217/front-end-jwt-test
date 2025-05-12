@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { addBook, getAllBook, getAllGenres, deleteBook, updateBook, addGenre } from '../../services/bookManagerService';
+import React, { useEffect, useState, useRef } from 'react';
+import {
+    addBook,
+    getAllBook,
+    getAllGenres,
+    deleteBook,
+    updateBook,
+    addGenre,
+    importBooksFromExcel,
+} from '../../services/bookManagerService';
 import { toast } from 'react-toastify';
 import { IoMdAdd } from 'react-icons/io';
 import ModalAddBook from './ModalAddBook';
@@ -11,6 +19,7 @@ import ModalDeletegenres from './ModalDeleteGenres';
 import { FaSearch } from 'react-icons/fa';
 import Pagination from '../../components/Paginate/ReactPaginate';
 import styles from '../UserManagement/UserManagement.module.css';
+import ModalImportExcel from '../../components/ModalExcel/ModalImportExcel';
 
 const BookManagementTable = () => {
     const [genres, setGenres] = useState([]);
@@ -31,6 +40,21 @@ const BookManagementTable = () => {
     const [currentLimit] = useState(10);
     const [isLoading, setIsLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
+    const [isOpenModalImport, setIsOpenModalImport] = useState(false);
+    const [importResult, setImportResult] = useState(null);
+    const fileInputRef = useRef(null);
+
+    const handleCloseImportModal = () => {
+        setIsOpenModalImport(false);
+        // Chỉ refresh khi import thành công
+        if (importResult && importResult.EC === 0) {
+            fetchAllBook();
+        }
+        // Reset importResult sau khi đóng modal
+        setTimeout(() => {
+            setImportResult(null);
+        }, 300);
+    };
 
     useEffect(() => {
         fetchAllBook();
@@ -104,7 +128,7 @@ const BookManagementTable = () => {
             }
         } catch (error) {
             console.error('Error details:', error.response?.data || error);
-            toast.error(error.response?.data?.EM );
+            toast.error(error.response?.data?.EM);
         }
     };
     const handleOpenDeleteModal = (book) => {
@@ -178,6 +202,51 @@ const BookManagementTable = () => {
         }
     };
 
+    const handleImportExcel = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            setIsLoading(true);
+            const response = await importBooksFromExcel(formData);
+            console.log('Import response:', response);
+
+            // Kiểm tra response
+            if (response && response.EC === 0) {
+                setImportResult(response);
+                setIsOpenModalImport(true);
+                toast.success(response.EM);
+                await fetchAllBook();
+            } else {
+                setImportResult(response);
+                setIsOpenModalImport(true);
+                toast.error(response.EM || 'Import không thành công');
+            }
+        } catch (error) {
+            console.error('Import error:', error);
+            // Sử dụng error object trực tiếp nếu nó có định dạng phù hợp
+            const errorResponse = error.EM
+                ? error
+                : {
+                      EM: error.message || 'Lỗi khi import file Excel',
+                      EC: -1,
+                      DT: { error: error.message },
+                  };
+
+            setImportResult(errorResponse);
+            setIsOpenModalImport(true);
+            toast.error(errorResponse.EM);
+        } finally {
+            setIsLoading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
     return (
         <div className="container mx-auto px-4 mt-4">
             <h1 className="text-3xl font-bold mb-6 text-center">Quản Lý Sách Trong Thư Viện</h1>
@@ -204,28 +273,56 @@ const BookManagementTable = () => {
                     </select>
                 </div>
             </div>
-            <div className="flex items-center gap-6">
-                <button
-                    onClick={() => setIsOpenModalAdd(true)}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
-                >
-                    <IoMdAdd />
-                    Thêm sách
-                </button>
-                <button
-                    onClick={() => setIsOpenModalAddGende(true)}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
-                >
-                    <IoMdAdd />
-                    Thêm thể loại sách
-                </button>
-                <button
-                    onClick={() => setIsOpenModalDeleteGende(true)}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
-                >
-                    <IoMdAdd />
-                    Xem thể loại sách
-                </button>
+            <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-6">
+                    <button
+                        onClick={() => setIsOpenModalAdd(true)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
+                    >
+                        <IoMdAdd />
+                        Thêm sách
+                    </button>
+                    <button
+                        onClick={() => setIsOpenModalAddGende(true)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
+                    >
+                        <IoMdAdd />
+                        Thêm thể loại sách
+                    </button>
+                    <button
+                        onClick={() => setIsOpenModalDeleteGende(true)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
+                    >
+                        <IoMdAdd />
+                        Xem thể loại sách
+                    </button>
+                </div>
+                <div>
+                    <input
+                        type="file"
+                        accept=".xlsx,.xls"
+                        onChange={handleImportExcel}
+                        ref={fileInputRef}
+                        className="hidden"
+                    />
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center gap-2"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Đang xử lý...
+                            </>
+                        ) : (
+                            <>
+                                <IoMdAdd />
+                                Import Excel
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
             <table className="table-auto w-full border-collapse border border-gray-300">
                 <thead>
@@ -344,6 +441,33 @@ const BookManagementTable = () => {
                     />
                 </footer>
             )}
+
+            <ModalImportExcel isOpen={isOpenModalImport} onClose={handleCloseImportModal} importResult={importResult}>
+                {importResult && importResult.EC !== 0 && (
+                    <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                        <p className="font-bold mb-2">{importResult.EM}</p>
+                        {importResult.DT && (
+                            <>
+                                {importResult.DT.error && (
+                                    <p className="text-red-600 mb-2">Lỗi: {importResult.DT.error}</p>
+                                )}
+                                {importResult.DT.details && importResult.DT.details.length > 0 && (
+                                    <div className="mt-2">
+                                        <p className="font-semibold">Chi tiết lỗi:</p>
+                                        <ul className="list-disc list-inside mt-1">
+                                            {importResult.DT.details.map((detail, index) => (
+                                                <li key={index} className="text-red-600">
+                                                    {detail}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+                )}
+            </ModalImportExcel>
         </div>
     );
 };
