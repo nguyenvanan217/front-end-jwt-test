@@ -216,33 +216,20 @@ const BookManagementTable = () => {
         try {
             setIsLoading(true);
             const response = await importBooksFromExcel(formData);
-            console.log('Import response check >>>>>>:', response);
+            setImportResult(response);
+            setIsOpenModalImport(true);
 
-            // Kiểm tra response
-            if (response && response.EC === 0) {
-                setImportResult(response);
-                setIsOpenModalImport(true);
+            if (response.EC === 0) {
                 toast.success(response.EM);
                 await fetchAllBook();
+            } else if (response.EC === 1) {
+                toast.warning('Dữ liệu Excel có lỗi, vui lòng kiểm tra chi tiết');
             } else {
-                setImportResult(response);
-                setIsOpenModalImport(true);
-                toast.error(response.EM || 'Import không thành công');
+                toast.error(response.EM);
             }
         } catch (error) {
             console.error('Import error:', error);
-            // Sử dụng error object trực tiếp nếu nó có định dạng phù hợp
-            const errorResponse = error.EM
-                ? error
-                : {
-                      EM: error.message || 'Lỗi khi import file Excel',
-                      EC: -1,
-                      DT: { error: error.message },
-                  };
-
-            setImportResult(errorResponse);
-            setIsOpenModalImport(true);
-            toast.error(errorResponse.EM);
+            toast.error('Có lỗi xảy ra khi import');
         } finally {
             setIsLoading(false);
             if (fileInputRef.current) {

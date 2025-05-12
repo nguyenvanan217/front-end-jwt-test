@@ -33,18 +33,33 @@ const ModalImportExcel = ({ isOpen, onClose, importResult }) => {
                                 )}
                             </div>
                         ) : (
-                            // Lỗi
+                            // Validation Error hoặc Server Error
                             <div className="p-4 bg-red-100 rounded">
-                                <p className="font-bold text-red-700 mb-2">{importResult.EM}</p>
-                                {importResult.DT?.error && <p className="text-red-600">{importResult.DT.error}</p>}
+                                <p className="font-bold text-red-700 mb-4">
+                                    {importResult.EM}
+                                    {importResult.DT?.totalRows && (
+                                        <span className="block text-sm mt-2">
+                                            Tổng số dòng: {importResult.DT.totalRows} | Hợp lệ:{' '}
+                                            {importResult.DT.validRows} | Lỗi: {importResult.DT.errorRows}
+                                        </span>
+                                    )}
+                                </p>
                                 {importResult.DT?.details?.length > 0 && (
-                                    <ul className="mt-2 space-y-1">
-                                        {importResult.DT.details.map((detail, index) => (
-                                            <li key={index} className="text-red-600">
-                                                • {detail}
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    <div className="mt-4">
+                                        <p className="font-semibold mb-2">Chi tiết lỗi:</p>
+                                        <ul className="space-y-2">
+                                            {importResult.DT.details.map((detail, index) => (
+                                                <li key={index} className="text-red-600">
+                                                    • Dòng {detail.row}: {detail.title}
+                                                    {detail.errors.map((err, i) => (
+                                                        <p key={i} className="ml-4 text-sm">
+                                                            - {err}
+                                                        </p>
+                                                    ))}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 )}
                             </div>
                         )}

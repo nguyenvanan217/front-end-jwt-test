@@ -95,10 +95,23 @@ export const importBooksFromExcel = async (formData) => {
                 'Content-Type': 'multipart/form-data',
             },
         });
+        console.log('Import response check nì:', response);
+        // Kiểm tra response có phải là validation error không
+        if (response.DT?.details) {
+            return {
+                EC: 1, // Đổi EC thành 1 để phân biệt với lỗi server
+                EM: 'Dữ liệu Excel đầu vào không hợp lệ, vui lòng kiểm tra lại dữ liệu của bạn!',
+                DT: {
+                    totalRows: response.DT.totalRows,
+                    validRows: response.DT.validRows,
+                    errorRows: response.DT.errorRows,
+                    details: response.DT.details,
+                },
+            };
+        }
 
-        // Kiểm tra và trả về response.DT
-        if (response && response.DT) {
-            console.log('Import response:', response.DT);
+        // Trường hợp import thành công
+        if (response.DT?.successCount !== undefined) {
             return {
                 EC: 0,
                 EM: `Import thành công ${response.DT.successCount}/${response.DT.totalProcessed} sách`,
@@ -106,21 +119,12 @@ export const importBooksFromExcel = async (formData) => {
             };
         }
 
-        throw new Error('Không nhận được phản hồi từ server');
+        throw new Error('Phản hồi không hợp lệ từ server');
     } catch (error) {
         console.error('Import error:', error);
-
-        if (error.response?.DT) {
-            return {
-                EC: -1,
-                EM: 'Import thất bại',
-                DT: error.response.DT,
-            };
-        }
-
         return {
-            EM: error.message || 'Có lỗi xảy ra',
             EC: -1,
+            EM: error.message || 'Có lỗi xảy ra khi import',
             DT: {
                 error: error.message,
                 details: [],
