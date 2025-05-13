@@ -11,12 +11,15 @@ import { getAccount } from './services/userService';
 import LoadingPage from './components/Loading/LoadingPage';
 import { useNavigate } from 'react-router-dom';
 import MessengerWithAdmin from './components/MessengerWithAdmin/MessengerWithAdmin';
+import React from 'react';
+import IconChatBot from './components/IconChatBot/IconChatBot';
+import { ChatProvider } from './components/Context/chat.context';
 
 function App() {
     const { auth, setAuth } = useContext(AuthContext);
     const navigate = useNavigate();
     const fetchAccount = async () => {
-        console.log(typeof toast.destroy); 
+        console.log(typeof toast.destroy);
         let response = await getAccount();
         if (response && +response.EC === 0) {
             let data = response.DT;
@@ -64,7 +67,7 @@ function App() {
     }, []);
 
     return (
-        <>
+        <ChatProvider>
             {auth.isAuthenticated && <Navbar />}
             {auth?.isLoading ? (
                 <div className="flex justify-center items-center h-screen">
@@ -74,7 +77,15 @@ function App() {
                 <div className="App">
                     <AppRoutes />
                     {auth.isAuthenticated && !auth?.user?.groupWithRoles?.group?.name?.includes('Quản Lý') && (
-                        <MessengerWithAdmin />
+                        <>
+                            <MessengerWithAdmin />
+                            <IconChatBot
+                                onClick={() => {
+                                    // Xử lý khi click vào icon chat bot
+                                    console.log('ChatBot clicked');
+                                }}
+                            />
+                        </>
                     )}
                 </div>
             )}
@@ -93,7 +104,7 @@ function App() {
                 limit={3}
             />
             {/* Same as */}
-        </>
+        </ChatProvider>
     );
 }
 

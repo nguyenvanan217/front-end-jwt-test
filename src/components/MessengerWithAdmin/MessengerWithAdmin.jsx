@@ -9,9 +9,10 @@ import { getAdminChatId } from '../../services/userService';
 import ModalViewPreviewImage from './ModalViewPreviewImage';
 import { toast } from 'react-toastify';
 import { connectSocket, addMessageCallback, removeMessageCallback } from '../../setup/socket';
+import { ChatContext } from '../Context/chat.context';
 
 const MessengerWithAdmin = () => {
-    const [isOpen, setIsOpen] = useState(false);
+    const { chatState, toggleMessenger } = useContext(ChatContext);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
     const [adminId, setAdminId] = useState([]);
@@ -20,6 +21,7 @@ const MessengerWithAdmin = () => {
     const userId = String(auth?.user?.id);
     const messagesEndRef = useRef(null);
     const [unreadCount, setUnreadCount] = useState(0);
+    const isOpen = chatState.isMessengerOpen; // Thêm dòng này
 
     const [previewImages, setPreviewImages] = useState([]);
     const fileInputRef = useRef(null);
@@ -346,21 +348,25 @@ const MessengerWithAdmin = () => {
         });
     };
 
+    const handleToggleChat = () => {
+        toggleMessenger();
+    };
+
     return (
         <>
-            <IconChat onClick={() => setIsOpen(!isOpen)} unreadCount={unreadCount} />
+            <IconChat onClick={toggleMessenger} unreadCount={unreadCount} />
             {isOpen && (
-                <div className="fixed bottom-24 right-4 w-[350px] bg-white rounded-lg shadow-xl border border-gray-200">
-                    <div className="bg-blue-600 rounded-t-md text-white flex justify-between items-center p-4 border-b">
+                <div className="fixed bottom-24 right-4 w-[350px] bg-white rounded-lg shadow-xl border border-gray-200 z-[55]">
+                    {/* ...existing chat UI code... */}
+                    <div className="bg-blue-500 rounded-t-md text-white flex justify-between items-center p-4">
                         <div className="flex items-center gap-3">
-                            <img src={logo} alt="Logo" className="w-8 h-8" />
-                            <h3 className="font-semibold">Bạn Cần Hỗ Trợ ?</h3>
+                            <h3 className="font-semibold">Chat với Admin</h3>
                         </div>
-                        <button onClick={() => setIsOpen(false)} className="text-white hover:text-gray-700">
+                        <button onClick={toggleMessenger} className="text-white hover:text-gray-200">
                             <IoClose size={24} />
                         </button>
                     </div>
-
+                    {/* ...rest of the chat UI... */}
                     <div className="h-96 overflow-y-auto p-4">
                         {messages.map((msg, index) => (
                             <div key={msg.id} className={`flex ${msg.isSender ? 'justify-end' : 'justify-start'} mb-4`}>
