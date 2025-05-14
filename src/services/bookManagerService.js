@@ -133,6 +133,18 @@ export const importBooksFromExcel = async (formData) => {
     }
 };
 
+export const extendBookLoan = async (transactionId) => {
+    try {
+        const URL_API = `/api/v1/transactions/extend/${transactionId}`;
+        const response = await axios.put(URL_API);
+        console.log('Gia hạn check>>>>>>>>> :', response);
+        return response;
+    } catch (error) {
+        console.error('Lỗi khi gia hạn sách:', error);
+        throw error;
+    }
+};
+
 export {
     getAllBook,
     addBook,

@@ -401,64 +401,71 @@ const Messenger = () => {
             <div className="flex-1 flex flex-col">
                 {selectedChat ? (
                     <>
-                        <div className="bg-white p-4 border-b border-gray-300 flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300 text-white font-bold">
+                        {/* Header */}
+                        <div className="bg-white p-2 sm:p-4 border-b border-gray-300 flex items-center gap-2 sm:gap-3">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-gray-300 text-white text-sm sm:text-base font-bold">
                                 {selectedChat.avatar.startsWith('http') ? (
                                     <img
                                         src={selectedChat.avatar}
                                         alt={selectedChat.name}
-                                        className="w-full h-full rounded-full"
+                                        className="w-full h-full rounded-full object-cover"
                                     />
                                 ) : (
                                     selectedChat.avatar
                                 )}
                             </div>
                             <div>
-                                <h2 className="font-semibold">{selectedChat.name}</h2>
+                                <h2 className="font-semibold text-sm sm:text-base">{selectedChat.name}</h2>
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        {/* Messages Area */}
+                        <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-2 sm:space-y-4">
                             {selectedChatMessages.map((msg, index) => (
                                 <div
                                     key={msg.id}
-                                    className={`flex items-start gap-2 ${msg.isSender ? 'flex-row-reverse' : ''}`}
+                                    className={`flex items-start gap-1 sm:gap-2 ${
+                                        msg.isSender ? 'flex-row-reverse' : ''
+                                    }`}
                                 >
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-300 text-white font-bold">
+                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-gray-300 text-white text-xs sm:text-sm font-bold">
                                         {msg.avatar}
                                     </div>
                                     <div
-                                        className={`max-w-[70%] ${
+                                        className={`max-w-[75%] sm:max-w-[70%] ${
                                             msg.isSender
                                                 ? 'bg-blue-500 text-white rounded-l-lg rounded-br-lg'
                                                 : 'bg-white rounded-r-lg rounded-bl-lg'
-                                        } p-3 shadow-sm`}
+                                        } p-2 sm:p-3 shadow-sm`}
                                     >
                                         {msg.imageUrl && (
                                             <img
                                                 src={msg.imageUrl}
                                                 alt="Message Image"
-                                                className="max-w-full max-h-64 rounded-md mb-1 cursor-pointer"
+                                                className="max-w-full max-h-48 sm:max-h-64 rounded-md mb-1 cursor-pointer"
                                                 onClick={() => handleImageClick(msg.imageUrl, index, 'messages')}
                                             />
                                         )}
-                                        {msg.content && <p>{msg.content}</p>}
-                                        <span className="text-xs text-gray-400 mt-1 block">{msg.timestamp}</span>
+                                        {msg.content && <p className="text-sm sm:text-base">{msg.content}</p>}
+                                        <span className="text-[10px] sm:text-xs text-gray-400 mt-1 block">
+                                            {msg.timestamp}
+                                        </span>
                                     </div>
                                 </div>
                             ))}
                             <div ref={messagesEndRef} />
                         </div>
 
-                        <form onSubmit={handleSendMessage} className="bg-white p-4 border-t border-gray-300">
+                        {/* Message Input Form */}
+                        <form onSubmit={handleSendMessage} className="bg-white p-2 sm:p-4 border-t border-gray-300">
                             {previewImages.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mb-3">
+                                <div className="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
                                     {previewImages.map((image, index) => (
                                         <div key={index} className="relative">
                                             <img
                                                 src={image}
                                                 alt={`Preview ${index}`}
-                                                className="w-20 h-20 object-cover rounded-md cursor-pointer transition-transform duration-500 ease-in-out"
+                                                className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md cursor-pointer transition-transform duration-500 ease-in-out"
                                                 onClick={() => handleImageClick(image, index, 'preview')}
                                             />
                                             <button
@@ -467,7 +474,7 @@ const Messenger = () => {
                                                     e.stopPropagation();
                                                     handleRemoveImage(index);
                                                 }}
-                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600"
+                                                className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-xs sm:text-sm hover:bg-red-600"
                                             >
                                                 ×
                                             </button>
@@ -476,13 +483,13 @@ const Messenger = () => {
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-2 relative">
+                            <div className="flex items-center gap-1 sm:gap-2 relative">
                                 <button
                                     type="button"
-                                    className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
+                                    className="p-1.5 sm:p-2 text-gray-500 hover:text-blue-500 transition-colors"
                                     onClick={handleOpenImageUpload}
                                 >
-                                    <FaImage size={20} />
+                                    <FaImage className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </button>
                                 <input
                                     type="file"
@@ -497,18 +504,18 @@ const Messenger = () => {
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
                                     placeholder="Nhập tin nhắn..."
-                                    className="flex-1 p-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
+                                    className="flex-1 p-1.5 sm:p-2 text-sm sm:text-base border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
                                 />
                                 <button
                                     type="submit"
                                     disabled={!message.trim() && imageFiles.length === 0}
-                                    className={`p-2 rounded-full ${
+                                    className={`p-1.5 sm:p-2 rounded-full ${
                                         message.trim() || imageFiles.length > 0
                                             ? 'text-blue-500 hover:bg-blue-50'
                                             : 'text-gray-400'
                                     } transition-colors`}
                                 >
-                                    <IoSend size={20} />
+                                    <IoSend className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </button>
                             </div>
                         </form>
@@ -523,8 +530,8 @@ const Messenger = () => {
                         )}
                     </>
                 ) : (
-                    <div className="flex-1 flex items-center justify-center text-gray-500">
-                        Chọn một cuộc trò chuyện để bắt đầu
+                    <div className="flex-1 flex items-center justify-center text-gray-500 text-sm sm:text-base">
+                        Chọn một cuộc trò chuyện để bắt đầu!
                     </div>
                 )}
             </div>

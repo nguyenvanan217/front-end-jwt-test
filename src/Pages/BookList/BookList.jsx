@@ -28,9 +28,7 @@ function BookList() {
     }, [currentPage, currentLimit, searchTerm]);
 
     useEffect(() => {
-        if (selectedGenre || searchTerm) {
-            filterAndSearchBooks();
-        }
+        filterAndSearchBooks();
     }, [selectedGenre, searchTerm, books]);
 
     const fetchAllBook = async () => {
@@ -72,10 +70,16 @@ function BookList() {
     };
 
     const filterAndSearchBooks = () => {
-        let filtered = [...books];
+        console.log('Current selectedGenre:', selectedGenre);
+        console.log('Current searchTerm:', searchTerm);
 
+        let filtered = [...books];
+        console.log('Initial books:', filtered.length);
+
+        // Bỏ điều kiện selectedGenre !== ""
         if (selectedGenre) {
             filtered = filtered.filter((book) => book.genreId === parseInt(selectedGenre));
+            console.log('After genre filter:', filtered.length);
         }
 
         if (searchTerm.trim()) {
@@ -84,6 +88,7 @@ function BookList() {
                 (book) =>
                     book.title.toLowerCase().includes(searchLower) || book.author.toLowerCase().includes(searchLower),
             );
+            console.log('After search filter:', filtered.length);
         }
 
         setFilteredBooks(filtered);
@@ -133,15 +138,15 @@ function BookList() {
     const handleImportExcel = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-    
+
         const formData = new FormData();
         formData.append('file', file);
-    
+
         try {
             const response = await importBooksFromExcel(formData);
             setImportResult(response);
             setIsOpenModalImport(true);
-            
+
             // Chỉ refresh danh sách khi import thành công
             if (response && response.EC === 0) {
                 await fetchAllBook();
@@ -149,9 +154,9 @@ function BookList() {
         } catch (error) {
             console.error('Import error:', error);
             const errorResult = error.response?.data || {
-                EM: "Lỗi khi import file Excel",
+                EM: 'Lỗi khi import file Excel',
                 EC: -1,
-                DT: { error: error.message }
+                DT: { error: error.message },
             };
             setImportResult(errorResult);
             setIsOpenModalImport(true);
@@ -161,7 +166,7 @@ function BookList() {
             }
         }
     };
-    
+
     const handleCloseImportModal = () => {
         setIsOpenModalImport(false);
         // Không cần gọi fetchAllBook ở đây vì đã gọi trong handleImportExcel
@@ -212,7 +217,7 @@ function BookList() {
                         <span className="ml-2 text-gray-500">Đang tải dữ liệu...</span>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
                         {filteredBooks.map((book) => (
                             <div
                                 key={book.id}
@@ -230,25 +235,25 @@ function BookList() {
                                     </div>
                                 </div>
 
-                                {/* Book Info */}
-                                <div className="p-4 flex flex-col flex-grow">
+                                {/* Book Info - Update text sizes for better mobile display */}
+                                <div className="p-2 sm:p-4 flex flex-col flex-grow">
                                     <h2
-                                        className="text-base md:text-lg font-bold line-clamp-2 mb-2 cursor-pointer"
+                                        className="text-sm sm:text-base md:text-lg font-bold line-clamp-2 mb-1 sm:mb-2 cursor-pointer"
                                         onClick={() => handleBtnDetailBook(book)}
                                     >
                                         {book.title}
                                     </h2>
-                                    <p className="text-sm md:text-base text-gray-600 mb-2 line-clamp-1">
+                                    <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-1 sm:mb-2 line-clamp-1">
                                         Số Lượng: {book.quantity}
                                     </p>
-                                    <p className="text-sm md:text-base text-gray-600 mb-4 line-clamp-1">
+                                    <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-2 sm:mb-4 line-clamp-1">
                                         Thể loại: {getGenreName(book.genreId)}
                                     </p>
 
-                                    {/* Chỉ giữ lại nút Chi tiết */}
-                                    <div className="flex justify-center gap-2 mt-auto">
+                                    {/* Buttons - Update padding and text size for mobile */}
+                                    <div className="flex justify-center gap-1 sm:gap-2 mt-auto">
                                         <button
-                                            className="w-1/2 bg-blue-500 text-white hover:bg-blue-700 transition-colors duration-300 rounded-md p-2 text-sm md:text-base"
+                                            className="w-1/2 bg-blue-500 text-white hover:bg-blue-700 transition-colors duration-300 rounded-md p-1 sm:p-2 text-xs sm:text-sm md:text-base"
                                             onClick={() => handleBtnDetailBook(book)}
                                         >
                                             Chi tiết
@@ -258,7 +263,7 @@ function BookList() {
                                                 book.quantity > 0
                                                     ? 'bg-green-500 hover:bg-green-700'
                                                     : 'bg-gray-400 cursor-not-allowed'
-                                            } text-white transition-colors duration-300 rounded-md p-2 text-sm md:text-base`}
+                                            } text-white transition-colors duration-300 rounded-md p-1 sm:p-2 text-xs sm:text-sm md:text-base`}
                                             onClick={() => handleOpenBorrowModal(book)}
                                             disabled={book.quantity <= 0}
                                         >

@@ -22,9 +22,8 @@ function UserManagement() {
     const [isLoading, setIsLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
 
-
     const { auth } = useContext(AuthContext);
-    console.log(">>>>>>>>>>check auth", auth);
+    console.log('>>>>>>>>>>check auth', auth);
     const useDebounce = (value, delay) => {
         const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -216,19 +215,22 @@ function UserManagement() {
                                                         Xem Chi tiết
                                                     </Link>
                                                 </td>
-                                                <td className=" py-2 text-center border border-gray-300 flex justify-center gap-5">
-                                                    <button
-                                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                                                        onClick={() => handleUpdateUser(item)}
-                                                    >
-                                                        Chỉnh sửa
-                                                    </button>
-                                                    <button
-                                                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                                                        onClick={() => handleDeleteUser(item)}
-                                                    >
-                                                        Xóa
-                                                    </button>
+                                                <td className="py-2 text-center border border-gray-300">
+                                                    <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-5">
+                                                        <button
+                                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 sm:py-2 px-2 sm:px-4 rounded text-sm sm:text-base"
+                                                            onClick={() => handleUpdateUser(item)}
+                                                        >
+                                                            <span className="hidden sm:inline">Chỉnh sửa</span>
+                                                            <span className="sm:hidden">Sửa</span>
+                                                        </button>
+                                                        <button
+                                                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 sm:py-2 px-2 sm:px-4 rounded text-sm sm:text-base"
+                                                            onClick={() => handleDeleteUser(item)}
+                                                        >
+                                                            Xóa
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );

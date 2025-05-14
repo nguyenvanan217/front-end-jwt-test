@@ -9,7 +9,7 @@ import {
 import { toast } from 'react-toastify';
 import './BookLoanReturnDetails.css';
 import ModalDeleteTransaction from './ModalDeleteTransaction';
-import { autoUpdateStatusInDB } from '../../services/bookManagerService';
+import { autoUpdateStatusInDB, extendBookLoan } from '../../services/bookManagerService';
 import { useTransactionCalculations } from '../../hooks/useTransactionCalculations';
 
 function BookLoanReturnDetails() {
@@ -228,7 +228,45 @@ function BookLoanReturnDetails() {
             setIsOpenModal(false);
         }
     }, [getTransactionId]);
+    // Hàm gia hạn sách
+    const handleExtendBook = useCallback(
+        async (transactionId) => {
+            try {
+                setIsSendingEmail(true); 
+                const response = await extendBookLoan(transactionId);
+                console.log('>>>>>>Gia hạn sách:', response);
 
+                if (response?.EC === 0) {
+                    toast.success(response.EM);
+
+                    // Cập nhật lại dữ liệu local với ngày mới từ response
+                    setUserDetails((prev) => ({
+                        ...prev,
+                        Transactions: prev.Transactions.map((trans) => {
+                            if (trans.id === transactionId) {
+                                return {
+                                    ...trans,
+                                    return_date: response.DT.newReturnDate,
+                                };
+                            }
+                            return trans;
+                        }),
+                    }));
+
+                    // Gọi fetchData để đồng bộ dữ liệu với server
+                    await fetchData();
+                } else {
+                    toast.error(response?.EM || 'Không thể gia hạn sách');
+                }
+            } catch (error) {
+                console.error('Lỗi khi gia hạn sách:', error);
+                toast.error('Không thể gia hạn sách');
+            } finally {
+                setIsSendingEmail(false); // Tắt loading state
+            }
+        },
+        [fetchData],
+    );
     const handleEditDetails = () => {
         setDateInput(true);
         setButtonUpdate(true);
@@ -464,7 +502,26 @@ function BookLoanReturnDetails() {
                                                         </td>
                                                     ) : (
                                                         <td className="px-4 py-2">
-                                                            {formatDate(transaction.return_date)}
+                                                            <div className="flex items-center gap-4">
+                                                                <span>{formatDate(transaction.return_date)}</span>
+                                                                {transaction.status === 'Chờ trả' && (
+                                                                    <button
+                                                                        onClick={() => handleExtendBook(transaction.id)}
+                                                                        className="bg-blue-500 font-bold hover:bg-blue-600 text-white text-sm px-4 py-1 mr-5 rounded"
+                                                                        title="Gia hạn thêm 15 ngày"
+                                                                        disabled={isSendingEmail} // Thêm disabled khi đang xử lý
+                                                                    >
+                                                                        {isSendingEmail ? (
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                                <span>Đang xử lý...</span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            'Gia hạn'
+                                                                        )}
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     )}
                                                 </tr>

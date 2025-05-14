@@ -113,11 +113,12 @@ function RolesManagerment() {
     };
     return (
         <div className="container mx-auto px-4 mt-4">
-            <h1 className="text-center text-3xl font-bold">Cấp Quyền Người Dùng</h1>
-            <div className="flex justify-between mt-7">
-                <div className="w-[30%]">
-                    <h1 className="text-2xl font-bold">Người Dùng:</h1>
-                    <table className="border-collapse border-2 border-gray-300 mt-6">
+            <h1 className="text-center text-2xl sm:text-3xl font-bold">Cấp Quyền Người Dùng</h1>
+            <div className="flex flex-col lg:flex-row justify-between mt-7 gap-6">
+                {/* Left section */}
+                <div className="w-full lg:w-[30%]">
+                    <h1 className="text-xl sm:text-2xl font-bold">Người Dùng:</h1>
+                    <table className="w-full border-collapse border-2 border-gray-300 mt-6">
                         <thead className="bg-[#020617] text-white">
                             <tr>
                                 <th className="border border-gray-400 px-4 py-2">Người Dùng</th>
@@ -150,33 +151,37 @@ function RolesManagerment() {
                         </tfoot>
                     </table>
                 </div>
-                <div className="w-[65%] mb-10">
-                    <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-bold">Thông Tin Quyền Hạn:</h1>
-                        <div className="flex justify-end">
-                            <select
-                                className="w-[500px] h-[40px] border border-blue-400 focus:outline-none focus:border-blue-500 rounded-md pl-4"
-                                onChange={(event) => handleOnchangeGroup(event.target.value)}
-                            >
-                                <option value="0">Chọn Đối Tượng Để Xem Quyền Hạn Tại Đây!</option>
-                                {group &&
-                                    group.length > 0 &&
-                                    group.map((item, index) => (
-                                        <option value={item.id} key={`group-${index}`}>
-                                            Quyền hạn của {item.name}
-                                        </option>
-                                    ))}
-                            </select>
-                        </div>
 
-                        <button
-                            className="bg-red-500 text-white px-4 py-2 rounded-md"
-                            onClick={() => hanleUpdateRole(selectedGroupId, selectedPermissions)}
-                        >
-                            Cập Nhật
-                        </button>
+                {/* Right section */}
+                <div className="w-full lg:w-[65%] mb-10">
+                    <h1 className="text-xl sm:text-2xl font-bold mb-6">Thông Tin Quyền Hạn:</h1>
+                    <div className="flex">
+                        <div className="flex gap-4">
+                            <div className="flex justify-end w-full">
+                                <select
+                                    className="w-full lg:w-[500px] h-[40px] border border-blue-400 focus:outline-none focus:border-blue-500 rounded-md pl-4 text-sm sm:text-base"
+                                    onChange={(event) => handleOnchangeGroup(event.target.value)}
+                                >
+                                    <option value="0">Chọn Đối Tượng Để Xem Quyền Hạn Tại Đây!</option>
+                                    {group &&
+                                        group.length > 0 &&
+                                        group.map((item, index) => (
+                                            <option value={item.id} key={`group-${index}`}>
+                                                Quyền hạn của {item.name}
+                                            </option>
+                                        ))}
+                                </select>
+                            </div>
+
+                            <button
+                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors whitespace-nowrap"
+                                onClick={() => hanleUpdateRole(selectedGroupId, selectedPermissions)}
+                            >
+                                Cập Nhật
+                            </button>
+                        </div>
                     </div>
-                    <table className="border-collapse border-2 border-gray-300 mt-4">
+                    <table className="w-full border-collapse border-2 border-gray-300 mt-4">
                         <thead className="bg-[#020617] text-white">
                             <tr>
                                 <th className="border border-gray-400 px-4 py-2">Id</th>

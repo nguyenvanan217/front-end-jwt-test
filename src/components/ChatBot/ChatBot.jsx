@@ -77,7 +77,7 @@ const ChatBot = ({ isOpen, onClose }) => {
             <div className="bg-yellow-500 rounded-t-md text-white flex justify-between items-center p-4">
                 <div className="flex items-center gap-3">
                     <FaRobot className="w-8 h-8" />
-                    <h3 className="font-semibold">Chat với Bot</h3>
+                    <h3 className="font-semibold">AI hỗ trợ sinh viên về sách</h3>
                 </div>
                 <button onClick={onClose} className="text-white hover:text-gray-200">
                     <IoClose size={24} />
@@ -94,7 +94,7 @@ const ChatBot = ({ isOpen, onClose }) => {
                         )}
                         <div
                             className={`max-w-[70%] rounded-lg p-3 ${
-                                msg.isSender ? 'bg-yellow-500 text-white' : 'bg-white text-gray-800 shadow-sm'
+                                msg.isSender ? 'bg-yellow-600 text-white' : 'bg-white text-gray-800 shadow-sm'
                             }`}
                         >
                             <p className="text-sm mb-2">{msg.content}</p>

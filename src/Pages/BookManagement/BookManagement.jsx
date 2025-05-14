@@ -18,6 +18,7 @@ import ModalAddGender from './ModalAddGender';
 import ModalDeletegenres from './ModalDeleteGenres';
 import { FaSearch } from 'react-icons/fa';
 import Pagination from '../../components/Paginate/ReactPaginate';
+import { FaFileImport } from 'react-icons/fa6';
 import styles from '../UserManagement/UserManagement.module.css';
 import ModalImportExcel from '../../components/ModalExcel/ModalImportExcel';
 
@@ -264,56 +265,53 @@ const BookManagementTable = () => {
                     </select>
                 </div>
             </div>
-            <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-6">
-                    <button
-                        onClick={() => setIsOpenModalAdd(true)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
-                    >
-                        <IoMdAdd />
-                        Thêm sách
-                    </button>
-                    <button
-                        onClick={() => setIsOpenModalAddGende(true)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
-                    >
-                        <IoMdAdd />
-                        Thêm thể loại sách
-                    </button>
-                    <button
-                        onClick={() => setIsOpenModalDeleteGende(true)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 flex items-center gap-2"
-                    >
-                        <IoMdAdd />
-                        Xem thể loại sách
-                    </button>
-                </div>
-                <div>
-                    <input
-                        type="file"
-                        accept=".xlsx,.xls"
-                        onChange={handleImportExcel}
-                        ref={fileInputRef}
-                        className="hidden"
-                    />
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center gap-2"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                            <>
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                Đang xử lý...
-                            </>
-                        ) : (
-                            <>
-                                <IoMdAdd />
-                                Import Excel
-                            </>
-                        )}
-                    </button>
-                </div>
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+                <button
+                    onClick={() => setIsOpenModalAdd(true)}
+                    className="bg-blue-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-blue-600 flex items-center gap-2 text-sm sm:text-base"
+                >
+                    <IoMdAdd />
+                    <span className="hidden sm:inline">Thêm sách</span>
+                    <span className="sm:hidden">Thêm</span>
+                </button>
+
+                <button
+                    onClick={() => setIsOpenModalAddGende(true)}
+                    className="bg-blue-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-blue-600 flex items-center gap-2 text-sm sm:text-base"
+                >
+                    <IoMdAdd />
+                    <span className="hidden sm:inline">Thêm thể loại sách</span>
+                    <span className="sm:hidden">Thêm Thể Loại</span>
+                </button>
+
+                <button
+                    onClick={() => setIsOpenModalDeleteGende(true)}
+                    className="bg-blue-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-blue-600 flex items-center gap-2 text-sm sm:text-base"
+                >
+                    <IoMdAdd />
+                    <span className="hidden sm:inline">Xem thể loại sách</span>
+                    <span className="sm:hidden">Xem Thể loại</span>
+                </button>
+
+                <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-green-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-green-600 flex items-center gap-2 text-sm sm:text-base"
+                    disabled={isLoading}
+                >
+                    {isLoading ? (
+                        <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span className="hidden sm:inline">Đang xử lý...</span>
+                            <span className="sm:hidden">Xử lý...</span>
+                        </>
+                    ) : (
+                        <>
+                            <FaFileImport />
+                            <span className="hidden sm:inline">Import Excel</span>
+                            <span className="sm:hidden">Import</span>
+                        </>
+                    )}
+                </button>
             </div>
             <table className="table-auto w-full border-collapse border border-gray-300">
                 <thead>
@@ -363,24 +361,28 @@ const BookManagementTable = () => {
                                     </span>
                                 </td>
                                 <td className="border text-center px-4 py-2">
-                                    <button
-                                        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2"
-                                        onClick={() => handleViewDetailModal(book)}
-                                    >
-                                        Xem chi tiết
-                                    </button>
-                                    <button
-                                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 mr-2"
-                                        onClick={() => handleOpenUpdateModal(book)}
-                                    >
-                                        Chỉnh Sửa
-                                    </button>
-                                    <button
-                                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                                        onClick={() => handleOpenDeleteModal(book)}
-                                    >
-                                        Xóa
-                                    </button>
+                                    <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-2">
+                                        <button
+                                            className="bg-green-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-green-600 text-sm sm:text-base flex items-center justify-center gap-1"
+                                            onClick={() => handleViewDetailModal(book)}
+                                        >
+                                            <span className="hidden sm:inline">Xem chi tiết</span>
+                                            <span className="sm:hidden">Xem</span>
+                                        </button>
+                                        <button
+                                            className="bg-blue-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-blue-600 text-sm sm:text-base flex items-center justify-center gap-1"
+                                            onClick={() => handleOpenUpdateModal(book)}
+                                        >
+                                            <span className="hidden sm:inline">Chỉnh sửa</span>
+                                            <span className="sm:hidden">Sửa</span>
+                                        </button>
+                                        <button
+                                            className="bg-red-500 text-white px-2 sm:px-3 py-1 rounded hover:bg-red-600 text-sm sm:text-base flex items-center justify-center gap-1"
+                                            onClick={() => handleOpenDeleteModal(book)}
+                                        >
+                                            Xóa
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))
