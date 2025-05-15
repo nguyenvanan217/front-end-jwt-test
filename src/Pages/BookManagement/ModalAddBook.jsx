@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaRegWindowClose } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getAllGenres } from '../../services/bookManagerService';
-import '../../components/modalUser/Modal.css';
+import '../../components/ModalUser/Modal.css';
 function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
     const [bookData, setBookData] = useState({
         title: '',

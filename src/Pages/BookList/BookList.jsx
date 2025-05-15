@@ -1,11 +1,16 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { getAllBook, getAllGenres, importBooksFromExcel } from '../../services/bookManagerService';
 import { toast } from 'react-toastify';
 import ModalBookDetail from './ModalBookDetail';
 import ModalBorrowBooks from './ModalBorrowBooks';
 import Pagination from '../../components/Paginate/ReactPaginate';
 import styles from '../UserManagement/UserManagement.module.css';
+import AuthContext from '../../components/Context/auth.context';
+
 function BookList() {
+    const { auth } = useContext(AuthContext);
+    const isAdmin = auth?.user?.groupWithRoles?.group?.name === 'Quản Lý Thư Viện';
+
     const [books, setBooks] = useState([]);
     const [genres, setGenres] = useState([]);
     const [selectedGenre, setSelectedGenre] = useState('');
@@ -253,22 +258,26 @@ function BookList() {
                                     {/* Buttons - Update padding and text size for mobile */}
                                     <div className="flex justify-center gap-1 sm:gap-2 mt-auto">
                                         <button
-                                            className="w-1/2 bg-blue-500 text-white hover:bg-blue-700 transition-colors duration-300 rounded-md p-1 sm:p-2 text-xs sm:text-sm md:text-base"
+                                            className={`${
+                                                isAdmin ? 'w-1/2' : 'w-full'
+                                            } bg-blue-500 text-white hover:bg-blue-700 transition-colors duration-300 rounded-md p-1 sm:p-2 text-xs sm:text-sm md:text-base`}
                                             onClick={() => handleBtnDetailBook(book)}
                                         >
                                             Chi tiết
                                         </button>
-                                        <button
-                                            className={`w-1/2 ${
-                                                book.quantity > 0
-                                                    ? 'bg-green-500 hover:bg-green-700'
-                                                    : 'bg-gray-400 cursor-not-allowed'
-                                            } text-white transition-colors duration-300 rounded-md p-1 sm:p-2 text-xs sm:text-sm md:text-base`}
-                                            onClick={() => handleOpenBorrowModal(book)}
-                                            disabled={book.quantity <= 0}
-                                        >
-                                            {book.quantity > 0 ? 'Mượn sách' : 'Hết sách'}
-                                        </button>
+                                        {isAdmin && (
+                                            <button
+                                                className={`w-1/2 ${
+                                                    book.quantity > 0
+                                                        ? 'bg-green-500 hover:bg-green-700'
+                                                        : 'bg-gray-400 cursor-not-allowed'
+                                                } text-white transition-colors duration-300 rounded-md p-1 sm:p-2 text-xs sm:text-sm md:text-base`}
+                                                onClick={() => handleOpenBorrowModal(book)}
+                                                disabled={book.quantity <= 0}
+                                            >
+                                                {book.quantity > 0 ? 'Mượn sách' : 'Hết sách'}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>

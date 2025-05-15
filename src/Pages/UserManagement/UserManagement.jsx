@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { getAllUsers, deleteUser } from '../../services/userService';
-import ModalUser from '../../components/modalUser/ModalUser';
-import ModalUserUpdate from '../../components/modalUser/ModalUserUpdate';
+import ModalUser from '../../components/ModalUser/ModalUser';
+import ModalUserUpdate from '../../components/ModalUser/ModalUserUpdate';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
 import Pagination from '../../components/Paginate/ReactPaginate';

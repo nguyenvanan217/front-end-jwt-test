@@ -65,8 +65,6 @@ function Login() {
         if (check) {
             let response = await loginUser(email, password);
             if (response && +response.EC === 0) {
-                console.log('mới check>>>>>>>>>>>>>>>>', response.DT);
-                // console.log('response', response.DT.access_token);
                 localStorage.setItem('access_token', response.DT.access_token);
                 toast.success(response.EM);
                 setAuth({
@@ -78,7 +76,14 @@ function Login() {
                         groupWithRoles: response?.DT?.groupWithRole ?? '',
                     },
                 });
-                navigate('/usermanagerment');
+
+                // Kiểm tra role và điều hướng
+                const isAdmin = response?.DT?.groupWithRole?.group?.name?.includes('Quản Lý');
+                if (isAdmin) {
+                    navigate('/usermanagerment'); // Trang cho admin
+                } else {
+                    navigate('/booklist'); // Trang cho sinh viên
+                }
             } else {
                 toast.error(response.EM);
             }

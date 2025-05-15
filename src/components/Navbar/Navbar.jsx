@@ -13,7 +13,7 @@ import { FaUserAlt } from 'react-icons/fa';
 import { FaFacebookMessenger } from 'react-icons/fa';
 function Navbar() {
     const { auth, setAuth } = useContext(AuthContext);
-    const isAdmin = auth?.user?.groupWithRoles.group.name.includes('Quản Lý Thư Viện');
+    const isAdmin = auth?.user?.groupWithRoles?.group?.name?.includes('Quản Lý Thư Viện');
     console.log('isAdmin navbar', isAdmin);
     const [dropdown, setDropdown] = useState(false);
     const [mobileMenu, setMobileMenu] = useState(false);
@@ -74,22 +74,34 @@ function Navbar() {
                     </div>
 
                     {/* Desktop Menu */}
-                    <div className="hidden md:flex items-center gap-5">
-                        <NavLink to="/usermanagerment" className="nav-link" onClick={handleNavLinkClick}>
-                            Quản Lý Người Dùng
-                        </NavLink>
-                        <NavLink to="/bookmanagerment" className="nav-link" onClick={handleNavLinkClick}>
-                            Quản Lý Sách
-                        </NavLink>
-                        <NavLink to="/booklist" className="nav-link" onClick={handleNavLinkClick}>
-                            Sách Thư Viện
-                        </NavLink>
-                        <NavLink to="/bookborrowinghistory" className="nav-link" onClick={handleNavLinkClick}>
-                            Quản Lý Mượn Sách
-                        </NavLink>
-                        <NavLink to="/rolemanagerment" className="nav-link" onClick={handleNavLinkClick}>
-                            Quản Lý Quyền
-                        </NavLink>
+                    <div className={`hidden md:flex items-center ${isAdmin ? 'gap-5' : 'flex-1'}`}>
+                        {isAdmin ? (
+                            // Admin Menu Items
+                            <>
+                                <NavLink to="/usermanagerment" className="nav-link" onClick={handleNavLinkClick}>
+                                    Quản Lý Người Dùng
+                                </NavLink>
+                                <NavLink to="/bookmanagerment" className="nav-link" onClick={handleNavLinkClick}>
+                                    Quản Lý Sách
+                                </NavLink>
+                                <NavLink to="/booklist" className="nav-link" onClick={handleNavLinkClick}>
+                                    Sách Thư Viện
+                                </NavLink>
+                                <NavLink to="/bookborrowinghistory" className="nav-link" onClick={handleNavLinkClick}>
+                                    Quản Lý Mượn Sách
+                                </NavLink>
+                                <NavLink to="/rolemanagerment" className="nav-link" onClick={handleNavLinkClick}>
+                                    Quản Lý Quyền
+                                </NavLink>
+                            </>
+                        ) : (
+                            // Student Menu Items - Positioned at start
+                            <div className="ml-5">
+                                <NavLink to="/booklist" className="nav-link" onClick={handleNavLinkClick}>
+                                    Sách Thư Viện
+                                </NavLink>
+                            </div>
+                        )}
                     </div>
 
                     {/* User Section */}
@@ -126,8 +138,8 @@ function Navbar() {
                                 </div>
                             )}
                         </div>
-                        <Link to="/messenger" className="nav-link" onClick={handleNavLinkClick}>
-                           {isAdmin ? <FaFacebookMessenger className="text-white text-xl" /> : ''}
+                        <Link to="/messenger" className="nav-link hidden md:block" onClick={handleNavLinkClick}>
+                            {isAdmin ? <FaFacebookMessenger className="text-white text-xl" /> : ''}
                         </Link>
                     </div>
 
@@ -143,21 +155,46 @@ function Navbar() {
             {/* Mobile Navigation */}
             <div className={`md:hidden bg-slate-900 mobile-menu ${mobileMenu ? 'open' : ''}`}>
                 <div className="px-4 space-y-3 py-2">
-                    <NavLink to="/usermanagerment" className="mobile-nav-link" onClick={handleNavLinkClick}>
-                        Quản Lý Người Dùng
-                    </NavLink>
-                    <NavLink to="/bookmanagerment" className="mobile-nav-link" onClick={handleNavLinkClick}>
-                        Quản Lý Sách
-                    </NavLink>
-                    <NavLink to="/booklist" className="mobile-nav-link" onClick={handleNavLinkClick}>
-                        Sách Thư Viện
-                    </NavLink>
-                    <NavLink to="/bookborrowinghistory" className="mobile-nav-link" onClick={handleNavLinkClick}>
-                        Quản Lý Mượn Sách
-                    </NavLink>
-                    <NavLink to="/rolemanagerment" className="mobile-nav-link" onClick={handleNavLinkClick}>
-                        Quản Lý Quyền
-                    </NavLink>
+                    {isAdmin ? (
+                        // Admin Mobile Menu Items
+                        <>
+                            <NavLink to="/usermanagerment" className="mobile-nav-link" onClick={handleNavLinkClick}>
+                                Quản Lý Người Dùng
+                            </NavLink>
+                            <NavLink to="/bookmanagerment" className="mobile-nav-link" onClick={handleNavLinkClick}>
+                                Quản Lý Sách
+                            </NavLink>
+                            <NavLink to="/booklist" className="mobile-nav-link" onClick={handleNavLinkClick}>
+                                Sách Thư Viện
+                            </NavLink>
+                            <NavLink
+                                to="/bookborrowinghistory"
+                                className="mobile-nav-link"
+                                onClick={handleNavLinkClick}
+                            >
+                                Quản Lý Mượn Sách
+                            </NavLink>
+                            <NavLink to="/rolemanagerment" className="mobile-nav-link" onClick={handleNavLinkClick}>
+                                Quản Lý Quyền
+                            </NavLink>
+                        </>
+                    ) : (
+                        // Student Mobile Menu Item
+                        <NavLink to="/booklist" className="mobile-nav-link" onClick={handleNavLinkClick}>
+                            Sách Thư Viện
+                        </NavLink>
+                    )}
+
+                    {isAdmin && (
+                        <NavLink to="/messenger" className="mobile-nav-link" onClick={handleNavLinkClick}>
+                            <div className="flex items-center gap-2">
+                                <FaFacebookMessenger className="text-xl" />
+                                <span>Tin nhắn</span>
+                            </div>
+                        </NavLink>
+                    )}
+
+                    {/* Account Info and Logout Section */}
                     <div className="pt-4 border-t border-slate-700 mb-2 flex flex-col gap-3">
                         <div className="text-white mb-2">Welcome: {auth.user.name}</div>
                         <Link to="/accountinformation" className="text-red-500 flex items-center gap-2">

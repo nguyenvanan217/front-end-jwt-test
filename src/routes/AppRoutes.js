@@ -39,8 +39,8 @@ function AppRoutes() {
                     <div style={{ textAlign: 'center', marginTop: '50px' }}>
                         <h1 className="text-red-600 text-2xl font-bold">404 - Page Not Found</h1>
                         <p className="text-red-600">The page you are looking for does not exist.</p>
-                        <a href="/" className="text-blue-600 underline">
-                            Go back to Home
+                        <a href="/usermanagerment" className="text-blue-600 underline">
+                            Go Back
                         </a>
                     </div>
                 }

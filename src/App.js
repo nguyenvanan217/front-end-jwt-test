@@ -14,6 +14,7 @@ import MessengerWithAdmin from './components/MessengerWithAdmin/MessengerWithAdm
 import React from 'react';
 import IconChatBot from './components/IconChatBot/IconChatBot';
 import { ChatProvider } from './components/Context/chat.context';
+import ToTop from './components/ToTop/ToTop';
 
 function App() {
     const { auth, setAuth } = useContext(AuthContext);
@@ -76,34 +77,18 @@ function App() {
             ) : (
                 <div className="App">
                     <AppRoutes />
-                    {auth.isAuthenticated && !auth?.user?.groupWithRoles?.group?.name?.includes('Quản Lý') && (
+                    <ToTop />
+                    {auth.isAuthenticated && (
                         <>
-                            <MessengerWithAdmin />
-                            <IconChatBot
-                                onClick={() => {
-                                    // Xử lý khi click vào icon chat bot
-                                    console.log('ChatBot clicked');
-                                }}
-                            />
+                            {/* Hiển thị MessengerWithAdmin chỉ cho sinh viên */}
+                            {!auth?.user?.groupWithRoles?.group?.name?.includes('Quản Lý') && <MessengerWithAdmin />}
+                            {/* Hiển thị IconChatBot cho cả admin và sinh viên */}
+                            <IconChatBot />
                         </>
                     )}
                 </div>
             )}
-
-            <ToastContainer
-                position="top-left"
-                autoClose={3000}
-                hideProgressBar={true}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="colored"
-                limit={3}
-            />
-            {/* Same as */}
+            <ToastContainer />
         </ChatProvider>
     );
 }

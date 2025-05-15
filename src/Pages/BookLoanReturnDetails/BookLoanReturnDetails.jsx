@@ -232,7 +232,7 @@ function BookLoanReturnDetails() {
     const handleExtendBook = useCallback(
         async (transactionId) => {
             try {
-                setIsSendingEmail(true); 
+                setIsSendingEmail(true);
                 const response = await extendBookLoan(transactionId);
                 console.log('>>>>>>Gia hạn sách:', response);
 
@@ -307,321 +307,366 @@ function BookLoanReturnDetails() {
                     handleConfirmDeleteTransaction={handleConfirmDeleteTransaction}
                 />
             )}
-            <div className="p-6 bg-white rounded-lg shadow-lg">
-                <h2 className="text-3xl font-bold text-center text-blue-600 mb-4">Chi Tiết Mượn Trả</h2>
+            <div className="p-3 sm:p-4 md:p-6 bg-white rounded-lg shadow-lg">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-blue-600 mb-3 sm:mb-4">
+                    Chi Tiết Mượn Trả
+                </h2>
 
                 {isLoading ? (
-                    <div className="flex items-center justify-center p-8">
-                        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="ml-3 text-gray-600">Đang tải thông tin...</span>
+                    <div className="flex items-center justify-center p-4 sm:p-8">
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="ml-3 text-gray-600 text-sm sm:text-base">Đang tải thông tin...</span>
                     </div>
                 ) : (
-                    <div className="flex justify-between gap-6">
+                    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
                         {/* Thông tin người dùng */}
-                        <div className="w-3/6">
-                            <h3 className="font-semibold text-lg text-blue-600 mb-2">Thông tin người dùng:</h3>
-                            <table className="min-w-full table-auto border-collapse">
-                                <thead className="bg-blue-500 text-white">
-                                    <tr>
-                                        <th className="px-4 py-2 table-header">Thông tin</th>
-                                        <th className="px-4 py-2 table-header">Chi tiết</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td className="px-4 py-2 font-medium text-nowrap">ID người dùng:</td>
-                                        <td className="px-4 py-2">{userDetails?.id}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-medium">Email:</td>
-                                        <td className="px-4 py-2 text-ellipsis">{userDetails?.email}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-medium">Tên người dùng:</td>
-                                        <td className="px-4 py-2 text-ellipsis">{userDetails?.username}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-medium">Nhóm:</td>
-                                        <td className="px-4 py-2">{userDetails?.Group?.name}</td>
-                                    </tr>
-                                    {/* Thêm thống kê số lượng sách */}
-                                    <tr className="border-t">
-                                        <td colSpan="2" className="px-4 py-2 font-medium text-blue-600">
-                                            Thống kê mượn sách:
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-medium">Đã trả:</td>
-                                        <td className="px-4 py-2">
-                                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-                                                {statusCounts.returned} sách
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-medium">Chờ trả:</td>
-                                        <td className="px-4 py-2">
-                                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                                                {statusCounts.pending} sách
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-medium">Quá hạn:</td>
-                                        <td className="px-4 py-2">
-                                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
-                                                {statusCounts.overdue} sách
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-medium">Ngày hiện tại:</td>
-                                        <td className="px-4 py-2 text-blue-600 font-medium">
-                                            {formatDate(new Date())}
-                                        </td>
-                                    </tr>
-                                    {statusCounts.overdue > 0 && (
-                                        <>
-                                            <tr>
-                                                <td className="px-4 py-2 font-medium">Tổng số ngày quá hạn:</td>
-                                                <td className="px-4 py-2">
-                                                    <span className="text-red-500 font-bold px-2 py-1 rounded">
-                                                        {overdueDaysAndFine.totalDays} ngày
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="px-4 py-2 font-medium">Tổng tiền phạt:</td>
-                                                <td className="px-4 py-2">
-                                                    <span className="text-red-500 font-bold px-2 py-1 rounded">
-                                                        {formatCurrency(overdueDaysAndFine.totalFine)}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        </>
-                                    )}
-                                </tbody>
-                            </table>
+                        <div className="w-full lg:w-1/2">
+                            <h3 className="font-semibold text-base sm:text-lg text-blue-600 mb-2">
+                                Thông tin người dùng:
+                            </h3>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full table-auto border-collapse">
+                                    <thead className="bg-blue-500 text-white">
+                                        <tr>
+                                            <th className="px-3 sm:px-4 py-2 text-left text-sm sm:text-base whitespace-nowrap">
+                                                Thông tin
+                                            </th>
+                                            <th className="px-3 sm:px-4 py-2 text-left text-sm sm:text-base">
+                                                Chi tiết
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td className="px-4 py-2 font-medium text-nowrap">ID người dùng:</td>
+                                            <td className="px-4 py-2">{userDetails?.id}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-medium">Email:</td>
+                                            <td className="px-4 py-2 text-ellipsis">{userDetails?.email}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-medium">Tên người dùng:</td>
+                                            <td className="px-4 py-2 text-ellipsis">{userDetails?.username}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-medium">Nhóm:</td>
+                                            <td className="px-4 py-2">{userDetails?.Group?.name}</td>
+                                        </tr>
+                                        {/* Thêm thống kê số lượng sách */}
+                                        <tr className="border-t">
+                                            <td colSpan="2" className="px-4 py-2 font-medium text-blue-600">
+                                                Thống kê mượn sách:
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-medium">Đã trả:</td>
+                                            <td className="px-4 py-2">
+                                                <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                                                    {statusCounts.returned} sách
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-medium">Chờ trả:</td>
+                                            <td className="px-4 py-2">
+                                                <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                                                    {statusCounts.pending} sách
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-medium">Quá hạn:</td>
+                                            <td className="px-4 py-2">
+                                                <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
+                                                    {statusCounts.overdue} sách
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-medium">Ngày hiện tại:</td>
+                                            <td className="px-4 py-2 text-blue-600 font-medium">
+                                                {formatDate(new Date())}
+                                            </td>
+                                        </tr>
+                                        {statusCounts.overdue > 0 && (
+                                            <>
+                                                <tr>
+                                                    <td className="px-4 py-2 font-medium">Tổng số ngày quá hạn:</td>
+                                                    <td className="px-4 py-2">
+                                                        <span className="text-red-500 font-bold px-2 py-1 rounded">
+                                                            {overdueDaysAndFine.totalDays} ngày
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="px-4 py-2 font-medium">Tổng tiền phạt:</td>
+                                                    <td className="px-4 py-2">
+                                                        <span className="text-red-500 font-bold px-2 py-1 rounded">
+                                                            {formatCurrency(overdueDaysAndFine.totalFine)}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         {/* Thông tin sách mượn */}
-                        <div className="w-3/6">
-                            <h3 className="font-semibold text-lg text-green-600 mb-2">Thông tin sách mượn:</h3>
+                        <div className="w-full lg:w-1/2">
+                            <h3 className="font-semibold text-base sm:text-lg text-green-600 mb-2">
+                                Thông tin sách mượn:
+                            </h3>
                             {userDetails ? (
                                 userDetails.Transactions && userDetails.Transactions.length > 0 ? (
-                                    userDetails.Transactions.map((transaction) => (
-                                        <table className="w-full mb-4" key={transaction.id}>
-                                            <thead className="bg-[#020617] text-white header-content-book relative z-0">
-                                                <tr>
-                                                    <th className="px-4 py-2 text-left border-spacing-3 text-nowrap">
-                                                        Thông tin
-                                                    </th>
-                                                    <th className="px-4 py-2 text-left border-spacing-3">Chi tiết</th>
-                                                </tr>
-                                                {deleteBorrowedTable && (
-                                                    <button
-                                                        className="absolute top-[15%] left-[93%] w-10 h-7 bg-red-600"
-                                                        onClick={() => handleOpenDeleteModal(transaction.id)}
-                                                    >
-                                                        X
-                                                    </button>
-                                                )}
-                                            </thead>
-                                            <tbody className="body-content-book">
-                                                {/* <tr>
-                                                    <td className="px-4 py-2 font-medium">Id giao dịch:</td>
-                                                    <td className="px-4 py-2 text-ellipsis">{transaction.id}</td>
-                                                </tr> */}
-                                                <tr>
-                                                    <td className="px-4 py-2 font-medium">Id sách:</td>
-                                                    <td className="px-4 py-2 text-ellipsis">{transaction.bookId}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="px-4 py-2 font-medium">Tên sách:</td>
-                                                    <td className="px-4 py-2 text-ellipsis">
-                                                        {transaction.Book?.title}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="px-4 py-2 font-medium">Ngày mượn:</td>
-                                                    {dateInput ? (
-                                                        <td className="px-4 py-2">
-                                                            <div className="flex flex-col">
-                                                                <input
-                                                                    type="date"
-                                                                    value={transaction.borrow_date?.split('T')[0]}
-                                                                    onChange={(e) =>
-                                                                        handleDateChange(
-                                                                            e,
-                                                                            transaction.id,
-                                                                            'borrow_date',
-                                                                        )
-                                                                    }
-                                                                    className={`border ${
-                                                                        dateError ? 'border-red-500' : 'border-gray-300'
-                                                                    } rounded px-2 py-1 outline-none`}
-                                                                />
-                                                                {dateError && (
-                                                                    <div className="text-red-500 text-sm mt-1">
-                                                                        {dateError}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    ) : (
-                                                        <td className="px-4 py-2">
-                                                            {formatDate(transaction.borrow_date)}
-                                                        </td>
-                                                    )}
-                                                </tr>
-                                                <tr>
-                                                    <td className="px-4 py-2 font-medium">Ngày trả:</td>
-                                                    {dateInput ? (
-                                                        <td className="px-4 py-2">
-                                                            <div className="flex flex-col">
-                                                                <input
-                                                                    type="date"
-                                                                    value={transaction.return_date?.split('T')[0]}
-                                                                    onChange={(e) =>
-                                                                        handleDateChange(
-                                                                            e,
-                                                                            transaction.id,
-                                                                            'return_date',
-                                                                        )
-                                                                    }
-                                                                    className={`border ${
-                                                                        dateError ? 'border-red-500' : 'border-gray-300'
-                                                                    } rounded px-2 py-1 outline-none`}
-                                                                />
-                                                                {dateError && (
-                                                                    <div className="text-red-500 text-sm mt-1">
-                                                                        {dateError}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    ) : (
-                                                        <td className="px-4 py-2">
-                                                            <div className="flex items-center gap-4">
-                                                                <span>{formatDate(transaction.return_date)}</span>
-                                                                {transaction.status === 'Chờ trả' && (
-                                                                    <button
-                                                                        onClick={() => handleExtendBook(transaction.id)}
-                                                                        className="bg-blue-500 font-bold hover:bg-blue-600 text-white text-sm px-4 py-1 mr-5 rounded"
-                                                                        title="Gia hạn thêm 15 ngày"
-                                                                        disabled={isSendingEmail} // Thêm disabled khi đang xử lý
-                                                                    >
-                                                                        {isSendingEmail ? (
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                                                <span>Đang xử lý...</span>
-                                                                            </div>
-                                                                        ) : (
-                                                                            'Gia hạn'
-                                                                        )}
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    )}
-                                                </tr>
-                                                {transaction.status === 'Quá hạn' && (
-                                                    <>
+                                    <div className="space-y-4">
+                                        {userDetails.Transactions.map((transaction) => (
+                                            <div key={transaction.id} className="overflow-x-auto">
+                                                <table className="min-w-full">
+                                                    <thead className="bg-[#020617] text-white relative z-0">
                                                         <tr>
-                                                            <td className="px-4 py-2 font-medium">Số ngày quá hạn:</td>
-                                                            <td className="px-4 py-2">
-                                                                <span className="text-red-500 font-medium">
-                                                                    {calculateOverdueDays(transaction.return_date)} ngày
-                                                                </span>
-                                                            </td>
+                                                            <th className="px-3 sm:px-4 py-2 text-left text-sm sm:text-base whitespace-nowrap">
+                                                                Thông tin
+                                                            </th>
+                                                            <th className="px-3 sm:px-4 py-2 text-left text-sm sm:text-base pr-12">
+                                                                Chi tiết
+                                                            </th>
                                                         </tr>
-                                                        <tr>
-                                                            <td className="px-4 py-2 font-medium">Tiền phạt:</td>
-                                                            <td className="px-4 py-2">
-                                                                <span className="text-red-500 font-medium">
-                                                                    {formatCurrency(
-                                                                        calculateFine(transaction.return_date),
-                                                                    )}
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    </>
-                                                )}
-                                                <tr>
-                                                    <td className="px-4 py-2 font-medium">Trạng thái:</td>
-                                                    <td className="px-4 py-2">
-                                                        <div className="flex items-center gap-4">
-                                                            <span
-                                                                className={`px-2 py-1 rounded ${
-                                                                    transaction.status === 'Quá hạn'
-                                                                        ? 'bg-red-500 text-white'
-                                                                        : transaction.status === 'Chờ trả'
-                                                                        ? 'bg-orange-500 text-white'
-                                                                        : transaction.status === 'Đã trả'
-                                                                        ? 'bg-green-500 text-white'
-                                                                        : ''
-                                                                }`}
+                                                        {deleteBorrowedTable && (
+                                                            <button
+                                                                className="absolute top-1/2 -translate-y-1/2 right-2 w-8 h-7 bg-red-600 text-white rounded"
+                                                                onClick={() => handleOpenDeleteModal(transaction.id)}
                                                             >
-                                                                {transaction.status}
-                                                            </span>
-                                                            {(transaction.status === 'Quá hạn' ||
-                                                                transaction.status === 'Chờ trả') && (
-                                                                <button
-                                                                    onClick={() => handleConfirmReturn(transaction.id)}
-                                                                    className={`text-white font-bold py-1 px-3 rounded text-sm ${
-                                                                        transaction.status === 'Quá hạn'
-                                                                            ? 'bg-blue-500 hover:bg-blue-700 whitespace-nowrap'
-                                                                            : 'bg-green-500 hover:bg-green-700 whitespace-nowrap'
-                                                                    }`}
-                                                                >
-                                                                    {transaction.status === 'Quá hạn'
-                                                                        ? 'Xác nhận đã nộp phạt'
-                                                                        : 'Xác nhận đã trả sách'}
-                                                                </button>
+                                                                X
+                                                            </button>
+                                                        )}
+                                                    </thead>
+                                                    <tbody className="text-sm sm:text-base">
+                                                        {/* <tr>
+                                                            <td className="px-4 py-2 font-medium">Id giao dịch:</td>
+                                                            <td className="px-4 py-2 text-ellipsis">{transaction.id}</td>
+                                                        </tr> */}
+                                                        <tr>
+                                                            <td className="px-4 py-2 font-medium">Id sách:</td>
+                                                            <td className="px-4 py-2 text-ellipsis">
+                                                                {transaction.bookId}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="px-4 py-2 font-medium">Tên sách:</td>
+                                                            <td className="px-4 py-2 text-ellipsis">
+                                                                {transaction.Book?.title}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="px-4 py-2 font-medium">Ngày mượn:</td>
+                                                            {dateInput ? (
+                                                                <td className="px-4 py-2">
+                                                                    <div className="flex flex-col">
+                                                                        <input
+                                                                            type="date"
+                                                                            value={
+                                                                                transaction.borrow_date?.split('T')[0]
+                                                                            }
+                                                                            onChange={(e) =>
+                                                                                handleDateChange(
+                                                                                    e,
+                                                                                    transaction.id,
+                                                                                    'borrow_date',
+                                                                                )
+                                                                            }
+                                                                            className={`border ${
+                                                                                dateError
+                                                                                    ? 'border-red-500'
+                                                                                    : 'border-gray-300'
+                                                                            } rounded px-2 py-1 outline-none`}
+                                                                        />
+                                                                        {dateError && (
+                                                                            <div className="text-red-500 text-sm mt-1">
+                                                                                {dateError}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            ) : (
+                                                                <td className="px-4 py-2">
+                                                                    {formatDate(transaction.borrow_date)}
+                                                                </td>
                                                             )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    ))
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="px-4 py-2 font-medium">Ngày trả:</td>
+                                                            {dateInput ? (
+                                                                <td className="px-4 py-2">
+                                                                    <div className="flex flex-col">
+                                                                        <input
+                                                                            type="date"
+                                                                            value={
+                                                                                transaction.return_date?.split('T')[0]
+                                                                            }
+                                                                            onChange={(e) =>
+                                                                                handleDateChange(
+                                                                                    e,
+                                                                                    transaction.id,
+                                                                                    'return_date',
+                                                                                )
+                                                                            }
+                                                                            className={`border ${
+                                                                                dateError
+                                                                                    ? 'border-red-500'
+                                                                                    : 'border-gray-300'
+                                                                            } rounded px-2 py-1 outline-none`}
+                                                                        />
+                                                                        {dateError && (
+                                                                            <div className="text-red-500 text-sm mt-1">
+                                                                                {dateError}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            ) : (
+                                                                <td className="px-4 py-2">
+                                                                    <div className="flex items-center gap-4">
+                                                                        <span>
+                                                                            {formatDate(transaction.return_date)}
+                                                                        </span>
+                                                                        {transaction.status === 'Chờ trả' && (
+                                                                            <button
+                                                                                onClick={() =>
+                                                                                    handleExtendBook(transaction.id)
+                                                                                }
+                                                                                className="bg-blue-500 font-bold hover:bg-blue-600 text-white text-sm px-4 py-1 mr-5 rounded"
+                                                                                title="Gia hạn thêm 15 ngày"
+                                                                                disabled={isSendingEmail} // Thêm disabled khi đang xử lý
+                                                                            >
+                                                                                {isSendingEmail ? (
+                                                                                    <div className="flex items-center gap-2">
+                                                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                                        <span>Đang xử lý...</span>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    'Gia hạn'
+                                                                                )}
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            )}
+                                                        </tr>
+                                                        {transaction.status === 'Quá hạn' && (
+                                                            <>
+                                                                <tr>
+                                                                    <td className="px-4 py-2 font-medium">
+                                                                        Số ngày quá hạn:
+                                                                    </td>
+                                                                    <td className="px-4 py-2">
+                                                                        <span className="text-red-500 font-medium">
+                                                                            {calculateOverdueDays(
+                                                                                transaction.return_date,
+                                                                            )}{' '}
+                                                                            ngày
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td className="px-4 py-2 font-medium">
+                                                                        Tiền phạt:
+                                                                    </td>
+                                                                    <td className="px-4 py-2">
+                                                                        <span className="text-red-500 font-medium">
+                                                                            {formatCurrency(
+                                                                                calculateFine(transaction.return_date),
+                                                                            )}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            </>
+                                                        )}
+                                                        <tr>
+                                                            <td className="px-4 py-2 font-medium">Trạng thái:</td>
+                                                            <td className="px-4 py-2">
+                                                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                                                                    <span
+                                                                        className={`px-2 py-1 rounded text-sm sm:text-base whitespace-nowrap
+                                                                            ${
+                                                                                transaction.status === 'Quá hạn'
+                                                                                    ? 'bg-red-500 text-white'
+                                                                                    : transaction.status === 'Chờ trả'
+                                                                                    ? 'bg-orange-500 text-white'
+                                                                                    : 'bg-green-500 text-white'
+                                                                            }
+                                                                        `}
+                                                                    >
+                                                                        {transaction.status}
+                                                                    </span>
+                                                                    {(transaction.status === 'Quá hạn' ||
+                                                                        transaction.status === 'Chờ trả') && (
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleConfirmReturn(transaction.id)
+                                                                            }
+                                                                            className={`text-white font-bold py-1 px-2 sm:px-3 rounded text-sm whitespace-nowrap
+                                                                                ${
+                                                                                    transaction.status === 'Quá hạn'
+                                                                                        ? 'bg-blue-500 hover:bg-blue-700'
+                                                                                        : 'bg-green-500 hover:bg-green-700'
+                                                                                }
+                                                                            `}
+                                                                        >
+                                                                            {transaction.status === 'Quá hạn'
+                                                                                ? 'Xác nhận đã nộp phạt'
+                                                                                : 'Xác nhận đã trả sách'}
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ) : (
-                                    <div className="text-center p-4">
-                                        <div className="text-yellow-500 font-medium mb-2">
+                                    <div className="text-center p-3 sm:p-4">
+                                        <div className="text-yellow-500 font-medium mb-2 text-sm sm:text-base">
                                             {userDetails.borrowedBooksCount > 0
                                                 ? 'Đang tải thông tin giao dịch...'
                                                 : 'Sinh viên này chưa có giao dịch mượn sách nào.'}
                                         </div>
-                                        <div className="text-gray-500 text-sm">
+                                        <div className="text-gray-500 text-xs sm:text-sm">
                                             Nếu bạn cho rằng đây là lỗi, vui lòng kiểm tra lại trong vài giây.
                                         </div>
                                     </div>
                                 )
                             ) : (
-                                <div className="text-center text-gray-500">Đang tải thông tin...</div>
+                                <div className="text-center text-gray-500 text-sm sm:text-base">
+                                    Đang tải thông tin...
+                                </div>
                             )}
                         </div>
                     </div>
                 )}
 
                 {userDetails?.Transactions?.length > 0 && (
-                    <div className="flex justify-end gap-4 mt-6">
+                    <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-4 sm:mt-6">
                         {buttonUpdate && (
                             <button
-                                className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg"
+                                className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg text-sm sm:text-base"
                                 onClick={handleSaveChanges}
                             >
                                 Lưu
                             </button>
                         )}
                         <button
-                            className="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg"
+                            className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg text-sm sm:text-base"
                             onClick={buttonUpdate ? handleCancelEdit : () => handleEditDetails()}
                         >
                             {buttonUpdate ? 'Hủy' : 'Chỉnh sửa'}
                         </button>
                         <button
-                            className="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg"
+                            className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-red-500 text-white font-semibold rounded-lg text-sm sm:text-base"
                             onClick={deleteBorrowedTable ? handleCancelDelete : () => handleDeleteBorrowedBookTable()}
                         >
                             {deleteBorrowedTable ? 'Hủy' : 'Xóa'}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaRegWindowClose } from 'react-icons/fa';
-import '../../components/modalUser/Modal.css';
+import '../../components/ModalUser/Modal.css';
 import { getAllGenres } from '../../services/bookManagerService';
 
 const ModalBookDetail = ({ isOpen, onClose, book }) => {
@@ -61,7 +61,9 @@ const ModalBookDetail = ({ isOpen, onClose, book }) => {
                             {/* Right Column - Book Details */}
                             <div className="space-y-4">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-5 min-h-[3rem]">{book?.title}</h2>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-5 min-h-[3rem]">
+                                        {book?.title}
+                                    </h2>
                                     <div className="space-y-3">
                                         <div>
                                             <h3 className="text-lg font-semibold text-gray-700">Tác giả</h3>
@@ -84,10 +86,14 @@ const ModalBookDetail = ({ isOpen, onClose, book }) => {
                                         </div>
                                         <div>
                                             <h3 className="text-lg font-semibold text-gray-700">Trạng thái</h3>
-                                            <p className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium
-                                                ${book?.quantity > 0 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-red-100 text-red-800'}`}>
+                                            <p
+                                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium
+                                                ${
+                                                    book?.quantity > 0
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-red-100 text-red-800'
+                                                }`}
+                                            >
                                                 {book?.quantity > 0 ? 'Còn sách' : 'Hết sách'}
                                             </p>
                                         </div>
@@ -112,4 +118,4 @@ const ModalBookDetail = ({ isOpen, onClose, book }) => {
     );
 };
 
-export default ModalBookDetail; 
+export default ModalBookDetail;

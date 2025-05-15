@@ -54,29 +54,29 @@ function ModalPayment({ isOpen, setIsOpenModal, totalPrice, userDetails, overdue
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Overlay */}
             <div className="absolute inset-0 bg-black opacity-50 pointer-events-auto" onClick={handleClose} />
 
             {/* Modal content */}
-            <div className="relative bg-white rounded-lg p-6 w-[800px] max-w-[95%] z-[9999]">
+            <div className="relative bg-white rounded-lg p-4 sm:p-6 w-full sm:w-[600px] md:w-[800px] max-h-[90vh] overflow-y-auto z-[9999]">
                 {/* Close button */}
                 <button
                     onClick={handleClose}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
+                    className="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
                 >
-                    <IoMdClose size={24} />
+                    <IoMdClose size={20} className="sm:w-6 sm:h-6" />
                 </button>
 
-                <div className="flex gap-6">
+                <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                     {/* Left section - QR Code */}
                     <div className="flex-1">
                         {/* Modal header */}
-                        <div className="text-center mb-6">
-                            <h2 className="text-2xl font-bold text-gray-800">Thanh toán QR</h2>
-                            <div className="text-gray-500 mt-2">
+                        <div className="text-center mb-4 sm:mb-6">
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Thanh toán QR</h2>
+                            <div className="text-gray-500 mt-2 text-sm sm:text-base">
                                 Nội dung chuyển khoản: <br />
-                                <span className="text-red-500 font-bold">
+                                <span className="text-red-500 font-bold break-all">
                                     {transferContent} <br /> Số tiền: {amountOnly.toLocaleString('vi-VN')}đ
                                 </span>
                             </div>
@@ -84,18 +84,18 @@ function ModalPayment({ isOpen, setIsOpenModal, totalPrice, userDetails, overdue
 
                         {/* QR Code */}
                         <div className="flex flex-col items-center">
-                            <div className="border-2 border-gray-200 p-4 rounded-lg">
-                                <img src={QR} alt="QR Payment" className="w-64 h-64 object-contain" />
+                            <div className="border-2 border-gray-200 p-2 sm:p-4 rounded-lg">
+                                <img src={QR} alt="QR Payment" className="w-48 h-48 sm:w-64 sm:h-64 object-contain" />
                             </div>
                         </div>
                     </div>
 
                     {/* Right section - Information and Instructions */}
-                    <div className="flex-1 flex flex-col justify-between">
+                    <div className="flex-1 flex flex-col justify-between mt-4 md:mt-0">
                         {/* Bank Information */}
-                        <div className="mb-6">
-                            <h3 className="font-semibold text-lg mb-3">Thông tin chuyển khoản</h3>
-                            <div className="space-y-2 text-gray-600">
+                        <div className="mb-4 sm:mb-6">
+                            <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3">Thông tin chuyển khoản</h3>
+                            <div className="space-y-2 text-sm sm:text-base text-gray-600">
                                 <p className="flex justify-between">
                                     <span>Ngân hàng:</span>
                                     <span className="font-medium">{process.env.REACT_APP_BANK_ID}</span>
@@ -112,9 +112,11 @@ function ModalPayment({ isOpen, setIsOpenModal, totalPrice, userDetails, overdue
                         </div>
 
                         {/* Instructions */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h3 className="font-semibold mb-3">Hướng dẫn thanh toán nộp phạt:</h3>
-                            <ol className="list-decimal list-inside space-y-2 text-gray-600">
+                        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                            <h3 className="font-semibold mb-2 sm:mb-3 text-base sm:text-lg">
+                                Hướng dẫn thanh toán nộp phạt:
+                            </h3>
+                            <ol className="list-decimal list-inside space-y-1 sm:space-y-2 text-sm sm:text-base text-gray-600">
                                 <li>Mở ứng dụng ngân hàng hoặc ví điện tử của bạn</li>
                                 <li>Quét mã QR bên cạnh</li>
                                 <li>Kiểm tra thông tin và số tiền thanh toán</li>
@@ -125,7 +127,7 @@ function ModalPayment({ isOpen, setIsOpenModal, totalPrice, userDetails, overdue
                         </div>
 
                         {/* Note */}
-                        <div className="mt-4 text-sm text-gray-500 italic">
+                        <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500 italic">
                             Lưu ý: Vui lòng giữ lại biên lai thanh toán cho đến khi hoàn tất xác nhận
                         </div>
                     </div>

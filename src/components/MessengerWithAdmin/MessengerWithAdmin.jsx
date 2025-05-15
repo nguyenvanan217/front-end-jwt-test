@@ -356,7 +356,7 @@ const MessengerWithAdmin = () => {
         <>
             <IconChat onClick={toggleMessenger} unreadCount={unreadCount} />
             {isOpen && (
-                <div className="fixed bottom-24 right-4 w-[350px] bg-white rounded-lg shadow-xl border border-gray-200 z-[55]">
+                <div className="fixed bottom-24 right-4 w-[350px] bg-white rounded-lg shadow-xl border border-gray-200 z-[1000]">
                     {/* ...existing chat UI code... */}
                     <div className="bg-blue-500 rounded-t-md text-white flex justify-between items-center p-4">
                         <div className="flex items-center gap-3">
