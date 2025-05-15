@@ -33,6 +33,8 @@ const MessengerWithAdmin = () => {
         images: [],
     });
 
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
+
     const getAdminId = async () => {
         try {
             const response = await getAdminChatId();
@@ -360,7 +362,8 @@ const MessengerWithAdmin = () => {
                     {/* ...existing chat UI code... */}
                     <div className="bg-blue-500 rounded-t-md text-white flex justify-between items-center p-4">
                         <div className="flex items-center gap-3">
-                            <h3 className="font-semibold">Chat với Admin</h3>
+                            <img src={logo} alt="" width={30} height={30} />
+                            <h3 className="font-semibold">Thư Viện Đại Học Khoa Học Huế</h3>
                         </div>
                         <button onClick={toggleMessenger} className="text-white hover:text-gray-200">
                             <IoClose size={24} />
@@ -368,6 +371,22 @@ const MessengerWithAdmin = () => {
                     </div>
                     {/* ...rest of the chat UI... */}
                     <div className="h-96 overflow-y-auto p-4">
+                        {isFirstLoad && messages.length === 0 && (
+                            <div className="flex justify-start mb-4">
+                                {/* <div className="w-8 h-8 flex items-center justify-center mr-2">
+                                    <img src={logo} alt="Logo" className="w-8 h-8" />
+                                </div> */}
+                                <div className="bg-gray-100 rounded-lg p-3">
+                                    <div className="text-sm text-gray-800">
+                                        <p className="font-semibold mb-1">Xin chào! 👋</p>
+                                        <p>Chào mừng bạn đến với Thư viện Đại học Khoa học Huế.</p>
+                                        <p className="mt-1">
+                                            Hãy đặt câu hỏi hoặc chia sẻ vấn đề của bạn, chúng tôi luôn sẵn sàng hỗ trợ!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         {messages.map((msg, index) => (
                             <div key={msg.id} className={`flex ${msg.isSender ? 'justify-end' : 'justify-start'} mb-4`}>
                                 {!msg.isSender && (

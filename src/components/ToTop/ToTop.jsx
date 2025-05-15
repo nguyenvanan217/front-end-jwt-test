@@ -36,8 +36,7 @@ const ToTop = () => {
                 onClick={scrollToTop}
                 className={`
                     fixed 
-                    ${isAdmin ? 'bottom-[110px]' : 'bottom-[150px]'}
-                    sm:${isAdmin ? 'bottom-[100px]' : 'bottom-[150px]'}
+                    ${isAdmin ? 'bottom-[110px] sm:bottom-[120px]' : 'bottom-[150px] sm:bottom-[170px]'}
                     right-4 sm:right-[19px]
                     p-2 sm:p-[13px]
                     bg-blue-500 

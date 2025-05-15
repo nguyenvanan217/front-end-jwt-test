@@ -530,7 +530,7 @@ const Messenger = () => {
                         )}
                     </>
                 ) : (
-                    <div className="flex-1 flex items-center justify-center text-gray-500 text-sm sm:text-base">
+                    <div className="flex-1 flex items-center justify-center text-gray-500 ml-5 text-sm sm:text-base">
                         Chọn một cuộc trò chuyện để bắt đầu!
                     </div>
                 )}

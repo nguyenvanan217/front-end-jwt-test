@@ -8,6 +8,7 @@ const ChatBot = ({ isOpen, onClose }) => {
     const [messages, setMessages] = useState([]);
     const messagesEndRef = useRef(null);
     const [loading, setLoading] = useState(false);
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -85,6 +86,18 @@ const ChatBot = ({ isOpen, onClose }) => {
             </div>
 
             <div className="h-96 overflow-y-auto p-4 bg-gray-50">
+                {isFirstLoad && messages.length === 0 && (
+                    <div className="flex justify-start mb-4">
+                        {/* <div className="h-7 w-8 flex items-center justify-center mr-2 bg-yellow-500 rounded-full">
+                            <FaRobot className="text-white" />
+                        </div> */}
+                        <div className="bg-white rounded-lg p-3 shadow-sm">
+                            <strong className="text-sm text-gray-600">
+                                Hãy đặt câu hỏi với AI của chúng tôi nếu cần hỗ trợ ngay lập tức!
+                            </strong>
+                        </div>
+                    </div>
+                )}
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.isSender ? 'justify-end' : 'justify-start'} mb-4`}>
                         {!msg.isSender && (
