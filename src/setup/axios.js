@@ -62,7 +62,7 @@ instance.interceptors.response.use(
                 // Chỉ hiển thị toast một lần để tránh spam
                 if (!isShowingForbiddenToast) {
                     isShowingForbiddenToast = true;
-                    toast.error(`You don't have permission to access this resource!`, {
+                    toast.error(`Bạn không có quyền truy cập tài nguyên này!`, {
                         onClose: () => {
                             isShowingForbiddenToast = false;
                         },
