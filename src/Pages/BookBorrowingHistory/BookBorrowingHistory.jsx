@@ -182,7 +182,7 @@ function BookBorrowingHistory() {
         <>
             {/* Thêm Loading Overlay */}
             {isSendingEmail && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[1000] flex items-center justify-center">
                     <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
                         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
                         <p className="text-lg font-semibold text-gray-700">Đang xử lý...</p>
@@ -300,7 +300,7 @@ function BookBorrowingHistory() {
                                                 {user.Transactions.status === 'Quá hạn' ? (
                                                     <div className="text-red-500 font-medium">{overdueDays} ngày</div>
                                                 ) : (
-                                                    <div className="text-gray-500">0 ngày</div>
+                                                    <div className="text-gray-500">Không có</div>
                                                 )}
                                             </td>
                                             <td className="py-2 px-4 border-b">

@@ -292,7 +292,7 @@ function BookLoanReturnDetails() {
     return (
         <>
             {isSendingEmail && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[1000] flex items-center justify-center">
                     <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
                         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
                         <p className="text-lg font-semibold text-gray-700">Đang xử lý...</p>

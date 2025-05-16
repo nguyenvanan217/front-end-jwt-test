@@ -6,9 +6,10 @@ import { createTransaction } from '../../services/bookManagerService';
 
 const ModalBorrowBooks = ({ isOpen, onClose, book, onBorrowSuccess }) => {
     const [studentEmail, setStudentEmail] = useState('');
+    const [errors, setErrors] = useState({});
     const [borrowDate, setBorrowDate] = useState('');
     const [returnDate, setReturnDate] = useState('');
-    const [errors, setErrors] = useState({});
+    const [isProcessing, setIsProcessing] = useState(false); // Add loading state
 
     const getCurrentDate = () => {
         const now = new Date();
@@ -62,6 +63,7 @@ const ModalBorrowBooks = ({ isOpen, onClose, book, onBorrowSuccess }) => {
         }
 
         try {
+            setIsProcessing(true); // Start loading
             const response = await createTransaction({
                 bookId: book.id,
                 studentEmail: studentEmail.trim(),
@@ -80,13 +82,25 @@ const ModalBorrowBooks = ({ isOpen, onClose, book, onBorrowSuccess }) => {
         } catch (error) {
             console.error('Lỗi khi đăng ký mượn sách:', error);
             toast.error('Không thể đăng ký mượn sách');
+        } finally {
+            setIsProcessing(false); // Stop loading
         }
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 z-[1000] overflow-y-auto">
+            {/* Add loading overlay */}
+            {isProcessing && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[1001] flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+                        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-lg font-semibold text-gray-700">Đang xử lý...</p>
+                    </div>
+                </div>
+            )}
+
             {/* Overlay */}
             <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose}></div>
 
@@ -170,9 +184,12 @@ const ModalBorrowBooks = ({ isOpen, onClose, book, onBorrowSuccess }) => {
                         </button>
                         <button
                             onClick={handleSubmit}
-                            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none"
+                            disabled={isProcessing}
+                            className={`rounded-md ${
+                                isProcessing ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                            } px-4 py-2 text-sm font-medium text-white focus:outline-none`}
                         >
-                            Xác nhận
+                            {isProcessing ? 'Đang xử lý...' : 'Xác nhận'}
                         </button>
                     </div>
                 </div>

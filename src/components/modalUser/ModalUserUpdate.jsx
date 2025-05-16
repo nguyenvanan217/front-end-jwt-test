@@ -126,7 +126,7 @@ function ModalUserUpdate(props) {
 
     return (
         <div
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[1000]"
             onClick={() => props.setIsOpenModalUpdate(false)}
         >
             <div

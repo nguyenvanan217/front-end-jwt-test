@@ -90,9 +90,10 @@ const Messenger = () => {
                         id: chat.message_id,
                         userId: otherUser.id,
                         name: otherUser.username, // Tên của người kia
+                        email: otherUser.email,
                         lastMessage: chat.content,
-                        lastSenderId: chat.sender_id, // ID người gửi tin nhắn cuối
-                        lastImageUrl: chat.image_url, // URL ảnh của tin nhắn cuối (nếu có)
+                        lastSenderId: chat.sender_id,
+                        lastImageUrl: chat.image_url,
                         lastTime: formatTimeToVN(chat.createdAt),
                         avatar: getAvatar(otherUser),
                         unread: chat.status === 'Sent' ? 1 : 0,
@@ -416,6 +417,7 @@ const Messenger = () => {
                             </div>
                             <div>
                                 <h2 className="font-semibold text-sm sm:text-base">{selectedChat.name}</h2>
+                                <p className="text-xs sm:text-sm text-gray-500">{selectedChat.email}</p>
                             </div>
                         </div>
 

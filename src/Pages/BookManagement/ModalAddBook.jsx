@@ -100,7 +100,7 @@ function ModalAddBook({ setIsOpenModalAdd, handleAddBook }) {
 
     return (
         <div
-            className="fixed inset-0 flex justify-center bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 flex justify-center bg-black bg-opacity-50 z-[1000]"
             onClick={() => setIsOpenModalAdd(false)}
         >
             <div

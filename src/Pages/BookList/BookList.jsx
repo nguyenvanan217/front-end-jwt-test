@@ -183,7 +183,6 @@ function BookList() {
             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-center my-4">
                 Tủ Sách Thư Viện Đại Học Khoa Học Huế
             </h1>
-
             {/* Search and Filter Section */}
             <div className="flex flex-col md:flex-row gap-4 mb-6">
                 {/* Search Input */}
@@ -248,6 +247,9 @@ function BookList() {
                                     >
                                         {book.title}
                                     </h2>
+                                    <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-1 sm:mb-2 line-clamp-1">
+                                        Tác giả: {book.author}
+                                    </p>
                                     <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-1 sm:mb-2 line-clamp-1">
                                         Số Lượng: {book.quantity}
                                     </p>

@@ -148,11 +148,16 @@ const BookManagementTable = () => {
                 toast.success(response.EM);
                 fetchAllBook();
                 setIsOpenModalDelete(false);
+            } else if (response.EC === 1) {
+                toast.error(response.EM); // "Không tìm thấy sách"
+            } else if (response.EC === 2) {
+                toast.error(response.EM); // "Không thể xóa sách này vì đang có người mượn và chưa hoàn trả"
             } else {
                 toast.error(response.EM || 'Xóa sách thất bại');
             }
         } catch (error) {
             console.error('Error:', error);
+            toast.error('Có lỗi xảy ra khi xóa sách');
         }
     };
     const handleOpenUpdateModal = (book) => {

@@ -381,7 +381,7 @@ const MessengerWithAdmin = () => {
                                         <p className="font-semibold mb-1">Xin chào! 👋</p>
                                         <p>Chào mừng bạn đến với Thư viện Đại học Khoa học Huế.</p>
                                         <p className="mt-1">
-                                            Hãy đặt câu hỏi hoặc chia sẻ vấn đề của bạn, chúng tôi luôn sẵn sàng hỗ trợ!
+                                            Hãy chia sẻ vấn đề của bạn hoặc gia hạn sách, chúng tôi luôn sẵn sàng hỗ trợ!
                                         </p>
                                     </div>
                                 </div>

@@ -1,14 +1,19 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FaRobot } from 'react-icons/fa';
 import ChatBot from '../ChatBot/ChatBot';
 import { ChatContext } from '../Context/chat.context';
 import AuthContext from '../Context/auth.context';
+import { useLocation } from 'react-router-dom';
 
 const IconChatBot = () => {
     const { chatState, toggleBot } = useContext(ChatContext);
+    const location = useLocation();
     const { auth } = useContext(AuthContext);
     const isOpen = chatState.isBotOpen;
     const isAdmin = auth?.user?.groupWithRoles?.group?.name?.includes('Quản Lý');
+    if (location.pathname === '/messenger') {
+        return null;
+    }
 
     return (
         <>

@@ -37,7 +37,7 @@ function App() {
             });
         } else {
             console.log('API Error Response:', response);
-            toast.warning('Session expired, please login again!');
+            toast.warning('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!');
             setTimeout(() => {
                 setAuth({
                     isLoading: false,

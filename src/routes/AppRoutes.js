@@ -12,13 +12,28 @@ import PrivateRoutes from './PrivateRoutes';
 import RolesManagerment from '../Pages/Roles/RolesManagerment';
 import AccountInformation from '../Pages/AccountInformation/AccountInformation';
 import Messenger from '../Pages/Messenger/Messenger';
+import PublicRoutes from './PublicRoutes';
 
 function AppRoutes() {
     return (
         <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            {/* Public routes - wrapped with PublicRoutes */}
+            <Route
+                path="/"
+                element={
+                    <PublicRoutes>
+                        <Login />
+                    </PublicRoutes>
+                }
+            />
+            <Route
+                path="/register"
+                element={
+                    <PublicRoutes>
+                        <Register />
+                    </PublicRoutes>
+                }
+            />
 
             {/* Protected routes */}
             <Route element={<PrivateRoutes />}>

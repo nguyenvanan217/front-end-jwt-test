@@ -48,7 +48,7 @@ instance.interceptors.response.use(
                     setTimeout(() => {
                         window.location.href = '/';
                     }, 3000);
-                    toast.error('Session expired. Please log in again!', {
+                    toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!', {
                         onClose: () => {
                             isShowingUnauthorizedToast = false;
                         },
