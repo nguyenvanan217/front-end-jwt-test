@@ -116,15 +116,18 @@ function Navbar() {
                             </button>
                             {dropdown && (
                                 <div className="drop-down flex flex-col gap-2">
-                                    <Link
-                                        to="/accountinformation"
-                                        className="text-red-500 flex items-center justify-between gap-2"
-                                    >
-                                        <span>
-                                            <FaUserAlt />
-                                        </span>
-                                        <strong>Thông Tin Tài Khoản </strong>
-                                    </Link>
+                                    {!isAdmin && (
+                                        (<Link
+                                            to="/accountinformation"
+                                            className="text-red-500 flex items-center justify-between gap-2"
+                                        >
+                                            <span>
+                                                <FaUserAlt />
+                                            </span>
+                                            <strong>Thông Tin Tài Khoản </strong>
+                                        </Link>
+                                        )
+                                    )}
                                     <Link
                                         to="/"
                                         onClick={handleLogout}
@@ -197,12 +200,14 @@ function Navbar() {
                     {/* Account Info and Logout Section */}
                     <div className="pt-4 border-t border-slate-700 mb-2 flex flex-col gap-3">
                         <div className="text-white mb-2">Welcome: {auth.user.name}</div>
-                        <Link to="/accountinformation" className="text-red-500 flex items-center gap-2">
-                            <span className="">
-                                <FaUserAlt />
-                            </span>
-                            <strong>Thông Tin Tài Khoản</strong>
-                        </Link>
+                       {!isAdmin && (
+                           <Link to="/accountinformation" className="text-red-500 flex items-center gap-2">
+                               <span className="">
+                                   <FaUserAlt />
+                               </span>
+                               <strong>Thông Tin Tài Khoản</strong>
+                           </Link>
+                       )}
                         <Link to="/" onClick={handleLogout} className="text-red-500 flex items-center gap-2">
                             <span className="text-xl">
                                 <LuLogOut />

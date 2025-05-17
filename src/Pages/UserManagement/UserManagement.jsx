@@ -88,6 +88,7 @@ function UserManagement() {
     const fetchAllUser = async () => {
         try {
             const response = await getAllUsers(currentPage, currentLimit, searchTerm);
+            console.log('>>>>>>>>>check get all user response', response);
             if (response && response.EC === 0) {
                 setTotalPage(response.DT.totalPages);
                 setListUser(response.DT.users);
@@ -99,10 +100,18 @@ function UserManagement() {
         }
     };
     const handleDeleteUser = (item) => {
+        if (hasActiveLoans(item)) {
+            toast.error('Không thể xóa sinh viên đang mượn sách!');
+            return;
+        }
         setIsOpenModal(true);
         setDataModal(item);
     };
     const handleUpdateUser = (item) => {
+        if (hasActiveLoans(item)) {
+            toast.error('Không thể chỉnh sửa sinh viên đang mượn sách!');
+            return;
+        }
         setIsOpenModalUpdate(true);
         setDataModal(item);
     };
@@ -122,6 +131,13 @@ function UserManagement() {
     const handlePageClick = async (event) => {
         setCurrentPage(+event.selected + 1);
         await fetchAllUser();
+    };
+
+    // Thêm hàm kiểm tra trạng thái mượn sách
+    const hasActiveLoans = (user) => {
+        return user.Transactions && user.Transactions.some(trans => 
+            trans.status === 'Chờ trả' || trans.status === 'Quá hạn'
+        );
     };
 
     return (
@@ -187,6 +203,7 @@ function UserManagement() {
                                     filteredUsers.map((item, index) => {
                                         const groupName = item?.Group?.name || 'Chưa có nhóm';
                                         const borrowCount = item?.borrowedBooksCount || 0;
+                                        const isDisabled = hasActiveLoans(item);
 
                                         return (
                                             <tr key={index} className="hover:bg-gray-100">
@@ -218,15 +235,21 @@ function UserManagement() {
                                                 <td className="py-2 text-center border border-gray-300">
                                                     <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-5">
                                                         <button
-                                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 sm:py-2 px-2 sm:px-4 rounded text-sm sm:text-base"
+                                                            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 sm:py-2 px-2 sm:px-4 rounded text-sm sm:text-base
+                                                                ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                             onClick={() => handleUpdateUser(item)}
+                                                            disabled={isDisabled}
+                                                            title={isDisabled ? "Không thể chỉnh sửa khi sinh viên đang mượn sách" : ""}
                                                         >
                                                             <span className="hidden sm:inline">Chỉnh sửa</span>
                                                             <span className="sm:hidden">Sửa</span>
                                                         </button>
                                                         <button
-                                                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 sm:py-2 px-2 sm:px-4 rounded text-sm sm:text-base"
+                                                            className={`bg-red-500 hover:bg-red-700 text-white font-bold py-1 sm:py-2 px-2 sm:px-4 rounded text-sm sm:text-base
+                                                                ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                             onClick={() => handleDeleteUser(item)}
+                                                            disabled={isDisabled}
+                                                            title={isDisabled ? "Không thể xóa khi sinh viên đang mượn sách" : ""}
                                                         >
                                                             Xóa
                                                         </button>
