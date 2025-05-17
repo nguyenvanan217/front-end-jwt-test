@@ -135,8 +135,9 @@ function UserManagement() {
 
     // Thêm hàm kiểm tra trạng thái mượn sách
     const hasActiveLoans = (user) => {
-        return user.Transactions && user.Transactions.some(trans => 
-            trans.status === 'Chờ trả' || trans.status === 'Quá hạn'
+        return (
+            user.Transactions &&
+            user.Transactions.some((trans) => trans.status === 'Chờ trả' || trans.status === 'Quá hạn')
         );
     };
 
@@ -239,7 +240,11 @@ function UserManagement() {
                                                                 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                             onClick={() => handleUpdateUser(item)}
                                                             disabled={isDisabled}
-                                                            title={isDisabled ? "Không thể chỉnh sửa khi sinh viên đang mượn sách" : ""}
+                                                            title={
+                                                                isDisabled
+                                                                    ? 'Không thể chỉnh sửa khi sinh viên đang mượn sách'
+                                                                    : ''
+                                                            }
                                                         >
                                                             <span className="hidden sm:inline">Chỉnh sửa</span>
                                                             <span className="sm:hidden">Sửa</span>
@@ -249,7 +254,11 @@ function UserManagement() {
                                                                 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                             onClick={() => handleDeleteUser(item)}
                                                             disabled={isDisabled}
-                                                            title={isDisabled ? "Không thể xóa khi sinh viên đang mượn sách" : ""}
+                                                            title={
+                                                                isDisabled
+                                                                    ? 'Không thể xóa khi sinh viên đang mượn sách'
+                                                                    : ''
+                                                            }
                                                         >
                                                             Xóa
                                                         </button>
